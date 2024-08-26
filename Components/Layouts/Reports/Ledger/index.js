@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import LedgerReport from '/Components/Layouts/Reports/Ledger/LedgerReport';
 import { Row, Col, Form } from "react-bootstrap";
 import moment from "moment";
-import { Radio, Select } from "antd";
+import { Radio, Select, notification } from "antd";
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
@@ -32,7 +34,7 @@ const Ledger = () => {
         const {result} = data
         let temprecords=[];
         result?.map((x) => {
-          console.log("x",x)
+          // console.log("x",x)
               return temprecords.push({ value: x.id, label: `(${x.code}) ${x.title}`, });
             });
             dispatch(setRecords(temprecords));
@@ -63,18 +65,19 @@ const Ledger = () => {
   }
 
   async function getLedger(){
-
+    console.log("getLedger Ran")
     try{
       const result = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER, {
         headers: {
+          companyid: company,
           id: account,
           currency: currency,
           from: from,
           to: to,
         }
       });
-      console.log(result.data)
-      return result.data
+      console.log(result)
+      return result.data.result
     }catch(e){
       console.error(e)
     }
@@ -156,29 +159,43 @@ const Ledger = () => {
       </Col>
       <Col md={12}>
         <button className='btn-custom mt-3' onClick={async () => {
-          if (account != "" && account != null) {
-            await getLedger();
-            Router.push({ pathname: `/reports/ledgerReport/${account}/`, query: { from: from, to: to, name: name, company: company, currency: currency } });
-            dispatch(incrementTab({
-              "label": "Ledger Report",
-              "key": "5-7",
-              "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`,
-              // 'data': getLedger()
-            }))
+          let count = await getLedger();
+          console.log(count)
+          if(count>0){
+            if (account != "" && account != null) {
+              Router.push({ pathname: `/reports/ledgerReport/${account}/`,
+                query: {from: from, to: to, name: name, company: company, currency: currency }
+              });
+              dispatch(incrementTab({
+                "label": "Ledger Report",
+                "key": "5-7",
+                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
+              }))
+            }
+            else{
+              Router.push({
+                pathname: `/reports/ledgerReport/${account}/`,  
+                query: { from: from, to: to, name: name, company: company, currency: currency }
+              });
+              dispatch(incrementTab({
+                "label": "Ledger Report",
+                "key": "5-7",
+                "id": `from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
+              }));
+              
+            }
           }
-          // else{
-          //   Router.push({
-          //     pathname: `/reports/ledgerReport/`,  
-          //     query: { from: from, to: to, name: name, company: company, currency: currency }
-          //   });
-            
-          //   dispatch(incrementTab({
-          //     "label": "Ledger Report",
-          //     "key": "5-7",
-          //     "id": `from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`  // Removed ${account} from id
-          //   }));
-            
-          // }
+          else{
+            let message = "No records found in "+ name;
+            notification.open({
+              message: "No Records Found",
+              description: message,
+              icon: <ExclamationCircleOutlined style={{ color: 'orange' }} />,
+              onClick: () => {
+                console.log('Notification Clicked!');
+              },
+            });
+          }
         }
         }> Go </button>
       </Col>
