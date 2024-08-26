@@ -19,10 +19,10 @@ const InvoiceAndBills = ({invoiceData}) => {
   const [records, setRecords] = useState([]);
   const [type, setType] = useState("Job Invoice");
   const currentRecords = (search!='' && search!=null && search!=undefined)?records.filter((x)=>{
-    return  x.invoice_No.toLowerCase().includes(search.toLowerCase()) ||
-            x.SE_Job.jobNo.toLowerCase().includes(search.toLowerCase()) ||
-            x.party_Name.toLowerCase().includes(search.toLowerCase()) ||
-            x.total.toLowerCase().includes(search.toLowerCase())
+    return  x?.invoice_No.toLowerCase().includes(search.toLowerCase()) ||
+            x?.SE_Job?.jobNo.toLowerCase().includes(search.toLowerCase()) ||
+            x?.party_Name.toLowerCase().includes(search.toLowerCase()) ||
+            x?.total.toLowerCase().includes(search.toLowerCase())
 
        }):records;
 
