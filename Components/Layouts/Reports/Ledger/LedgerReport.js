@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
 import moment from "moment";
 import MainTable from "./MainTable";
-import Router from 'next/router';
-import { removeTab } from '/redux/tabs/tabSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 
 const LedgerReport = ({ voucherData, account, from, to, name, company, currency }) => {
@@ -14,12 +12,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
   
   useEffect(() => {
     console.log(voucherData)
-    console.log(voucherData.result.length)
-    if(voucherData.result.length==0){
-      // dispatch(removeTab('2'))
-      // Router.push('/reports/ledger')
-    }
-    if (name && voucherData.status == "success") {
+    if (voucherData.status == "success") {
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
       voucherData.result.forEach((y) => {
         let exRate = parseFloat(y["Voucher.exRate"])>0?parseFloat(y["Voucher.exRate"]):1;
@@ -47,7 +40,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
               balance: tempBalance,
               voucher: y["Voucher.voucher_Id"],
               type: y.type,
-              narration: y.narration,
+              narration: y.narration?y.narration:null,
             });
             finalClosing = tempBalance
             isDone = true;
@@ -60,6 +53,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
       });
       setOpening(openingBalance);
       setClosing(finalClosing);
+      console.log(tempArray)
       setLedger(tempArray);
     }
   }, []);
