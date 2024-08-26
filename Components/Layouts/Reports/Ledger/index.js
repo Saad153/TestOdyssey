@@ -76,7 +76,7 @@ const Ledger = () => {
           to: to,
         }
       });
-      console.log(result.data.result)
+      console.log(result)
       return result.data.result
     }catch(e){
       console.error(e)
