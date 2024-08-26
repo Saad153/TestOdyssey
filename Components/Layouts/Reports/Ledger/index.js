@@ -160,6 +160,7 @@ const Ledger = () => {
       <Col md={12}>
         <button className='btn-custom mt-3' onClick={async () => {
           let count = await getLedger();
+          console.log(count)
           if(count>0){
             if (account != "" && account != null) {
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,
