@@ -65,7 +65,7 @@ const Ledger = () => {
   }
 
   async function getLedger(){
-
+    console.log("getLedger Ran")
     try{
       const result = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER, {
         headers: {
