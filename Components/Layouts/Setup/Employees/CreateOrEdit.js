@@ -346,6 +346,7 @@ return(
   <Select.Option value={'TrialBalance'} disabled={isAdminSelected}>Trial Balance</Select.Option>
   <Select.Option value={'IncomeStatement'} disabled={isAdminSelected}>Income Statement</Select.Option>
   <Select.Option value={'Delete'} disabled={isAdminSelected}>Delete</Select.Option>
+  <Select.Option value={'Edit'} disabled={isAdminSelected}>Edit</Select.Option>
   <Select.Option value={'admin'}>Admin</Select.Option>
 </Select>
         </Form.Item>

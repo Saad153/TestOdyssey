@@ -1,8 +1,7 @@
-import { setAccesLevels } from '/functions/setAccesLevels';
 import Cookies from "js-cookie";
 import jwt_decode from 'jwt-decode';
 
-function checkEmployeeAccess(){
+function checkEditAccess(){
 
     let token = null;
   if(Cookies.get("token") != null && Cookies.get("token") != "" && Cookies.get("token") != "undefined"){
@@ -33,19 +32,14 @@ function checkEmployeeAccess(){
   }
   newTemp.forEach((x)=>{
     x = x.trim()
-    if(x == 'admin' || x == 'Delete'){
-      console.log("admin triggered")
-      access = true;
-      console.log(access);
+    if(x == 'Edit'){
+      console.log("Edit triggered")
+      access = true
     }
-
    
   })
-  
-  
-  console.log(access)
-
+    
   return access
 }
 
-export { checkEmployeeAccess }
+export { checkEditAccess }

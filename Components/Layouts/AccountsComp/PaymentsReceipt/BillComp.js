@@ -604,7 +604,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
         </button>
       <div className='text-end'>
       <button onClick={submitPrices} 
-        disabled={Transaction_Amount === "0.00"}
+      disabled={Transaction_Amount === "0.00"}
       className='btn-custom mb-2'>Make Transaction</button>
         </div>
     </div>
