@@ -32,7 +32,7 @@ function checkEditAccess(){
   }
   newTemp.forEach((x)=>{
     x = x.trim()
-    if(x == 'Edit'){
+    if(x == 'admin' || x == 'Edit'){
       console.log("Edit triggered")
       access = true
     }
