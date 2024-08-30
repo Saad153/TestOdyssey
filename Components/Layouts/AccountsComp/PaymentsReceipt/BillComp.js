@@ -11,14 +11,15 @@ import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import Gl from './Gl';
 
-const BillComp = ({companyId, state, dispatch}) => {
-
+const BillComp = ({companyId, state, dispatch }) => {
   const router = useRouter();
   const dispatchNew = useDispatch();
   const { payType } = state;
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};  
-  
+
+const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2)
+
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
   }, [state.selectedParty, state.payType]);  
@@ -26,10 +27,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   useEffect(() => { 
     if(state.invoices.length>0){
       set('totalrecieving', totalRecieveCalc(state.invoices));
-      //if(!state.autoOn){
       calculateTransactions();
-      // console.log(state.invoices)
-      //}
     }
   }, [
     state.invoices,
@@ -48,6 +46,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     state.exRate, 
     state.manualExRate
   ]);  
+
 
   async function calculateTax(){
     let tempRate = state.autoOn? state.exRate:state.manualExRate
@@ -364,11 +363,6 @@ const BillComp = ({companyId, state, dispatch}) => {
         </Col>
         <Col md={3}>
           <br/>
-          {/* <button className={state.autoOn?'btn-custom':'btn-custom-disabled'}
-            style={{fontSize:10}}
-            disabled={!state.autoOn}
-            onClick={()=>autoKnocking()}
-          >Set</button> */}
         </Col>
         {!state.autoOn &&
         <Col md={12}>
@@ -556,19 +550,26 @@ const BillComp = ({companyId, state, dispatch}) => {
           <td className='px-1' style={{width:300}}> {commas(x.remBalance - x.receiving)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
-              checked={x.check} 
-              disabled={state.autoOn}
+              checked={x.remBalance - x.receiving == 0.0 } 
+              disabled={x.remBalance - x.receiving == 0.0}
               onChange={() => {
                 let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;
                 if(state.payType=="Recievable"){
+                  console.log(x.inVbalance)
+                  console.log(x.recieved)
+                  const rem = x.inVbalance - x.recieved;
+                  console.log(rem)
                   tempState[index].receiving = tempState[index].check?
                   (
+                    parseFloat(x.inVbalance)
                     // parseFloat(x.inVbalance) - parseFloat(x.recieved) + 
-                    parseFloat(x.remBalance) + 
-                    parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
+                    // parseFloat(x.remBalance) +
+                    // parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
                   ):
                   0.00
+
+                  parseFloat(state.edit?x.Invoice_Transactions[0].amount:0)+rem
                 } else {
                   tempState[index].receiving = tempState[index].check?
                   (
@@ -601,8 +602,10 @@ const BillComp = ({companyId, state, dispatch}) => {
         <button>
           {/* Submit */}
         </button>
-        <div className='text-end'>
-          <button onClick={submitPrices} className='btn-custom mb-2'>Make Transaction</button>
+      <div className='text-end'>
+      <button onClick={submitPrices} 
+        disabled={Transaction_Amount === "0.00"}
+      className='btn-custom mb-2'>Make Transaction</button>
         </div>
     </div>
     }

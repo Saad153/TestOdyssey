@@ -26,7 +26,6 @@ import { FaHistory } from "react-icons/fa";
 import { CiBoxList } from "react-icons/ci";
 
 const Vouchers = ({ register, control, errors, CompanyId, child, settlement, reset, voucherData, setSettlement, setChild, id }) => {
-console.log("settlement",settlement)
   let inputRef = useRef(null);
   const queryClient = useQueryClient();
   const dispatch = useDispatch();

@@ -2,11 +2,24 @@ import axios from "axios";
 import moment from "moment";
 
 function recordsReducer(state, action){
+
   switch (action.type) {
+    case"receiving":{
+      return {
+        ...state,
+        invoices: state.invoices.map((invoice) => {
+          invoice.receiving = action.payload.receiving
+          return invoice
+        }
+      )
+      }
+
+    }
     case 'set': {
       return { ...state, [action.var]: action.pay } 
     }
     case 'setAll': {
+      
       return {
           ...state, ...action.payload
       }
