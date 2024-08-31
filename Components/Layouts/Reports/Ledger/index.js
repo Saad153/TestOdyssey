@@ -28,7 +28,9 @@ const Ledger = () => {
       const gotAccounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHILD_ACCOUNTS, {
       headers: {
         companyid: company
-      } });
+      } 
+    
+    });
 
         const {data}= gotAccounts;
         const {result} = data
@@ -121,9 +123,17 @@ const Ledger = () => {
       <Col md={6}></Col>
       <Col md={3} className="my-3">
         <b>Company</b>
-        <Radio.Group className="mt-1" 
-        value={company} 
-        onChange={(e) => dispatch(setCompany(e.target.value))}>
+        <Radio.Group
+  className="mt-1"
+  value={company}
+  onChange={(e) => {
+    const selectedCompany = e.target.value;
+    
+    // Dispatch setCompany and then dispatch setAccount(null)
+    dispatch(setCompany(selectedCompany));
+
+  }}
+>
           <Radio value={1}>SEA NET SHIPPING & LOGISTICS</Radio>
           <Radio value={2}>CARGO LINKERS</Radio>
           <Radio value={3}>AIR CARGO SERVICES</Radio>
@@ -163,6 +173,7 @@ const Ledger = () => {
           console.log(count)
           if(count>0){
             if (account != "" && account != null) {
+              console.log("if")
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,
                 query: {from: from, to: to, name: name, company: company, currency: currency }
               });
@@ -173,8 +184,9 @@ const Ledger = () => {
               }))
             }
             else{
+              console.log("else")
               Router.push({
-                pathname: `/reports/ledgerReport/${account}/`,  
+                pathname: `/reports/ledgerReport/undefined/`,  
                 query: { from: from, to: to, name: name, company: company, currency: currency }
               });
               dispatch(incrementTab({

@@ -359,10 +359,32 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
             return (
               <tr className="f table-row-center-singleLine" key={index}>
                 <td style={{ padding: 3, minWidth: 500 }}>
-                  <SelectSearchComp className="form-select" name={`Voucher_Heads.${index}.ChildAccountId`} register={register}
-                    control={control} width={"100%"}
-                    options={child.length > 0 ? child.map((x) => { return { id: x?.id, name: x?.title } }) : []}
-                  />
+                <SelectSearchComp
+  className="form-select"
+  name={`Voucher_Heads.${index}.ChildAccountId`}
+  register={register}
+  control={control}
+  width={"100%"}
+  options={
+    child.length > 0
+      ? child
+          .filter((x) => {
+            if (allValues.vType === "BPV") {
+              return x.subCategory !== "Bank";
+            } else if (allValues.vType === "TV") {
+              return x.subCategory === "Bank";
+            }
+            return true; // Keep the original data if Type is not BPV or TV
+          })
+          .map((x) => {
+            return {
+              id: x?.id,
+              name: `${x?.title} (${x?.Parent_Account?.title})`,
+            };
+          })
+      : []
+  }
+/>
                 </td>
                 <td style={{ padding: 3, width: 90 }}>
                   <SelectComp className="form-select" name={`Voucher_Heads.${index}.type`} register={register} control={control}
