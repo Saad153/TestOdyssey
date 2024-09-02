@@ -16,6 +16,8 @@ import ReactToPrint from 'react-to-print';
 import DeleteVoucher from './DeleteVoucher';
 import Pagination from '../../../Shared/Pagination';
 import openNotification from "../../../Shared/Notification";
+import {checkEditAccess} from "../../../../functions/checkEditAccess";
+import {checkEmployeeAccess} from "../../../../functions/checkEmployeeAccess";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 const PaymentsReceipt = ({ id, voucherData }) => {
@@ -40,6 +42,8 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const noOfPages = rowData ? Math.ceil(rowData.length / recordsPerPage) : 0;
   const [showTable, setShowTable] = useState(true);
   const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
+  let edit = false;
+  let del = false;
 
 
   useEffect(() => {
@@ -135,6 +139,11 @@ const PaymentsReceipt = ({ id, voucherData }) => {
         subType: voucherData.subType
       })
     }
+
+    edit = checkEditAccess()
+    del = checkEmployeeAccess()
+    console.log(edit)
+    console.log(del)
   }, [router]);
 
   // console.log("currentRecords",currentRecords)
@@ -348,7 +357,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             }}
           >Show Old <MdHistory /></button>
 
-          {id != "new" && <DeleteVoucher companyId={companyId} setAll={setAll} state={state} id={id} setShowTable={setShowTable} />}
+          {id != "new" && del && <DeleteVoucher companyId={companyId} setAll={setAll} state={state} id={id} setShowTable={setShowTable} />}
           {!isPaymentReceiptNew && (
         <button className='btn-custom px-3' style={{ fontSize: 11 }} onClick={chkReturn}>
           Cheque Return
