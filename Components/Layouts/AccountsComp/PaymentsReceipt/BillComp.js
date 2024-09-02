@@ -18,12 +18,15 @@ const BillComp = ({companyId, state, dispatch }) => {
   const { payType } = state;
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};  
-  let edit = false
+  const [edit, setEdit] = useState(false);
 
 const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2)
 
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
+    // edit = checkEditAccess()
+    setEdit(checkEditAccess())
+    console.log("edit",edit)
   }, [state.selectedParty, state.payType]);  
   
   useEffect(() => { 
@@ -32,7 +35,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
       calculateTransactions();
     }
 
-    edit = checkEditAccess()
+    
   }, [
     state.invoices,
     state.manualExRate,
@@ -326,7 +329,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
     }
     return () => clearTimeout(delayDebounceFn)
   }, [state.auto])
-
+console.log(edit)
   return (
   <>
   <Row>
