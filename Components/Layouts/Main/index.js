@@ -12,6 +12,7 @@ import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Router from 'next/router';
 import Uploader from "./Uploader";
+import UploadBackUp from "./UploadBackUp";
 const DynamicComponent = dynamic(() => import("./ChartComp"), {
   loading: () => <p>Loading..</p>,
 });
@@ -34,6 +35,7 @@ const Main = ({sessionData, chartData}) => {
   return (
   <div className='home-styles'>
     <Row>
+      {/* <UploadBackUp /> */}
       {companyId==3 && 
         <AWBCalculator/>
       }
