@@ -42,8 +42,9 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const noOfPages = rowData ? Math.ceil(rowData.length / recordsPerPage) : 0;
   const [showTable, setShowTable] = useState(true);
   const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
-  let edit = false;
-  let del = false;
+  // let edit = false;
+  // let del = false;
+  const [del, setDel] = useState(false);
 
 
   useEffect(() => {
@@ -140,9 +141,10 @@ const PaymentsReceipt = ({ id, voucherData }) => {
       })
     }
 
-    edit = checkEditAccess()
-    del = checkEmployeeAccess()
-    console.log(edit)
+    // edit = checkEditAccess()
+    // del = checkEmployeeAccess()
+    setDel(checkEmployeeAccess())
+    // console.log(edit)
     console.log(del)
   }, [router]);
 
@@ -293,7 +295,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
       Router.push(`/accounts/paymentReceipt/${e.id}`);
     }
   }, []);
-
+  console.log(del)
   return (
     <div className='base-page-layout'>
       <Row>
