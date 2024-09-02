@@ -30,6 +30,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
               y.type === "debit" ? 
                 openingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
                 openingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
+            finalClosing = closingBalance
           } else {
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
             tempArray.push({
@@ -53,7 +54,6 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
       });
       setOpening(openingBalance);
       setClosing(finalClosing);
-      console.log(tempArray)
       setLedger(tempArray);
     }
   }, []);
