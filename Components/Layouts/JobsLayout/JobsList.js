@@ -36,8 +36,8 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
       x?.weight.toLowerCase().includes(query.toLowerCase()) ||
       x?.Bl?.hbl.toLowerCase().includes(query.toLowerCase()) ||
       x?.Bl?.mbl.toLowerCase().includes(query.toLowerCase()) 
-  }) : records.slice(indexOfFirst, indexOfLast);
-  const noOfPages = Math.ceil(records.length / recordsPerPage);
+  }) : records?.slice(indexOfFirst, indexOfLast);
+  const noOfPages = Math.ceil(records?.length / recordsPerPage);
 
   useEffect(() => {
     if (jobsData.status == "success") {
@@ -112,7 +112,7 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
               </thead>
               <tbody>
                 {
-                  currentRecords.map((x, index) => {
+                  currentRecords?.map((x, index) => {
                     return (
                       <tr key={index} className='f row-hov'
                         onClick={() => {

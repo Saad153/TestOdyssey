@@ -4,7 +4,7 @@ import { Tabs } from "antd";
 import moment from 'moment';
 import Cookies from 'js-cookie';
 import Router from 'next/router';
-import React, { useEffect } from 'react';
+import React, { useEffect,useState } from 'react';
 import { useSelector } from 'react-redux';
 import { getJobValues } from '/apis/jobs';
 import { useQuery } from '@tanstack/react-query';
@@ -43,6 +43,8 @@ const SignupSchema = yup.object().shape({
 });
 
 const CreateOrEdit = ({state, dispatch, baseValues, vendorData, id}) => {
+
+  const [register_date, setRegisterdate] = useState(moment().format('YYYY-MM-DD'));
 
   const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: yupResolver(SignupSchema),
@@ -151,7 +153,7 @@ const CreateOrEdit = ({state, dispatch, baseValues, vendorData, id}) => {
             {errors.name && <div className='error-line'>{errors.name.message}*</div>}
           </Col>
           <Col className='py-1'>     
-            <DateComp register={register} name='registerDate' control={control} label='Register Date' />
+            <DateComp register={register} name='registerDate' defaultValues={register_date} control={control} label='Register Date' />
             {errors.registerDate && <div className='error-line'>Required*</div>}
           </Col>
           <Col md={2} className='py-1'>

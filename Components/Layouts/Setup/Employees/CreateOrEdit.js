@@ -10,6 +10,7 @@ import Vouchers from "./Vouchers";
 import { getJobValues } from '/apis/jobs';
 import { useQuery } from '@tanstack/react-query';
 // import { useFormikContext } from 'formik';
+import moment from 'moment';
 
 const SignupSchema = Yup.object().shape({
   empName: Yup.string().min(3, 'Too Short!').max(45, 'Too Long!').required('Required'),
@@ -71,7 +72,7 @@ const CreateOrEdit = ({appendClient, edit, setVisible, setEdit, selectedEmployee
     accountNo: '', userName: '', address: '',
     empName: '', phone: '',  email: '',
     pass: '', cnic: '', bank: '',
-    code: '', date:'', id:'', represent:[""]
+    code: '', date:moment().format('YYYY-MM-DD'), id:'', represent:[""]
   });
 
   const [load, setLoad] = useState(false);

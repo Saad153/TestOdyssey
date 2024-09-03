@@ -13,7 +13,7 @@ const InvoiceEditor = ({data, reload}) => {
   const [charges, setCharges] = useState([]);
 
   useEffect(() => {
-    setCharges(data.resultOne.Charge_Heads)
+    setCharges(data.resultOne?.Charge_Heads)
   }, []);
 
   const appendCharge = () => {

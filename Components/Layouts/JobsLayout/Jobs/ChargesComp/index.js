@@ -31,7 +31,7 @@ import { Tabs } from 'antd';
   useEffect(() => {
     if(chargesData){
       chargesData.charges.forEach((x)=>{
-        if(x.Invoice.approved && x.Invoice.approved == "1"){
+        if(x.Invoice?.approved && x.Invoice?.approved == "1"){
           dispatchNew(setApproved("1"))
         }
       })
