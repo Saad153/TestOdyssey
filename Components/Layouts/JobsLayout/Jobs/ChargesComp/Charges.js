@@ -11,14 +11,16 @@ import React, { useEffect } from 'react';
 import PartySearch from './PartySearch';
 import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew } from "../states";
 import { v4 as uuidv4 } from 'uuid';
+import { useDispatch, useSelector } from 'react-redux';
 
 const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, companyId, operationType, allValues, chargesData}) => {
-
   const { permissions } = state;
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
+  const {approved} = useSelector((state) => state.invoice);
 
   useEffect(() => {
     if(chargeList){
+
       let list = chargeList.filter((x)=>x.check);
       dispatch({
         type:'set', payload:{
@@ -329,7 +331,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </td>
           <td>{x.local_amount}</td>
           <td>{x.particular}</td>
-          <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td><td></td><td></td></tr>
+          <td>{chargeList[index]?.Invoice?.approved === '1' ? 'Approved' : 'Unapproved'}</td><td></td><td></td></tr>
           }
         </>
       )})}

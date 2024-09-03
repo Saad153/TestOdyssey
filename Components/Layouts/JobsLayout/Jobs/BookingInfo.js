@@ -45,6 +45,8 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
   let allValues = useWatch({ control });
   const [isOpen, setIsOpen] = useState(false);
   const Space = () => <div className='mt-2' />
+  const approved1 = useSelector((state) => state.invoice);
+
 
 
   useEffect(() => {
@@ -416,11 +418,12 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
         <Col md={3}>
           {state.edit && <Notes state={state} dispatch={dispatch} />}
           {approved == "1" && <img src={'/approve.png'} height={100} />}
-          <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
+
+          {approved1.approved == "0" && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
             <CheckGroupComp register={register} name='approved' control={control} label=''
               options={[{ label: "Approve Job", value: "1" }]}
             />
-          </div>
+          </div>}
           <hr />
           {id != "new" && <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
             <button className='btn-custom px-4' type="button"
