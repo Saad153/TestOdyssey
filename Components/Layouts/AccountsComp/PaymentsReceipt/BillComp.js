@@ -10,6 +10,7 @@ import { incrementTab } from '/redux/tabs/tabSlice';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import Gl from './Gl';
+import {checkEditAccess} from "../../../../functions/checkEditAccess";
 
 const BillComp = ({companyId, state, dispatch }) => {
   const router = useRouter();
@@ -17,11 +18,15 @@ const BillComp = ({companyId, state, dispatch }) => {
   const { payType } = state;
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};  
+  const [edit, setEdit] = useState(false);
 
 const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2)
 
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
+    // edit = checkEditAccess()
+    setEdit(checkEditAccess())
+    console.log("edit",edit)
   }, [state.selectedParty, state.payType]);  
   
   useEffect(() => { 
@@ -29,6 +34,8 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
       set('totalrecieving', totalRecieveCalc(state.invoices));
       calculateTransactions();
     }
+
+    
   }, [
     state.invoices,
     state.manualExRate,
@@ -322,7 +329,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
     }
     return () => clearTimeout(delayDebounceFn)
   }, [state.auto])
-
+console.log(edit)
   return (
   <>
   <Row>
@@ -602,11 +609,11 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
         <button>
           {/* Submit */}
         </button>
-      <div className='text-end'>
+      {edit && <div className='text-end'>
       <button onClick={submitPrices} 
       disabled={Transaction_Amount === "0.00"}
       className='btn-custom mb-2'>Make Transaction</button>
-        </div>
+        </div>}
     </div>
     }
   </>
