@@ -8,13 +8,25 @@ import { Popover } from "antd";
 import { Row, Col } from "react-bootstrap";
 
 const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, approved, VoyageId, vesselId, type}) => {
-
+    // console.log("state carrier",state)
+    
     function getVoyageNumber (id) {
         let result = '';
         if(state.voyageList[0]){
             state.voyageList.forEach((x)=>{
+                // console.log("x",x)
             if(x.id==id){
-                result = x.voyage
+                result ={
+                    voyage: x.voyage,
+                    etd: x.importOriginSailDate,
+                    eta: x.importArrivalDate,
+                    exportEtd:x.exportSailDate,
+                    exportEta: x.destinationEta,
+                    cutoffDate: x.cutOffDate,
+                    cutoffTime: x.cutOffTime
+                    
+
+                } 
             }
             })
         }
@@ -28,6 +40,7 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
         })
         return result
     }
+    const voyageFilterData=  getVoyageNumber(VoyageId)
 
   return (
     <div className='px-2 pb-2 mt-3' style={{border:'1px solid silver'}}>
@@ -43,15 +56,15 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
                     dispatch({type:'voyageSelection', payload:vesselId})
                 }
             }}
-        >{getVoyageNumber(VoyageId)}</div>
+        >{voyageFilterData.voyage }</div>
         <Row>
             <Col md={6}>
                 <div className='my-2'></div>
-                <DateComp register={register} name='etd' control={control} label='ETD' disabled={getStatus(approved)} />
+                <DateComp register={register} name="etd" defaultValues={voyageFilterData.etd ||voyageFilterData.exportEtd } control={control} label='ETD' disabled={getStatus(approved)} />
             </Col>
             <Col md={6}>
                 <div className='my-2'></div>
-                <DateComp register={register} name='eta' control={control} label='ETA' disabled={getStatus(approved)} />
+                <DateComp register={register}  name="eta" control={control} defaultValues={voyageFilterData.eta ||voyageFilterData.exportEta} label='ETA' disabled={getStatus(approved)} />
             </Col>
             {type=="SI" &&<>
             <Col md={12}>
@@ -62,11 +75,11 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
             {type=="SE" &&<>
             <Col md={6}>
                 <div className='my-2'></div>
-                <DateComp register={register} name='cutOffDate' control={control} label='Cut Off'  disabled={getStatus(approved)} />
+                <DateComp register={register} name='cutOffDate' defaultValues={voyageFilterData.cutoffDate } control={control} label='Cut Off'  disabled={getStatus(approved)} />
             </Col>
             <Col md={6}>
                 <div className='my-2'></div>
-                <TimeComp register={register} name='cutOffTime' control={control} label='Time'  width={100} disabled={getStatus(approved)} />
+                <TimeComp register={register} name='cutOffTime' defaultValues={voyageFilterData.cutoffTime } control={control} label='Time'  width={100} disabled={getStatus(approved)} />
             </Col>
             </>}
         </Row>
@@ -89,10 +102,7 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
             </Col>
         </Row>
         <Row>
-        {/* arrivalDate:'',  
-        arrivalTime:'',
-        departureDate:'',
-        departureTime:'' */}
+
             <Col md={6}>
                 <div className='my-2'></div>
                 <DateComp register={register} name='arrivalDate' control={control} label='Arrival' disabled={getStatus(approved)} />

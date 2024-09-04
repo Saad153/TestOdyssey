@@ -220,7 +220,15 @@ const Voyage = ({vesselsData}) => {
         {state.voyagerecords.length>0 && <div className=''>
         <div className='mt-3' style={{maxHeight:500, overflowY:'auto'}}>
           <Table className='tableFixHead' style={{fontSize:13}}>
-            <thead><tr><th>Voyage #</th><th>Arrival</th><th>Sailing</th><th>Cut-Off Date</th><th>Cut-Off Time</th><th>Ports</th></tr></thead>
+            <thead><tr><th>Voyage #</th>
+            <th> Arrival Date </th>
+            <th>Sailing Date</th>
+            <th>Export Sailing Date</th>
+            <th>Destination ETA</th>
+            <th>Cut-Off Date</th>
+            <th>Cut-Off Time</th>
+            <th>Ports</th>
+            </tr></thead>
             <tbody>
             {state.voyagerecords.map((x,i)=>{
             return (
@@ -238,7 +246,9 @@ const Voyage = ({vesselsData}) => {
               });
             }}>
               <td className='blue-txt fw-7'> {x.voyage}</td>
-              <td>{x.importArrivalDate!="" && moment(x.importArrivalDate).format("DD-MM-YY")}</td>
+              <td>{x.importArrivalDate!="" && moment(x.importArrivalDate).format("DD-MM-YY")} </td>
+              <td>{x.importOriginSailDate!="" && moment(x.importOriginSailDate).format("DD-MM-YY")}  </td>
+              <td>{x.destinationEta!="" && moment(x.destinationEta).format("DD-MM-YY")}</td>
               <td>{x.exportSailDate!="" && moment(x.exportSailDate).format("DD-MM-YY")}</td>
               <td>{x.cutOffDate!="" && moment(x.cutOffDate).format("DD-MM-YY")}</td>
               <td>{x.cutOffTime!="" && moment(x.cutOffTime).format("hh:mm a")}</td>
