@@ -47,6 +47,8 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
   const [closing, setClosing] = useState(0);
   const [first, setFirst] = useState(true);
   const [voucherNarration, setVoucherNarration] = useState("");
+  const [isButtonHide, setIsButtonHide] = useState(true);
+
   const allValues = useWatch({ control });
   
   const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ");
@@ -83,8 +85,16 @@ const narration = (e) =>{
      temp.Voucher_Heads[0].narration = e
     }
   }
+
+  // if (e.trim() !== '') {
+  //   setIsButtonDisabled(false);
+  // } else {
+  //   setIsButtonDisabled(true);
+  // }
+
   reset(temp)
 }
+
 
   async function getValues() {
     const { chequeNo, payTo, vType, type, exRate, currency,voucherNarration } = voucherData;
@@ -443,6 +453,7 @@ const narration = (e) =>{
         name="voucherNarration"
         placeholder="Remarks"
         onChange1={(e) => {
+          setIsButtonHide(false)
           setVoucherNarration(e.target.value)
         }}
         control={control} 
@@ -452,15 +463,15 @@ const narration = (e) =>{
      </div>
   </Col>
   <Col style={{ display: 'flex' ,alignItems: 'center' }}>
-  <button
+ {!isButtonHide &&  <button
   className="btn-custom fs-11"
   onClick={(e) => {
     e.preventDefault(); 
     narration(voucherNarration);
   }}
 >
-  Save Narration
-</button>
+  Apply to Narration
+</button>}
 
   </Col>
 </Row>
