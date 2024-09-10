@@ -364,26 +364,16 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
       }
     })
   };
-  const routeToPayRec = () => {
-    dispatchNew(incrementTab({
-      "label": "Payment / Receipt",
-      "key": "3-4",
-      "id": `new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`
-    }))
-    Router.push({
-      pathname: "/accounts/paymentReceipt/new",
-      query: {
-        name: data.resultOne.party_Name,
-        partyid: data.resultOne.party_Id,
-        type: data.resultOne.partyType,
-        paytype: data.resultOne.payType,
-        currency: data.resultOne.currency,
-      }
-    },
-      undefined,
-      { shallow: true }
-    );
-  };
+  // const routeToPayRec = async() => {
+  // //  await dispatch(incrementTab({
+  // //     "label": "Payment / Receipt",
+  // //     "key": "3-4",
+  // //     "id": `new`
+  // //   }));
+  //   // Router.push(`/accounts/paymentReceipt/new/?`);
+
+  //   Router.push(`new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`);
+  // };
 
 
   return (
@@ -401,7 +391,16 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
                 </Popover>
                 <InvoiceEditor data={data} reload={reload} />
               </div>
-              <div className='div-btn-custom text-center py-2 px-3' onClick={routeToPayRec}>
+              <div className='div-btn-custom text-center py-2 px-3' onClick={()=>{
+
+             dispatch(incrementTab({
+                  "label": "Payment / Receipt",
+                  "key": "3-4",
+                  "id": `new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`
+                }))
+
+              }}
+          >
                 <b>Go to Payment/Receipt</b>
               </div>
             </div>
@@ -430,7 +429,7 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
                   style={{ cursor: 'pointer' }}
                   onClick={async () => {
                     await Router.push(`/seaJobs/export/${invoice?.SEJobId}`)
-                    dispatchNew(incrementTab({ "label": "SE JOB", "key": "4-3", "id": `${invoice?.SEJobId}` }))
+                    dispatch(incrementTab({ "label": "SE JOB", "key": "4-3", "id": `${invoice?.SEJobId}` }))
                   }}
                 >{" "}{invoice?.SE_Job?.jobNo}</span>
 
