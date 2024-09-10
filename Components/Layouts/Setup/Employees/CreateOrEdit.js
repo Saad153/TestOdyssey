@@ -366,12 +366,15 @@ return(
         </Form.Item>
         </Col>
       </Row>
-      <button className="btn-custom my-3" style={{border:'none'}} type="submit" disabled={isSubmitting}>
-        {load?<Spinner animation="border" role="status" size="sm" className="mx-3" />:'Submit'}
-      </button> 
-      <button className="btn-custom my-3 mx-3" type="button" style={{border:'none'}} onClick={loadVouchers}>
-        {load?<Spinner animation="border" role="status" size="sm" className="mx-3" />:'Show Vouchers'}
-      </button> 
+      <div className="d-flex justify-content-between my-3">
+      <button className="btn-custom" style={{ border: 'none' }} type="submit" disabled={isSubmitting}>
+    {load ? <Spinner animation="border" role="status" size="sm" className="mx-3" /> : 'Submit'}
+  </button>
+  <button className="btn-custom" style={{ border: 'none' }} type="button" onClick={loadVouchers}>
+    {load ? <Spinner animation="border" role="status" size="sm" className="mx-3" /> : 'Show Vouchers'}
+  </button>
+
+</div>
     </Form> 
   )} 
   </Formik>

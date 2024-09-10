@@ -326,6 +326,7 @@ const narration = (e) =>{
         <div style={{ color: closing>0?'green':'red', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}><b>{commas(closing)}</b></div>
       </Col>
       <Col md={4}>
+      <div className="d-flex justify-content-between my-3">
         <button type="button" className="btn-custom fs-11 px-4" 
           onClick={async () => {
             queryClient.removeQueries(['voucherData', { id: 'new' }]);
@@ -349,6 +350,7 @@ const narration = (e) =>{
             )}
           />
         </button>}
+  
         {/* voucher history modal toggle states  */}
         {id !== "new" && <button type="button" className="btn-custom fs-11 px-4" onClick={()=>setIsOpen(true)}> <FaHistory/> History</button>}
         {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
@@ -357,17 +359,21 @@ const narration = (e) =>{
         </button>
         
         {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+        </div>
       </Col>
 
     </Row>
-    <button type="button" className="btn-custom mb-3" style={{ width: "110px", float: 'right' }}
+    <div className="d-flex justify-content-end"> 
+    <button type="button" className="btn-custom  px-4" 
+     style={{ minWidth: '50px' }}
       onClick={() => append({
         type: (allValues.vType == "BRV" || allValues.vType == "CRV") ? "credit" : "debit",
         ChildAccountId: "",
         narration: "",
         amount: 0,
         defaultAmount: 0
-      })}>Add</button>
+      })}>+  Add</button>
+</div>
     <div className="table-sm-1 col-12" style={{ maxHeight: 300, overflowY: "auto" }} >
       <Table className="tableFixHead" bordered>
         <thead>
@@ -462,7 +468,7 @@ const narration = (e) =>{
       />
      </div>
   </Col>
-  <Col style={{ display: 'flex' ,alignItems: 'center' }}>
+  <Col style={{ display: 'flex' ,alignItems: 'center' ,    marginTop: '15px'}}>
  {!isButtonHide &&  <button
   className="btn-custom fs-11"
   onClick={(e) => {
