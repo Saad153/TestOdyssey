@@ -8,6 +8,7 @@ export const defaultValues = {
   chequeNo:"",
   costCenter:"KHI",
   payTo:"",
+  voucherNarration:"",
   type:"",
   vType:"",
   Voucher_Heads: []

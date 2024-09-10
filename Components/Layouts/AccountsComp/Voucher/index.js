@@ -55,69 +55,113 @@ const Voucher = ({ id }) => {
       console.log(error)
     }
   }
+
    
   const onSubmit = async (data) => {
-    data.payTo = data?.Voucher_Heads[0]?.narration
-    setLoad(true)
+  
+    // Check if payTo is empty
+    if (data.payTo == "") {
+      const { ChildAccountId, Voucher_Heads } = data;
+  
+      // Fetch Settlement Account details
+      const settlementAccountId = ChildAccountId;
+      const getSettlementAccount = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT, {
+        headers: { id: settlementAccountId },
+      });
+      const { title: settlementFinal } = getSettlementAccount.data.result;
+  
+      // Fetch Account details
+      const acc = Voucher_Heads;
+      const accountId = acc?.[0]?.ChildAccountId;
+  
+      if (accountId) {
+        const getAccount = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT, {
+          headers: { id: accountId },
+        });
+        const { title: accountTitle } = getAccount.data.result;
+
+  
+        // Set payTo field based on vType
+        if (data.vType === "CPV" || data.vType === "BRV" || data.vType === "TV" || data.vType === "JV") {
+          data.payTo = `Paid Amount from ${settlementFinal.toLowerCase()} to ${settlementFinal.toLowerCase()}`;
+        } else {
+          data.payTo = `Payment received from ${accountTitle.toLowerCase()} to ${settlementFinal.toLowerCase()}`;
+        }
+      }
+    }
+  
+    setLoad(true);
     let settlementAmmount = 0.00;
     let debit = 0.00, credit = 0.00;
-    let voucher = { ...data }
-
+    let voucher = { ...data };
+    
+  
     let newHeads = [...data.Voucher_Heads];
     if (voucher.ChildAccountId) {
-      voucher.Voucher_Heads.map((x) => {
-        settlementAmmount = settlementAmmount + x.amount;
-        if (x.type == "debit") {
-          debit = debit + x.amount;
+      voucher.Voucher_Heads.forEach((x) => {
+        settlementAmmount += x.amount;
+        if (x.type === "debit") {
+          debit += x.amount;
         } else {
-          credit = credit + x.amount;
+          credit += x.amount;
         }
-      })
-
-      let difference = debit - credit
+      });
+  
+      let difference = debit - credit;
       newHeads.push({
         ChildAccountId: voucher.ChildAccountId,
-        amount: difference > 0 ? difference : -1 * (difference),
-        type: difference > 0 ? 'credit' : 'debit', //voucher.vType==("CRV"||"BRV")?"debit":"credit",
+        amount: Math.abs(difference),
+        type: difference > 0 ? 'credit' : 'debit',
         settlement: "1",
-        narration: voucher.payTo,
-        defaultAmount: voucher.currency == "PKR" ? 0 : parseFloat(difference) / parseFloat(voucher.exRate)
-      })
-      voucher.Voucher_Heads = newHeads
+        narration:data.payTo !== "" ? voucher.payTo : data.payTo,
+        defaultAmount: voucher.currency === "PKR" ? 0 : parseFloat(difference) / parseFloat(voucher.exRate),
+      });
+      voucher.Voucher_Heads = newHeads;
     }
-    voucher.CompanyId = CompanyId ? CompanyId : 1;
-    voucher.type = (voucher.vType == "BPV" || voucher.vType == "CPV") ? "Payble" : (voucher.vType == "BRV" || voucher.vType == "CRV") ? "Recievable" : voucher.vType == "TV" ? "Trasnfer Voucher" : "General Voucher"
-
+  
+    // Set the CompanyId and type
+    voucher.CompanyId = CompanyId || 1;
+    const voucherTypeMapping = {
+      BPV: "Payable",
+      CPV: "Payable",
+      BRV: "Receivable",
+      CRV: "Receivable",
+      TV: "Transfer Voucher",
+    };
+    voucher.type = voucherTypeMapping[voucher.vType] || "General Voucher";
     // <----- Create New Voucher ----->
     if (id == "new") {
       delete voucher.id;
-      await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER, {...voucher, createdBy:employeeName}).then((x) => {
-        if (x.data.status == "success") {
-          //passing id and mode to create history funtion when create method triggers
-          createHistory(x.data.result.id,"Create")
-
-          openNotification("Success", `Voucher Created Successfully!`, "green");
-          setLoad(false);
-          dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": `${x.data.result.id}` }));
-          Router.push(`/accounts/vouchers/${x.data.result.id}`);
-        } else {
-          openNotification("Error", `An Error occured Please Try Again!`, "red");
-          setLoad(false);
-        }
-      });
+      await axios
+        .post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER, { ...voucher, createdBy: employeeName })
+        .then((x) => {
+          if (x.data.status == "success") {
+            createHistory(x.data.result.id, "Create");
+  
+            openNotification("Success", `Voucher Created Successfully!`, "green");
+            setLoad(false);
+            dispatch(incrementTab({ label: "Voucher", key: "3-5", id: `${x.data.result.id}` }));
+            Router.push(`/accounts/vouchers/${x.data.result.id}`);
+          } else {
+            openNotification("Error", `An Error occurred. Please try again!`, "red");
+            setLoad(false);
+          }
+        });
     }
     // <----- Update Existing Voucher ----->
     else {
-      await axios.post(process.env.NEXT_PUBLIC_CLIMAX_UPDATE_VOUCEHR, { ...voucher, id: id }).then((x) => {
-        x.data.status == "success"
-        ? openNotification("Success", `Voucher Updated Successfully!`, "green")
-        : openNotification("Error", `An Error occured Please Try Again!`, "red");
-        //passing id and mode to history funtion when the update method triggers
-        createHistory(id,"Update");
-      });
+      await axios
+        .post(process.env.NEXT_PUBLIC_CLIMAX_UPDATE_VOUCEHR, { ...voucher, id: id })
+        .then((x) => {
+          x.data.status == "success"
+            ? openNotification("Success", `Voucher Updated Successfully!`, "green")
+            : openNotification("Error", `An Error occurred. Please try again!`, "red");
+          createHistory(id, "Update");
+        });
     }
+  
     await delay(1000);
-    setLoad(false)
+    setLoad(false);
   };
   
   return (
