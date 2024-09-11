@@ -392,15 +392,19 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
                 <InvoiceEditor data={data} reload={reload} />
               </div>
               <div className='div-btn-custom text-center py-2 px-3' onClick={()=>{
+               Router.push(`/accounts/paymentReceipt/new/?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`);
 
-             dispatch(incrementTab({
-                  "label": "Payment / Receipt",
-                  "key": "3-4",
-                  "id": `new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`
-                }))
+            //  dispatch(incrementTab({
+            //       "label": "Payment / Receipt",
+            //       "key": "3-4",
+            //       "id": `new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`
+            //     }))
+     
 
               }}
-          >
+          
+
+              >
                 <b>Go to Payment/Receipt</b>
               </div>
             </div>

@@ -10,7 +10,7 @@ function checkEmployeeAccess(){
     let firstCall = false;
     if(tempToken == Cookies.get('token')){
       token = jwt_decode(Cookies.get("token"));
-      console.log(token.access) 
+      // console.log(token.access) 
     }else{
       logout();
     }
@@ -34,16 +34,15 @@ function checkEmployeeAccess(){
   newTemp.forEach((x)=>{
     x = x.trim()
     if(x == 'admin' || x == 'Delete'){
-      console.log("admin triggered")
+      // console.log("admin triggered")
       access = true;
-      console.log(access);
+      // console.log(access);
     }
 
    
   })
   
   
-  console.log(access)
 
   return access
 }

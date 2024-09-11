@@ -2,7 +2,7 @@ import axios from "axios";
 import moment from "moment";
 
 function recordsReducer(state, action){
-
+  // console.log(state, action.payload)
   switch (action.type) {
     case"receiving":{
       return {
@@ -61,7 +61,7 @@ const initialState = {
   payType:'Recievable',
   payTypeByDifference:'Recievable',
   partyType:'client',
-  invoiceCurrency:'USD',
+  invoiceCurrency:'PKR',
   partyOptions:[],
   createdAt:'',
 

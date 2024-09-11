@@ -271,7 +271,7 @@ const getHeadsNew = async(id, dispatch, reset) => {
 }
 
 const saveHeads = async(charges, state, dispatch, reset) => {
-  await axios.post(process.env.NEXT_PUBLIC_CLIMAX_SAVE_SE_HEADS_NEW, 
+  const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_SAVE_SE_HEADS_NEW, 
     { charges, deleteList:state.deleteList, id:state.selectedRecord.id, exRate:state.exRate }
   ).then(async(x)=>{
     if(x.data.status=="success"){
@@ -374,14 +374,7 @@ const getStatus = (val) => {
 };
 
 const setHeadsCache = async(chargesData, dispatch, reset) => {
-  // chargesData.status=="success"?
-  // dispatch({type:'set', 
-  // payload:{
-  //   reciveableCharges:chargesData.data.reciveableCharges,
-  //   paybleCharges:chargesData.data.paybleCharges,
-  //   ...chargesData.data
-  //   //...tempChargeHeadsArray
-  // }}):null;
+  
   await chargesData?.data?.charges?.length>0?
     reset({chargeList:[ ...chargesData.data.charges ]}):
     null;
