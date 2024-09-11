@@ -592,6 +592,11 @@ return (
               {" "}
               {commas((parseFloat(invoice?.total) + parseFloat(invoice?.roundOff)).toFixed(2))}
             </span>
+            <span className='inv-label mx-2'>Settlement Amount {"(Local)"}:</span>
+            <span className='inv-value charges-box'> 
+              {" "}
+              {invoice.total==invoice.recieved?commas((parseFloat(invoice?.total) + parseFloat(invoice?.roundOff)).toFixed(2)):commas((parseFloat(invoice?.recieved)).toFixed(2))}
+            </span>
           </Col>
         </Row>
       </div>
