@@ -3,7 +3,23 @@ import axios from 'axios';
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 
+
 const upload_CoA = () => {
+
+    const [partiesAccounts1, setPartiesAccounts] = useState({
+        "Clients": [],
+        "Vendors": [],
+        "Clients/Vendors": [],
+        "nonGlParties": []
+    });
+
+    let partiesAccounts = {
+        "Clients": [],
+        "Vendors": [],
+        "Clients/Vendors": [],
+        "nonGlParties": []
+    }
+    const [withAccounts1, setWithAccounts] = useState([]);
     let withAccounts = []
     let withoutAccounts = []
     const [C, setClients] = useState(false);
@@ -18,6 +34,7 @@ const upload_CoA = () => {
         console.log(C)
         console.log(V)
         console.log(GL)
+        console.log(partiesAccounts)
     }, [C, V, GL])
     
     const parserOptions = {
@@ -184,49 +201,54 @@ const upload_CoA = () => {
     }
 
     const uploadDataParties = async () => {
-        console.log(partiesAccounts.Clients)
+        console.log(partiesAccounts1)
+        console.log(withAccounts1)
         let index = 0
-        
-        if(C || CV || GL){
+        let parties = partiesAccounts1
+        if(parties.Clients.length >0){
             console.log("uploading clients")
-            for(let element of partiesAccounts.Clients){
+            for(let element of parties.Clients){
+                delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_CLIENT, element)
                 partiesAccounts.Clients[index] = result.data.result
                 index++
             }
-        }else if(V || CV){
+            console.log("Clients",index)
+        }
+        index =0
+        if(parties.Vendors.length >0){
             console.log("uploading vendors")
-            for(let element of partiesAccounts.Vendors){
+            for(let element of parties.Vendors){
+                delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_VENDOR, element)
                 partiesAccounts.Vendors[index] = result.data.result
                 index++
             }
+            console.log("Vendors",index)
         }
     }
 
     const uploadDataAssociations = async () => {
-        console.log(withAccounts)
-        console.log(withoutAccounts)
-        for(let element of withAccounts){
-            if(C || CV || GL){
+        console.log(partiesAccounts1)
+        for(let element of partiesAccounts1.Clients){
+            console.log(element.childAccountId, element.account_name, element.name)
+            if(element.childAccountId){
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CLIENT_ASSOCIATIONS, {
-                    headers:{type: type},
                     companyId: Cookies.get("companyId"),
-                    ChildAccountId: element.ChildAccountId,
-                    name: element.account_name
+                    ChildAccountId: element.childAccountId,
+                    name: element.name
                 })
             }
-            if(V || CV){
-                console.log("vendor")
-                console.log(element.account_name)
+        }
+        for(let element of partiesAccounts1.Vendors){
+            // console.log(element.childAccountId, element.account_name, element.name)
+            if(element.childAccountId){
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_VENDOR_ASSOCIATIONS, {
-                    headers:{type: type},
                     companyId: Cookies.get("companyId"),
-                    ChildAccountId: element.ChildAccountId,
-                    name: element.account_name
+                    ChildAccountId: element.childAccountId,
+                    name: element.name
                 })
             }
-
         }
     }
 
@@ -239,15 +261,43 @@ const upload_CoA = () => {
             }
         })
         let accountsData = accounts.data.result
-        let namematched = false
+        let Acc = 0
+        let PAcc = 0
+        let CAcc = 0
         console.log(accountsData)
         data.forEach((x, i)=>{
-            if(fileInfo.name == 'clients.csv' || fileInfo.name == 'clientvendor.csv'){
-                setClients(true)
-                console.log("Got client")
-                partiesAccounts.Clients.push(
-                    {
-                        code: x.party_code,
+            let namematched = false
+            accountsData.forEach((y)=>{
+                Acc++
+                y.Parent_Accounts.forEach((z)=>{
+                    PAcc++
+                    z.Child_Accounts.forEach((a)=>{
+                        if(x.party_name && (a.title == x.party_name || a.title == x.party_name.slice(0, -1))){
+                            CAcc++
+                            x.ChildAccountId = a.id
+                            withAccounts.push(x)
+                            namematched = true
+                        }
+                        if(x.party_name || x.party_name == "SRILANKAN AIRLINE"){
+                            
+                            if(a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" ")) || a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" ")).slice(0, -1) || a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S"){
+                                CAcc++
+                                x.ChildAccountId = a.id
+                                withAccounts.push(x)
+                                namematched = true
+                            }
+                            // console.log(x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S")
+                        }
+                    })
+                })
+            })
+            if(!namematched){
+                withoutAccounts.push(x)
+            }
+            // console.log("Loop")
+            if(fileInfo.name == "parties.csv"){
+                let party = {
+                    code: x.party_code,
                         name: x.party_name,
                         city: x.city_name,
                         zip: null,  
@@ -270,7 +320,7 @@ const upload_CoA = () => {
                             x.sea_import === "Yes" ? "Sea Import" : null,
                             x.air_export === "Yes" ? "Air Export" : null,
                             x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         types: [
                             x.air_line === "Yes" ? "Air Line" : null,
                             x.billing_party === "Yes" ? "Billing Party" : null,
@@ -301,7 +351,7 @@ const upload_CoA = () => {
                             x.depoparty === "Yes" ? "Depoparty" : null,
                             x.terminal_party === "Yes" ? "Terminal Party" : null,
                             x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         bankAuthorizeDate: null,  
                         bank: null,  
                         branchName: null,  
@@ -313,7 +363,139 @@ const upload_CoA = () => {
                         ifscCode: null,  
                         micrCode: null,  
                         currency: x.currency_code,
-                        createdBy: null, 
+                        createdBy: Cookies.get('username'), 
+                        nongl: null, 
+                        active: true,
+                        accountRepresentatorId: null,
+                        salesRepresentatorId: null,
+                        docRepresentatorId: null,
+                        authorizedById: null,
+                        childAccountId: x.ChildAccountId
+
+                }
+                // console.log(party.types)
+                // if(party.types.includes("Air Line")){
+                //     console.log("Air Line", i)
+                // }
+                if(!namematched && party.types.includes("Air Line")){
+                    console.log("No match=>", i, x.party_name)
+                }
+                if(party.types.includes("Shipper")||party.types.includes("Consignee")){
+                    if(namematched){
+                        partiesAccounts.Clients.push(party)
+                    }
+                }
+                if (
+                    party.types.includes("Air Line") ||
+                    party.types.includes("Billing Party") ||
+                    party.types.includes("Buyer") ||
+                    party.types.includes("Buying House") ||
+                    party.types.includes("Warehouse") ||
+                    party.types.includes("Depo") ||
+                    party.types.includes("Notify") ||
+                    party.types.includes("Potential Customer") ||
+                    party.types.includes("Forwarder/Coloader") ||
+                    party.types.includes("Local Vendor") ||
+                    party.types.includes("Overseas Agent") ||
+                    party.types.includes("Commission Agent") ||
+                    party.types.includes("Indentor") ||
+                    party.types.includes("Transporter") ||
+                    party.types.includes("CHA/CHB") ||
+                    party.types.includes("Shipping Line") ||
+                    party.types.includes("Delivery Agent") ||
+                    party.types.includes("Warehouse Party") ||
+                    party.types.includes("Trucking") ||
+                    party.types.includes("Drayman") ||
+                    party.types.includes("Cartage") ||
+                    party.types.includes("Stevedore") ||
+                    party.types.includes("Principal") ||
+                    party.types.includes("Depoparty") ||
+                    party.types.includes("Terminal Party") ||
+                    party.types.includes("Slot Operator")
+                  ) {
+                    if(namematched){
+                        partiesAccounts.Vendors.push(party)
+                    }
+                  }
+                  if(!namematched){
+                    party.nongl = "1"
+                    partiesAccounts.Clients.push(party)
+                  }
+                  
+
+            }
+            if(fileInfo.name == 'clients.csv' || fileInfo.name == 'clientvendor.csv'){
+                setClients(true)
+                // console.log("Got client")
+                partiesAccounts.Clients.push(
+                    {
+                        code: x.party_code,
+                        name: x.party_name,
+                        city: x.city_name,
+                        zip: null,  
+                        person1: null,  
+                        mobile1: null,  
+                        person2: null,  
+                        mobile2: null,  
+                        telephone1: x.telephone_1,
+                        telephone2: x.telephone_2,
+                        address1: x.address_1,
+                        address2: x.address_2,
+                        website: x.website,
+                        accountsMail: x.email,
+                        infoMail: null,  
+                        strn: x.strn,
+                        ntn: x.vatno, 
+                        registerDate: x.registration_date,
+                        operations: [
+                            x.sea_export === "Yes" ? "Sea Export" : null,
+                            x.sea_import === "Yes" ? "Sea Import" : null,
+                            x.air_export === "Yes" ? "Air Export" : null,
+                            x.air_import === "Yes" ? "Air Import" : null
+                        ].filter(Boolean).join(", "),
+                        types: [
+                            x.air_line === "Yes" ? "Air Line" : null,
+                            x.billing_party === "Yes" ? "Billing Party" : null,
+                            x.buyer === "Yes" ? "Buyer" : null,
+                            x.buying_house === "Yes" ? "Buying House" : null,
+                            x.ware_house === "Yes" ? "Warehouse" : null,
+                            x.depo === "Yes" ? "Depo" : null,
+                            x.shipper === "Yes" ? "Shipper" : null,
+                            x.consignee === "Yes" ? "Consignee" : null,
+                            x.notify === "Yes" ? "Notify" : null,
+                            x.potential_customer === "Yes" ? "Potential Customer" : null,
+                            x.forwarder_coloader === "Yes" ? "Forwarder/Coloader" : null,
+                            x.local_vendor === "Yes" ? "Local Vendor" : null,
+                            x.overseas_agent === "Yes" ? "Overseas Agent" : null,
+                            x.commission_agent === "Yes" ? "Commission Agent" : null,
+                            x.indentor === "Yes" ? "Indentor" : null,
+                            x.transporter === "Yes" ? "Transporter" : null,
+                            x.cha_chb === "Yes" ? "CHA/CHB" : null,
+                            x.shipping_line === "Yes" ? "Shipping Line" : null,
+                            x.delivery_agent === "Yes" ? "Delivery Agent" : null,
+                            x.warehouse_party === "Yes" ? "Warehouse Party" : null,
+                            x.buying_house === "Yes" ? "Buying House" : null,
+                            x.trucking === "Yes" ? "Trucking" : null,
+                            x.drayman === "Yes" ? "Drayman" : null,
+                            x.cartage === "Yes" ? "Cartage" : null,
+                            x.stevedore === "Yes" ? "Stevedore" : null,
+                            x.principal === "Yes" ? "Principal" : null,
+                            x.depoparty === "Yes" ? "Depoparty" : null,
+                            x.terminal_party === "Yes" ? "Terminal Party" : null,
+                            x.slotoperator === "Yes" ? "Slot Operator" : null
+                        ].filter(Boolean).join(", "),
+                        bankAuthorizeDate: null,  
+                        bank: null,  
+                        branchName: null,  
+                        branchCode: null,  
+                        accountNo: x.account_code,
+                        iban: null,  
+                        swiftCode: null,  
+                        routingNo: null,  
+                        ifscCode: null,  
+                        micrCode: null,  
+                        currency: x.currency_code,
+                        createdBy: Cookies.get('username'), 
                         nongl: null, 
                         active: true,
                         accountRepresentatorId: null,
@@ -351,7 +533,7 @@ const upload_CoA = () => {
                             x.sea_import === "Yes" ? "Sea Import" : null,
                             x.air_export === "Yes" ? "Air Export" : null,
                             x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         types: [
                             x.air_line === "Yes" ? "Air Line" : null,
                             x.billing_party === "Yes" ? "Billing Party" : null,
@@ -382,7 +564,7 @@ const upload_CoA = () => {
                             x.depoparty === "Yes" ? "Depoparty" : null,
                             x.terminal_party === "Yes" ? "Terminal Party" : null,
                             x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         bankAuthorizeDate: null,  
                         bank: null,  
                         branchName: null,  
@@ -431,7 +613,7 @@ const upload_CoA = () => {
                             x.sea_import === "Yes" ? "Sea Import" : null,
                             x.air_export === "Yes" ? "Air Export" : null,
                             x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         types: [
                             x.air_line === "Yes" ? "Air Line" : null,
                             x.billing_party === "Yes" ? "Billing Party" : null,
@@ -462,7 +644,7 @@ const upload_CoA = () => {
                             x.depoparty === "Yes" ? "Depoparty" : null,
                             x.terminal_party === "Yes" ? "Terminal Party" : null,
                             x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", ") + ",",
+                        ].filter(Boolean).join(", "),
                         bankAuthorizeDate: null,  
                         bank: null,  
                         branchName: null,  
@@ -486,23 +668,15 @@ const upload_CoA = () => {
                 )
             }
             // console.log(x.party_name)
-            accountsData.forEach((y)=>{
-                y.Parent_Accounts.forEach((z)=>{
-                    z.Child_Accounts.forEach((a)=>{
-                        if(a.title == x.account_name){
-                            x.ChildAccountId = a.id
-                            withAccounts.push(x)
-                            namematched = true
-                        }
-                    })
-                })
-            })
-            if(!namematched){
-                withoutAccounts.push(x)
-            }
+            // console.log(accountsData[0].Parent_Accounts[0].Child_Accounts[0].name)
         })
+        // console.log(Acc,PAcc,CAcc)
 
+        console.log(partiesAccounts.Clients)
+        console.log(partiesAccounts.Vendors)
+        setPartiesAccounts(partiesAccounts)
         console.log(withAccounts)
+        setWithAccounts(withAccounts)
         console.log(withoutAccounts)
 
     }
@@ -516,14 +690,20 @@ const upload_CoA = () => {
             }
         })
         let accountsData = accounts.data.result
+        let couint = 0
         for(let x of data){
-            console.log(x)
+            let matched = false
             accountsData.forEach((y)=>{
                 y.Parent_Accounts.forEach((z)=>{
                     z.Child_Accounts.forEach((a)=>{
                         if(x.title_of_account){
                             if(a.title == x.title_of_account.trim()){
                                 x.ChildAccountId = a.id
+                                matched = true      
+                            }
+                            if(x.title_of_account.trim() == "ROYAL AIR MARACO"){
+                                x.ChildAccountId = 1380
+                                matched = true
                             }
                         }
                     })
@@ -534,7 +714,6 @@ const upload_CoA = () => {
             if(x.credit){
                 numberString = typeof x.credit === 'string' ? x.credit : x.credit.toString();
                 parsedNumber = numberString?parseFloat(numberString.replace(/,/g, '')):0.0;
-                console.log(parsedNumber);
 
             }
             let numberString1
@@ -542,13 +721,11 @@ const upload_CoA = () => {
             if(x.debit){
                 numberString1 = typeof x.debit === 'string' ? x.debit : x.debit.toString();
                 parsedNumber1 = numberString1?parseFloat(numberString1.replace(/,/g, '')):0.0;
-                console.log(parsedNumber1);
 
             }
 
             let Voucher_Heads = [];
 
-            // Check the condition for parsedNumber
             if (parsedNumber) {
                 Voucher_Heads.push({
                     defaultAmount: "-",
@@ -556,11 +733,10 @@ const upload_CoA = () => {
                     type: "credit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: x.ChildAccountId
+                    ChildAccountId: parseInt(x.ChildAccountId)
                 });
             }
 
-            // Check the condition for parsedNumber1
             if (parsedNumber1) {
                 Voucher_Heads.push({
                     defaultAmount: "-",
@@ -568,7 +744,7 @@ const upload_CoA = () => {
                     type: "debit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: x.ChildAccountId
+                    ChildAccountId: parseInt(x.ChildAccountId)
                 });
             }
             let voucher = {
@@ -581,11 +757,410 @@ const upload_CoA = () => {
                 payTo:"",
                 Voucher_Heads:Voucher_Heads
               }
-            const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
-            console.log(result)
+            !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
+            matched?await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher):null
+            matched?couint++:null
         }
+        console.log(couint)
 
     }
+
+
+    function extractCode(str) {
+        const match = str.match(/^[A-Z]+-([A-Z]{2})-\d{2,4}\/\d+$/);
+        return match ? match[1] : null;
+    }
+
+    function removeBracketedPart(str) {
+        return str.replace(/\s*\([^()]*\)\s*$/, '').trim();
+    }
+
+    function parseDateString(dateStr) {
+        // console.log(dateStr)
+        if(dateStr && dateStr.includes("-")){
+            const [day, monthName, year] = dateStr.split('-');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames.indexOf(monthName);
+            return new Date(year, month, day);
+        }else if(dateStr && dateStr.includes("/")){
+            const [day, monthName, year] = dateStr.split('/');
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            const month = monthNames.indexOf(monthName);
+            return new Date(year, month, day);
+        }
+      }
+
+      function removeCommas(str) {
+        return str.replace(/,/g, '');
+    }
+
+    const handleInvoices = async (data, fileInfo) => {
+        console.log(data)
+        let agentInvoices  = false
+        data[0].agent_name?agentInvoices = true:agentInvoices = false
+        console.log(agentInvoices)
+        let count = 0
+        let counter  = 0
+        const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
+        const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
+        let clients = client.data.result
+        let vendors = vendor.data.result
+        console.log(clients)
+        console.log(vendors)
+        // console.log(removeBracketedPart(data[0].party))
+        let lastValue = 0
+        !agentInvoices?data.forEach((x, i)=>{
+            counter = (((i+1)/data.length)*100).toFixed(2)
+            
+            if(counter%10==0){
+                lastValue = counter%10
+            }
+            i%1000==0?console.log(counter+"%"):null
+            let party_id = ""
+            let party_name = ""
+            let matched = false
+            clients.forEach((a)=>{
+                if(x.party && a.name.trim() == removeBracketedPart(x.party)){
+                    party_id = a.id
+                    party_name = a.name
+                    matched = true
+                }
+            })
+            vendors.forEach((a)=>{
+                if(x.party && a.name.trim() == removeBracketedPart(x.party)){
+                    party_id = a.id
+                    party_name = a.name
+                    matched = true
+                }
+            })
+            !matched?count++:null
+            x.job_no?extractCode(x.job_no):""
+
+            let companyID = "0"
+            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
+                companyID = "3"
+            }
+            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
+                companyID = "1"
+            }
+            if(x.invoice___bill_date){
+                let temp =  parseDateString(x.invoice___bill_date)
+                const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                x.invoice___bill_date = isoString
+            }
+            let invoice = {}
+            
+            companyID!="0"?invoice = {
+                invoice_No: x.invoice___bill_+"-O",
+                type: "Old Job Invoice",
+                payType: x.payable!=0?"Payble":"Receivable",
+                status: "1",
+                operation: x.op_code?x.op_code:null,
+                currency: x.curr,
+                ex_rate: x.curr=="PKR"?"1":"0",
+                party_Id: party_id,
+                party_Name: party_name,
+                paid: "0",
+                recieved: x.balance?(x.receivable-(x.receivable-x.balance)).toString():"0",
+                roundOff: "0",
+                total: x.payable!=0?x.payable.toString():x.receivable.toString(),
+                approved: "1",
+                companyId: companyID,
+                createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+            }:null
+            if(x.job__ == "Advance"){
+                console.log("Advance")
+                console.log(x.invoice___bill_date)
+                invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
+                invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
+            }
+            companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+            !matched?invoicewoAcc.push(x):null
+        }):null
+        if(agentInvoices){
+            console.log(vendors)
+            console.log(data)
+            for(let x of data){
+                let party_id = ""
+                let party_name = ""
+                let matched = false
+                clients.forEach((a)=>{
+                    if(x.agent_name && a.name.trim() == removeBracketedPart(x.agent_name).trim()){
+                        party_id = a.id
+                        party_name = a.name
+                        matched = true
+                    }
+                })
+                vendors.forEach((y)=>{
+                    if(x.agent_name && x.agent_name == y.name.trim()){
+                        party_id = y.id
+                        party_name = y.name
+                        matched = true
+                    }
+                })
+                if(x.agent_name && x.agent_name.includes("TRANSMODAL LOGISTICS")){
+                    party_id = "813"
+                    party_name = "TRANSMODAL LOGISTICS INT'L (USA)"
+                    matched = true
+                }
+                if(x.invoice_date){
+                    let temp =  parseDateString(x.invoice_date.toString())
+                    const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                    // console.log(isoString)
+                    x.invoice_date = isoString
+                }
+                let companyID = "0"
+                if(x.invoice_no && (x.invoice_no.slice(0, 3)=="SNS")){
+                    companyID = "1"
+                }
+                if(x.invoice_no && (x.invoice_no.slice(0, 3)=="ACS")){
+                    companyID = "3"
+                }
+                // !matched?console.log("no match", x.agent_name):null
+                let invoice = {}
+                companyID!="0"?invoice = {
+                    invoice_No: x.invoice_no+"-O",
+                    type: "Old Job Invoice",
+                    payType: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
+                    status: "1",
+                    operation: x.invoice_no?extractCode(x.invoice_no):"",
+                    currency: x.currency,
+                    ex_rate: x.currency=="PKR"?"1":x.exchange_rate,
+                    party_Id: party_id,
+                    party_Name: party_name,
+                    paid: "0",
+                    recieved: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))-x.balance<0?((parseFloat(removeCommas(x.local_amount.toString()))-x.balance)*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))-x.balance).toString():"0",
+                    roundOff: "0",
+                    total: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))<0?((parseFloat(removeCommas(x.local_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))).toString():"0",
+                    approved: "1",
+                    companyId: companyID,
+                    createdAt: x.invoice_date?x.invoice_date:null
+                }:null
+                companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+                !matched?console.log("no match", x.agent_name):null
+                // !matched?console.log("no match", party_name):null
+                !matched?invoicewoAcc.push(x):null
+            }
+        }
+        console.log(count)
+        console.log(invoices)
+        console.log(invoicewoAcc)
+    }
+
+    function delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    const uploadInvoices = async() => {
+        let count = 0
+        for(let x of invoices){
+            count++
+            if(count%1000 == 0){
+                console.log(count)
+                await delay(10000);
+                console.log("delay")
+            }
+            if(x.companyId != "1" || x.companyId != "3"){
+                await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
+            }
+        }
+    }
+
+    const handleLedgerData = async(data, fileInfo) => {
+        console.log(data)
+        console.log(fileInfo)
+        let index = 0
+        let count = 0
+        let error = 0
+        let count1 = 0
+        let count2 = 0
+        let count3 = 0
+        let count4 = 0
+        let count5 = 0
+        data.forEach((x,i)=>{
+            if(x.voucher__ && x.voucher__.includes("AccountTitle")){
+                // console.log(x.voucher__.slice(0, 3))
+                let valueInBrackets = x.voucher__.slice(13, x.voucher__.length).match(/\((.*?)\)/)[1];
+                // console.log(valueInBrackets)
+                count++
+                index = i
+            }
+            if(i == index+1 && x.particular && !x.particular.includes("Opening")){
+                error++
+            }
+            if(x.particular && x.particular.includes("Opening")){
+                count1++
+            }
+
+            if(x.particular && (x.particular.includes("Receivable Against Job") || x.particular.includes("Payble Against Job"))){
+                count2++
+            }
+            if(x.particular && x.particular.includes('Received Cheque')){
+                count5++
+            }
+            if(x.particular && x.particular.includes("Inv")){
+                count4++
+            }
+            if(x.particular && x.particular.includes("INV")){
+                count3++
+            }
+        })
+        console.log("Number of Accounts=>",count)
+        console.log("Number of Errors=>",error)
+        console.log("Number of Opening balances=>",count1)
+        console.log("Number of Job Invoices=>",count2)
+        console.log("Number of Paid/Recieved Cheques=>",count5)
+        console.log("Number of Capital Invoices=>",count3)
+        console.log("Number of Small Invoices=>",count4)
+    }
+
+    const [jobs, setJobs] = useState([])
+
+    const handleJobData = async(data, fileInfo) => {
+        console.log(data)
+        console.log(fileInfo)
+        let jobList = []
+        let count = 0
+        const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
+        const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
+        let clients = client.data.result
+        let vendors = vendor.data.result
+        let index = 0
+        let SNS_AE = []
+        let SNS_AI = []
+        let SNS_SEJ = []
+        let SNS_SIJ = []
+        let ACS_AE = []
+        let ACS_AI = []
+        let ACS_SEJ = []
+        let ACS_SIJ = []
+        for(let x of data){
+            if(x.job__ && x.job__.includes("SNS")){
+                if(x.job__ && x.job__.includes("AE")){
+                    SNS_AE.push(x)
+                }
+                if(x.job__ && x.job__.includes("AI")){
+                    SNS_AI.push(x)
+                }
+                if(x.job__ && x.job__.includes("SEJ")){
+                    SNS_SEJ.push(x)
+                }
+                if(x.job__ && x.job__.includes("SIJ")){
+                    SNS_SIJ.push(x)
+                }
+            }
+            if(x.job__ && x.job__.includes("ACS")){
+                if(x.job__ && x.job__.includes("AE")){
+                    ACS_AE.push(x)
+                }
+                if(x.job__ && x.job__.includes("AI")){
+                    ACS_AI.push(x)
+                }
+                if(x.job__ && x.job__.includes("SEJ")){
+                    ACS_SEJ.push(x)
+                }
+                if(x.job__ && x.job__.includes("SIJ")){
+                    ACS_SIJ.push(x)
+                }
+            }
+        }
+        console.log(SNS_AE)
+        console.log(SNS_AI)
+        console.log(SNS_SEJ)
+        console.log(SNS_SIJ)
+        console.log(ACS_AE)
+        console.log(ACS_AI)
+        console.log(ACS_SEJ)
+        console.log(ACS_SIJ)
+        // for(let x of data){
+        //     let clientId = ""
+        //     let OAgentId = ""
+        //     let shippingLineId = ""
+        //     let localVendorId = ""
+        //     let CAgentId = ""
+        //     let transporterId = ""
+        //     let ConsigneeId = ""
+        //     let forwarderId = ""
+        //     let airLineId = ""
+        //     let shipperId = ""
+        //     vendors.forEach((y)=>{
+        //         if(x.clearingagent && y.name.trim().toLowerCase() == x.clearingagent.trim().toLowerCase()){
+        //             CAgentId = y.id
+        //         }
+        //         if(x.local_agent && y.name.trim().toLowerCase() == x.local_agent.trim().toLowerCase()){
+        //             localVendorId = y.id
+        //         }
+        //         if(x.air_shipping_line && y.name.trim().toLowerCase() == x.air_shipping_line.trim().toLowerCase()){
+        //             shippingLineId = y.id
+        //         }
+        //         if(x.overseas_agent && y.name.trim().toLowerCase() == x.overseas_agent.trim().toLowerCase()){
+        //             OAgentId = y.id
+        //         }
+        //     })
+        //     clients.forEach((y)=>{
+        //         if(x.client && y.name.trim().toLowerCase() == x.client.trim().toLowerCase()){
+        //             clientId = y.id
+        //         }
+        //         if(x.consignee && y.name.trim().toLowerCase() === x.consignee.trim().toLowerCase()){
+        //             console.log(index)
+        //             count++
+        //             ConsigneeId = y.id
+        //         }
+        //         if(x.shipper && y.name.trim().toLowerCase() == x.shipper.trim().toLowerCase()){
+        //             shipperId = y.id
+        //         }
+        //     })
+        //     let job={
+        //         jobNo: x.job__,
+        //         jobId: x.sr__,
+        //         pcs: x.number_of_pkgs?x.number_of_pkgs:null,
+        //         vol: x.vol?x.vol:null,
+        //         pol: x.port_of_loading?x.port_of_loading:null,
+        //         pod: x.final_dest?x.final_dest:null,
+        //         fd: x.port_of_delivery?x.port_of_delivery:null,
+        //         dg: x.hazmat_class_typeid?x.hazmat_class_typeid=="0"?"non-DG":"DG":null,
+        //         subType: x.sub_type_name?x.sub_type_name:null,
+        //         shpVol: x.vol?x.vol:null,
+        //         weight: x.wt?x.wt:null,
+        //         weightUnit: "KG",
+        //         costCenter: "KHI",
+        //         jobType: x.type_name?x.type_name:null,
+        //         jobKind: "Current",
+        //         companyId: "1",
+        //         freightType: x.freight_typeid?x.freight_typeid=="2"?"Collect":"Prepaid":null,
+        //         eta: x.sailing_arrival?x.sailing_arrival:null,
+        //         etd: x.delivery_date?x.delivery_date:null,
+        //         jobDate: x.jobdate?x.jobdate:null,
+        //         shipDate: x.sailing_date?x.sailing_date:null,
+        //         pkgUnit: x.pkg_unit?x.pkg_unit:null,
+        //         incoTerms: x.inconame?x.inconame.split(' ').map(word => word[0]).join(''):null,
+        //         approved: true,
+        //         operation: x.operation_types?x.operation_types:null,
+        //         ClientId: clientId?clientId:null,
+        //         overseasAgentId: OAgentId?OAgentId:null,
+        //         shippingLineId: shippingLineId?shippingLineId:null,
+        //         localVendorId: localVendorId?localVendorId:null,
+        //         customAgentId: CAgentId?CAgentId:null,
+        //         consigneeId: ConsigneeId?ConsigneeId:null,
+        //         shipperId: shipperId?shipperId:null
+        //     }
+
+        //     jobList.push(job)
+        //     index++
+        // // }
+        // setJobs(jobList)
+        // console.log(jobList)
+        // console.log("Count: ",count)
+    }
+
+    const uploadJobs = async()=>{
+        console.log(jobs)
+        for(let x of jobs){
+            const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_SEAJOB, x)
+            console.log(result)
+        }
+    }
+    
 
     let accountsList = {
         "Assets": [],
@@ -594,13 +1169,10 @@ const upload_CoA = () => {
         "income": [],
         "Capital": []
     }
-    
-    let partiesAccounts = {
-        "Clients": [],
-        "Vendors": [],
-        "Clients/Vendors": [],
-        "nonGlParties": []
-    }
+
+    let invoices = []
+
+    let invoicewoAcc = []
 
     return (
         <>
@@ -618,6 +1190,13 @@ const upload_CoA = () => {
         <button onClick={uploadDataAssociations} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Create Party Associations</button>
         <span className="py-2">Opening Balances</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleOpeningBalances(data, fileInfo)}}/>
+        <span className="py-2">Invoices</span>
+        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleInvoices(data, fileInfo)}}/>
+        <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+        <span className="py-2">Jobs</span>
+        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
+        <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
+        
         </>
     )
 }

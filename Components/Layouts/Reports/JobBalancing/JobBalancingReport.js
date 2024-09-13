@@ -78,7 +78,7 @@ const JobBalancingReport = ({ result, query }) => {
     let newArray = [...value.result];
     await newArray.forEach((y, i) => {
       y.no = i + 1;
-      y.balance = y.payType == "Recievable" ?
+      y.balance = y.payType == "Receivable" ?
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid));
       y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
@@ -90,15 +90,15 @@ const JobBalancingReport = ({ result, query }) => {
       y.createdAt = moment(y.createdAt).format("DD-MMM-YY")
       y.hbl = y?.SE_Job?.Bl?.hbl
       
-      y.recievable = y.payType == "Recievable" ? commas(y.total) : "-";
-      y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
-      y.balanced = parseFloat(y.payType == "Recievable" ? y.recieved : y.paid);
-      y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
+      y.Receivable = y.payType == "Receivable" ? commas(y.total) : "-";
+      y.payble = y.payType != "Receivable" ? commas(y.total) : "-";
+      y.balanced = parseFloat(y.payType == "Receivable" ? y.recieved : y.paid);
+      y.finalBalance = y.payType != "Receivable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.recieved : x.paid}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
+      // <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.total : "-"}</td>
+      // <td style={{ textAlign: 'right' }} >{x.payType != "Receivable" ? x.total : "-"}</td>
+      // <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.recieved : x.paid}</td>
+      // <td style={{ textAlign: 'right' }} >{x.payType != "Receivable" ? (${x.balance}) : x.balance}</td>
     })
     if(query.options!="showall"){
       newArray = await newArray.filter((x)=>{
@@ -207,11 +207,11 @@ const JobBalancingReport = ({ result, query }) => {
                   }>
                     {x?.SE_Job?.jobNo}
                   </td>
-                  <td style={{width:150}}>{formattedDate}</td>
+                  <td style={{width:150}}>{sailDate?formattedDate:null}</td>
                   <td style={{}}>{x.createdAt}</td>
                   <td style={{width:50}}>{x.hbl}</td>
                   <td style={{width:50}}>{x.SE_Job?.Bl?.mbl}</td>
-                  <td style={{width:50}}>{formattedSailDate}</td>
+                  <td style={{width:50}}>{sailDate?formattedSailDate:null}</td>
                   <td style={{width:50}}>{formattedArrivalDate}</td> 
                   <td style={{width:150}}><b>{x.party_Name}</b></td>
                   <td style={{width:150}}><b>{x.SE_Job?.Client?.code}</b></td>
@@ -226,7 +226,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td style={{width:20}}>{x.SE_Job?.weight}</td>
                   <td style={{width:20}}>{x.SE_Job?.vol}</td>
                   <td style={{width:20}}>{x.currency}</td>
-                  <td style={{ textAlign: 'right' }} >{x.recievable}</td>
+                  <td style={{ textAlign: 'right' }} >{x.Receivable}</td>
                   <td style={{ textAlign: 'right' }} >{x.payble}</td>
                   <td style={{ textAlign: 'right' }} >{x.balanced}</td>
                   <td style={{ textAlign: 'right' }} >{x.finalBalance}</td>
@@ -250,10 +250,10 @@ const JobBalancingReport = ({ result, query }) => {
                     <td style={{ maxWidth: 90 }}>{x.fd}</td>
                     <td style={{}}>{x.freightType}</td>
                     <td style={{}}>{x.currency}</td>
-                    <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
-                    <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? x.total : "-"}</td>
-                    <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.recieved : x.paid}</td>
-                    <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (`${x.balance}`) : x.balance}</td>
+                    <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.total : "-"}</td>
+                    <td style={{ textAlign: 'right' }} >{x.payType != "Receivable" ? x.total : "-"}</td>
+                    <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.recieved : x.paid}</td>
+                    <td style={{ textAlign: 'right' }} >{x.payType != "Receivable" ? (`${x.balance}`) : x.balance}</td>
                     <td style={{ textAlign: 'center' }}>{x.age}</td>
                   </tr>
                   )
@@ -262,7 +262,7 @@ const JobBalancingReport = ({ result, query }) => {
               {!overflow && (
                 <tr>
                   <td colSpan={8} style={{ textAlign: 'right' }}><b>Total</b></td>
-                  <td style={{ textAlign: 'right' }}>{getTotal("Recievable", records)}</td>
+                  <td style={{ textAlign: 'right' }}>{getTotal("Receivable", records)}</td>
                   <td style={{ textAlign: 'right' }}>{getTotal("Payble", records)}</td>
                   <td style={{ textAlign: 'right' }}>{paidReceivedTotal(records)}</td>
                   <td style={{ textAlign: 'right' }}>{balanceTotal(records)}</td>
@@ -287,7 +287,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td></td>
                   <td></td>
                   <td colSpan={8} style={{ textAlign: 'right' }}><b>Total</b></td>
-                  <td style={{ textAlign: 'right' }}>{getTotal("Recievable", records)}</td>
+                  <td style={{ textAlign: 'right' }}>{getTotal("Receivable", records)}</td>
                   <td style={{ textAlign: 'right' }}>{getTotal("Payble", records)}</td>
                   <td style={{ textAlign: 'right' }}>{paidReceivedTotal(records)}</td>
                   <td style={{ textAlign: 'right' }}>{balanceTotal(records)}</td>
@@ -401,7 +401,7 @@ const JobBalancingReport = ({ result, query }) => {
           { header: "Weight", key: "weight", width: 12, height:10 },
           { header: "volume", key: "vol", width: 12, height:10 },
           { header: "Currency", key: "currency", width: 12, height:10 },
-          { header: "Debit", key: "recievable", width: 32, height:10 },
+          { header: "Debit", key: "Receivable", width: 32, height:10 },
           { header: "Credit", key: "payble", width: 32, height:10 },
           { header: "Paid/Rcvd", key: "balanced", width: 32, height:10 },
           { header: "Balance", key: "finalBalance", width: 32, height:10 },

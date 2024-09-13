@@ -117,8 +117,8 @@ const PaymentsReceipt = ({ id, voucherData }) => {
         selectedParty: { id: voucherData.partyId, name: voucherData.partyName },
         partytype: voucherData.partyType,
         payType: voucherData.vType == "BRV" ?
-          "Recievable" :
-          voucherData.vType == "CRV" ? "Recievable" : "Payble",
+          "Receivable" :
+          voucherData.vType == "CRV" ? "Receivable" : "Payble",
         invoiceCurrency: voucherData.currency,
         tranVisible: true,
         transaction:
@@ -171,7 +171,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
     openNotification("Success", "Cheaque Returned Successfully!", "green")
   }
 
-  useEffect(() => { searchParties() }, [state.search]);
+  useEffect(() => { searchParties() }, [state.search, state.partyType]);
 
   useEffect(() => {
     setIsPaymentReceiptNew(router.asPath === '/accounts/paymentReceipt/new');
@@ -180,7 +180,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const searchParties = async () => {
     if (state.search.length > 2) {
       setShowTable(false); // Hide table and pagination
-
+      console.log(state.partyType)
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
         { search: state.search, type: state.partytype }
       ).then((x) => {
@@ -194,43 +194,84 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           setAll({ partyOptions: [] });
         }
       });
+      console.log(state.partyOptions)
     } else {
       setShowTable(true); // Show table and pagination if search is cleared
     }
   };
 
-
   const ListComp = ({ data }) => {
     return (
+      // <List
+      //   size="small"
+      //   bordered
+      //   dataSource={data}
+      //   renderItem={(item) =>
+
+      //     <List.Item key={item.id} className='searched-item'
+
+      //       onClick={() => {
+      //         Router.push({
+      //           pathname: "/accounts/paymentReceipt/new",
+      //           query: {
+      //             name: item.name, partyid: item.id, type: state.partytype,
+      //             paytype: state.payType, currency: state.invoiceCurrency
+      //           }
+      //         },
+      //           undefined,
+      //           { shallow: true }
+      //         );
+      //         dispatchNew(incrementTab({
+      //           "label": "Payment/ Reciept Details",
+      //           "key": "3-13",
+      //           "id": `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`
+      //         }))
+      //         setAll({ selectedParty: { id: item.id, name: item.name }, tranVisible: true, search: "" });
+      //       }}
+      //     >{`${item.code} ${item.name}`}</List.Item>
+      //   }
+      // />
       <List
-        size="small"
-        bordered
-        dataSource={data}
-        renderItem={(item) =>
+  size="small"
+  bordered
+  dataSource={data}
+  renderItem={(item) => (
+    <List.Item
+      key={item.id}
+      className="searched-item"
+      onClick={() => {
+        Router.push({
+          pathname: "/accounts/paymentReceipt/new",
+          query: {
+            name: item.name,
+            partyid: item.id,
+            type: state.partytype,
+            paytype: state.payType,
+            currency: state.invoiceCurrency,
+          },
+        },
+        undefined,
+        { shallow: true });
+        dispatchNew(
+          incrementTab({
+            label: "Payment/ Reciept Details",
+            key: "3-13",
+            id: `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`,
+          })
+        );
+        setAll({
+          selectedParty: { id: item.id, name: item.name },
+          tranVisible: true,
+          search: "",
+        });
+      }}
+    >
+      {`${item.code} ${item.name}`}
+    </List.Item>
+  )}
+  style={{ maxHeight: "300px", overflowY: "auto" }} // Adjust maxHeight as needed
+/>
 
-          <List.Item key={item.id} className='searched-item'
-
-            onClick={() => {
-              Router.push({
-                pathname: "/accounts/paymentReceipt/new",
-                query: {
-                  name: item.name, partyid: item.id, type: state.partytype,
-                  paytype: state.payType, currency: state.invoiceCurrency
-                }
-              },
-                undefined,
-                { shallow: true }
-              );
-              dispatchNew(incrementTab({
-                "label": "Payment/ Reciept Details",
-                "key": "3-13",
-                "id": `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`
-              }))
-              setAll({ selectedParty: { id: item.id, name: item.name }, tranVisible: true, search: "" });
-            }}
-          >{`${item.code} ${item.name}`}</List.Item>
-        }
-      />
     )
   };
 
@@ -300,12 +341,13 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                 value = "Payble"
                 TempInvoiceCurrency = "PKR"
               } else if (e.target.value == "client") {
-                value = "Recievable";
+                value = "Receivable";
                 TempInvoiceCurrency = "PKR"
               } else if (e.target.value == "agent") {
-                value = "Payble";
+                value = "Payable";
                 TempInvoiceCurrency = "USD"
               }
+              console.log(e.target.value)
               setAll({
                 selectedParty: { id: "", name: "" }, partytype: e.target.value,
                 search: "", payType: value, invoiceCurrency: TempInvoiceCurrency
@@ -322,7 +364,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             disabled={state.partytype == "agent"}
           >
             <Radio value={"Payble"}>Payable</Radio>
-            <Radio value={"Recievable"}>Receivable</Radio>
+            <Radio value={"Receivable"}>Receivable</Radio>
           </Radio.Group>
         </Col>
 
@@ -370,7 +412,9 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             />
             {state.search.length > 2 &&
               <div style={{ position: "absolute", zIndex: 10 }}>
-                <ListComp data={state.partyOptions} />
+                {/* <ListComp data={state.partyOptions} /> */}
+                <ListComp data={state.partyOptions} style={{ maxHeight: '300px', overflowY: 'auto' }} />
+
               </div>
             }
           </>

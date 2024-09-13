@@ -630,7 +630,44 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
               :
               <CLPrint records={records} invoice={invoice} />
             }
+
+            <span className='inv-label mx-2'>Total Amount {"(Local)"}:</span>
+            <span className='inv-value charges-box'> 
+              {" "}
+              {commas((parseFloat(invoice?.total) + parseFloat(invoice?.roundOff)).toFixed(2))}
+            </span>
+            <span className='inv-label mx-2'>Settlement Amount {"(Local)"}:</span>
+            <span className='inv-value charges-box'> 
+              {" "}
+              {invoice.total==invoice.recieved?commas((parseFloat(invoice?.total) + parseFloat(invoice?.roundOff)).toFixed(2)):commas((parseFloat(invoice?.recieved)).toFixed(2))}
+            </span>
+          </Col>
+        </Row>
+      </div>
+      }
+      {/* Printing Component */}
+      <div 
+        style={{
+          display:"none"
+        }}
+      >
+        <div ref={(response)=>(inputRef=response)}>
+          {invoice && companyId !== "2" ?
+            <InvoicePrint 
+              logo={logo} 
+              compLogo={compLogo} 
+              records={records} 
+              bank={bank} 
+              bankDetails={bankDetails} 
+              invoice={invoice} 
+              calculateTotal={calculateTotal} 
+            /> 
+          :
+          <CLPrint records={records} invoice={invoice} />
+          }
+
           </div>
+
         </div>
       </div>
     </>
