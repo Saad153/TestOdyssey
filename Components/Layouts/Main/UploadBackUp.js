@@ -204,10 +204,10 @@ const upload_CoA = () => {
         console.log(partiesAccounts1)
         console.log(withAccounts1)
         let index = 0
-        
-        if(partiesAccounts1.Clients.length >0){
+        let parties = partiesAccounts1
+        if(parties.Clients.length >0){
             console.log("uploading clients")
-            for(let element of partiesAccounts1.Clients){
+            for(let element of parties.Clients){
                 delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_CLIENT, element)
                 partiesAccounts.Clients[index] = result.data.result
@@ -216,9 +216,9 @@ const upload_CoA = () => {
             console.log("Clients",index)
         }
         index =0
-        if(partiesAccounts1.Vendors.length >0){
+        if(parties.Vendors.length >0){
             console.log("uploading vendors")
-            for(let element of partiesAccounts1.Vendors){
+            for(let element of parties.Vendors){
                 delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_VENDOR, element)
                 partiesAccounts.Vendors[index] = result.data.result
@@ -231,7 +231,7 @@ const upload_CoA = () => {
     const uploadDataAssociations = async () => {
         console.log(partiesAccounts1)
         for(let element of partiesAccounts1.Clients){
-            // console.log(element.childAccountId, element.account_name, element.name)
+            console.log(element.childAccountId, element.account_name, element.name)
             if(element.childAccountId){
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CLIENT_ASSOCIATIONS, {
                     companyId: Cookies.get("companyId"),
@@ -272,11 +272,21 @@ const upload_CoA = () => {
                 y.Parent_Accounts.forEach((z)=>{
                     PAcc++
                     z.Child_Accounts.forEach((a)=>{
-                        if(x.party_name && a.title == x.party_name){
+                        if(x.party_name && (a.title == x.party_name || a.title == x.party_name.slice(0, -1))){
                             CAcc++
                             x.ChildAccountId = a.id
                             withAccounts.push(x)
                             namematched = true
+                        }
+                        if(x.party_name || x.party_name == "SRILANKAN AIRLINE"){
+                            
+                            if(a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" ")) || a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" ")).slice(0, -1) || a.title == x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S"){
+                                CAcc++
+                                x.ChildAccountId = a.id
+                                withAccounts.push(x)
+                                namematched = true
+                            }
+                            // console.log(x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S")
                         }
                     })
                 })
@@ -680,6 +690,7 @@ const upload_CoA = () => {
             }
         })
         let accountsData = accounts.data.result
+        let couint = 0
         for(let x of data){
             let matched = false
             accountsData.forEach((y)=>{
@@ -748,7 +759,9 @@ const upload_CoA = () => {
               }
             !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
             matched?await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher):null
+            matched?couint++:null
         }
+        console.log(couint)
 
     }
 
@@ -822,10 +835,12 @@ const upload_CoA = () => {
             })
             !matched?count++:null
             x.job_no?extractCode(x.job_no):""
-            let companyID = Cookies.get("companyId")
-            if(x.job__ && x.job__.toString().slice(0, 1) == "A"){
+
+            let companyID = "0"
+            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
                 companyID = "3"
-            }else if(x.job__ && x.job__.toString().slice(0, 1) == "S"){
+            }
+            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
                 companyID = "1"
             }
             if(x.invoice___bill_date){
@@ -833,10 +848,12 @@ const upload_CoA = () => {
                 const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
                 x.invoice___bill_date = isoString
             }
-            let invoice = {
+            let invoice = {}
+            
+            companyID!="0"?invoice = {
                 invoice_No: x.invoice___bill_+"-O",
                 type: "Old Job Invoice",
-                payType: x.payable!=0?"Payable":"Receivable",
+                payType: x.payable!=0?"Payble":"Receivable",
                 status: "1",
                 operation: x.op_code?x.op_code:null,
                 currency: x.curr,
@@ -850,8 +867,14 @@ const upload_CoA = () => {
                 approved: "1",
                 companyId: companyID,
                 createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+            }:null
+            if(x.job__ == "Advance"){
+                console.log("Advance")
+                console.log(x.invoice___bill_date)
+                invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
+                invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
             }
-            invoice.party_Id!=""?invoices.push(invoice):null
+            companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
             !matched?invoicewoAcc.push(x):null
         }):null
         if(agentInvoices){
@@ -862,7 +885,7 @@ const upload_CoA = () => {
                 let party_name = ""
                 let matched = false
                 clients.forEach((a)=>{
-                    if(x.agent_name && a.name.trim() == removeBracketedPart(x.agent_name)){
+                    if(x.agent_name && a.name.trim() == removeBracketedPart(x.agent_name).trim()){
                         party_id = a.id
                         party_name = a.name
                         matched = true
@@ -886,17 +909,19 @@ const upload_CoA = () => {
                     // console.log(isoString)
                     x.invoice_date = isoString
                 }
-                let companyID = Cookies.get("companyId")
+                let companyID = "0"
                 if(x.invoice_no && (x.invoice_no.slice(0, 3)=="SNS")){
                     companyID = "1"
-                }else{
+                }
+                if(x.invoice_no && (x.invoice_no.slice(0, 3)=="ACS")){
                     companyID = "3"
                 }
                 // !matched?console.log("no match", x.agent_name):null
-                let invoice = {
+                let invoice = {}
+                companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
-                    payType: parseFloat(removeCommas(x.local_amount.toString()))-x.balance>0?"Payable":"Recievable",
+                    payType: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
                     status: "1",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,
@@ -910,8 +935,8 @@ const upload_CoA = () => {
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
-                }
-                invoice.party_Id!=""?invoices.push(invoice):null
+                }:null
+                companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
                 !matched?console.log("no match", x.agent_name):null
                 // !matched?console.log("no match", party_name):null
                 !matched?invoicewoAcc.push(x):null
@@ -967,7 +992,7 @@ const upload_CoA = () => {
                 count1++
             }
 
-            if(x.particular && (x.particular.includes("Receivable Against Job") || x.particular.includes("Payable Against Job"))){
+            if(x.particular && (x.particular.includes("Receivable Against Job") || x.particular.includes("Payble Against Job"))){
                 count2++
             }
             if(x.particular && x.particular.includes('Received Cheque')){
@@ -1171,6 +1196,7 @@ const upload_CoA = () => {
         <span className="py-2">Jobs</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
         <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
+        
         </>
     )
 }

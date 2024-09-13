@@ -118,8 +118,8 @@ const PaymentsReceipt = ({ id, voucherData }) => {
         selectedParty: { id: voucherData.partyId, name: voucherData.partyName },
         partytype: voucherData.partyType,
         payType: voucherData.vType == "BRV" ?
-          "Recievable" :
-          voucherData.vType == "CRV" ? "Recievable" : "Payble",
+          "Receivable" :
+          voucherData.vType == "CRV" ? "Receivable" : "Payble",
         invoiceCurrency: voucherData.currency,
         tranVisible: true,
         transaction:
@@ -348,7 +348,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                 value = "Payble"
                 TempInvoiceCurrency = "PKR"
               } else if (e.target.value == "client") {
-                value = "Recievable";
+                value = "Receivable";
                 TempInvoiceCurrency = "PKR"
               } else if (e.target.value == "agent") {
                 value = "Payable";
@@ -371,7 +371,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             disabled={state.partytype == "agent"}
           >
             <Radio value={"Payble"}>Payable</Radio>
-            <Radio value={"Recievable"}>Receivable</Radio>
+            <Radio value={"Receivable"}>Receivable</Radio>
           </Radio.Group>
         </Col>
 
