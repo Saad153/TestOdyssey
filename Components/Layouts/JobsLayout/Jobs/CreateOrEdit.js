@@ -84,16 +84,15 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
     getInvoices(tempState.id, dispatch);
     reset({...tempState});
 
-    // console.log(state.values)
-    console.log(allValues.approved)
-    console.log(checkEmployeeAccess())
+    // console.log(allValues.approved)
+    // console.log(checkEmployeeAccess())
     if(allValues.approved!=1 && checkEmployeeAccess()){
-      console.log("approved")
+      // console.log("approved")
       setDeleteAccess(true)
-      console.log(deleteAccess)
+      // console.log(deleteAccess)
     }else{
-      console.log("Not Approved")
-      console.log(deleteAccess)
+      // console.log("Not Approved")
+      // console.log(deleteAccess)
     }
 
   }, [state.selectedRecord]);
@@ -210,17 +209,17 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
       (x) => x?{...x,result:obj}:x
     )
 
-    console.log(state.values)
-    console.log(allValues.approved)
-    console.log(checkEmployeeAccess())
+    // console.log(state.values)
+    // console.log(allValues.approved)
+    // console.log(checkEmployeeAccess())
     if(allValues.approved!=1 && checkEmployeeAccess()){
-      console.log("approved")
+      // console.log("approved")
       setDeleteAccess(true)
-      console.log(deleteAccess)
+      // console.log(deleteAccess)
     }else{
       setDeleteAccess(false)
-      console.log("Not Approved")
-      console.log(deleteAccess)
+      // console.log("Not Approved")
+      // console.log(deleteAccess)
     }
 
   }, [allValues, state.equipments])
@@ -277,7 +276,7 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
                   id:allValues.id
                 }).then(async(x)=>{
                   let oldTabs = await type=="SE"?tabs.filter((x)=> {return x.key!="4-3" }):
-                  console.log(oldTabs)
+                  // console.log(oldTabs)
                   await type=="SI"?tabs.filter((x)=> {return x.key!="4-6" }):
                   await type=="AE"?tabs.filter((x)=> {return x.key!="7-2" }):
                   await tabs.filter((x)=> {return x.key!="7-5" })

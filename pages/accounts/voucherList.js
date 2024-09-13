@@ -5,7 +5,7 @@ import axios from 'axios';
 
 const voucherList = ({ sessionData, voucherData }) => {
   return (
-    <VoucherList sessionData={ sessionData} voucherData={voucherData } />
+    <VoucherList sessionData={ sessionData} voucherData={voucherData} />
   )
 }
 
@@ -25,7 +25,6 @@ export async function getServerSideProps({req, res}) {
     }
   })
   .then((x)=>x.data);
-  // console.log(voucherData)
   return{ 
     props: { sessionData, voucherData }
   }

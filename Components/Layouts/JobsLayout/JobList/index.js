@@ -32,7 +32,7 @@ const Index = ({ data }) => {
   const [seaExports, setseaExports] = useState("");
 
   const onChange = (e) => {
-    console.log(`checked = ${e}`);
+    // console.log(`checked = ${e}`);
     setseaExports(e);
   };
 

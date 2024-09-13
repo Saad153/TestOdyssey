@@ -3,15 +3,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getChargeHeads } from "/apis/jobs";
 import { Row, Col } from 'react-bootstrap';
 import { setHeadsCache, getHeadsNew } from '../states';
-import { useSelector } from 'react-redux';
+import { useSelector,useDispatch } from 'react-redux';
 import React, { useEffect } from 'react';
+import {setApproved } from '../../../../../redux/invoice/invoiceSlice';
 import Charges from './Charges';
 import { Tabs } from 'antd';
 
-const ChargesComp = ({state, dispatch, type, allValues}) => {
+  const ChargesComp = ({state, dispatch, type, allValues}) => {
 
+  const dispatchNew = useDispatch();
   const queryClient = useQueryClient();
   const companyId = useSelector((state) => state.company.value);
+  const {approved} = useSelector((state) => state.invoice);
   const { register, control, handleSubmit, reset } = useForm({});
   const { fields, append, remove } = useFieldArray({ control, name:"chargeList" });
   const chargeList = useWatch({ control, name:'chargeList' });
@@ -26,8 +29,15 @@ const ChargesComp = ({state, dispatch, type, allValues}) => {
   // }, [chargesData.status])
 
   useEffect(() => {
+    if(chargesData){
+      chargesData.charges.forEach((x)=>{
+        if(x.Invoice?.approved && x.Invoice?.approved == "1"){
+          dispatchNew(setApproved("1"))
+        }
+      })
+    }
     getHeadsNew(state.selectedRecord.id, dispatch, reset)
-  }, [])
+  }, [chargesData])
 
   // useEffect(() => {
   //   let obj = { charges:chargeList, payble:state.payble, reciveable:state.reciveable };

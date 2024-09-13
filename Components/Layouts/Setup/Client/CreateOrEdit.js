@@ -4,7 +4,7 @@ import { Tabs } from "antd";
 import moment from 'moment';
 import Cookies from 'js-cookie';
 import Router from 'next/router';
-import React, { useEffect } from 'react';
+import React, { useEffect ,useState} from 'react';
 import { getJobValues } from '/apis/jobs';
 import { useSelector } from 'react-redux';
 import { useQuery } from '@tanstack/react-query';
@@ -44,16 +44,25 @@ const SignupSchema = yup.object().shape({
 
 const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
 
+
     const company = useSelector((state) => state.company.companies);
+    const [register_date, setRegisterdate] = useState(moment().format('YYYY-MM-DD'));
+
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
       resolver: yupResolver(SignupSchema),
-      defaultValues:state.values
-    });
+      defaultValues: {
+        ...state.values,
+        
+
+      }    });
     const { oldRecord, Representatives } = state;
     const { refetch } = useQuery({
       queryKey:['values'],
       queryFn:getJobValues
     });
+
+        console.log("state date", state)
+
 
     useEffect(() => {
     //Edit
@@ -152,7 +161,7 @@ const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
     
     return (
     <div className='client-styles' style={{maxHeight:720, overflowY:'auto', overflowX:'hidden'}}>
-      <form onSubmit={handleSubmit(id!="new"?onEdit:onSubmit, onError)}>
+      <form onSubmit={handleSubmit(id!="new"?onEdit:onSubmit, onError)} >
       <Tabs defaultActiveKey="1">
         {/* Basic info tab */}
         <Tabs.TabPane tab="Basic Info" key="1">
@@ -178,7 +187,7 @@ const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
                 {errors.name && <div className='error-line'>{errors.name.message}*</div>}
             </Col>
             <Col className='py-1'>     
-                <DateComp register={register} name='registerDate' control={control} label='Register Date' />
+                <DateComp register={register} name='registerDate' defaultValues={register_date} control={control} label='Register Date' />
                 {errors.registerDate && <div className='error-line'>Required*</div>}
             </Col>
             <Col md={2} className='py-1'>

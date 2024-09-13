@@ -42,8 +42,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const noOfPages = rowData ? Math.ceil(rowData.length / recordsPerPage) : 0;
   const [showTable, setShowTable] = useState(true);
   const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
-  // let edit = false;
-  // let del = false;
+
   const [del, setDel] = useState(false);
 
 
@@ -141,14 +140,9 @@ const PaymentsReceipt = ({ id, voucherData }) => {
       })
     }
 
-    // edit = checkEditAccess()
-    // del = checkEmployeeAccess()
     setDel(checkEmployeeAccess())
-    // console.log(edit)
-    console.log(del)
   }, [router]);
 
-  // console.log("currentRecords",currentRecords)
 
   const addNew = () => router.push("/accounts/paymentReceipt/new");
   const chkReturn = async () => {
@@ -330,12 +324,11 @@ const PaymentsReceipt = ({ id, voucherData }) => {
     }
   
     if (!containsCR) {
-      // Only call dispatchNew and Router.push if 'CR' was not found
       dispatchNew(incrementTab({ "label": "Payment / Receipt", "key": "3-4", "id": e.id }));
       Router.push(`/accounts/paymentReceipt/${e.id}`);
     }
   }, []);
-  console.log(del)
+
   return (
     <div className='base-page-layout'>
       <Row>
@@ -415,7 +408,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           {!state.selectedParty.name && <>
             <Input placeholder="Search type" size='small'
               suffix={state.search.length > 2 ? <CloseCircleOutlined onClick={() => setAll({ search: "" })} /> : <SearchOutlined />}
-              value={state.search} onChange={(e) => setAll({ search: e.target.value })}
+              value={state.search} onChange={(e) => {setAll({ search: e.target.value });}}
             />
             {state.search.length > 2 &&
               <div style={{ position: "absolute", zIndex: 10 }}>
@@ -492,7 +485,6 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                       x?.amount?.toString().includes(query)
                   })
                     .map((x, index) => {
-                      // console.log("X",x)
                       return (
                         <tr onClick={() => cellClickListener(x)} key={index} style={{ cursor: 'pointer' }}>
                           <td className='blue-txt fw-6 fs-12' >{x.voucher_Id}</td>

@@ -123,7 +123,6 @@ const Gl = ({state, dispatch, companyId}) => {
       voucher.tranDate = moment(state.date).format("yyyy-MM-DD");
       state.edit?voucher.id = state.id : null;
       voucher.createdAt = state.createdAt;
-      // console.log(tempInvoices)
       await axios.post(
        state.edit?
          process.env.NEXT_PUBLIC_CLIMAX_UPDATE_VOUCEHR:

@@ -142,7 +142,7 @@ const Client = ({sessionData, clientData}) => {
           </tr>
         </thead>
         <tbody>
-        {records.map((x, index) => {
+        {records?.map((x, index) => {
           return (
           <tr key={index} className='f row-hov'
             onClick={()=>{

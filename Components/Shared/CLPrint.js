@@ -4,6 +4,7 @@ import { Row, Col, Table } from 'react-bootstrap';
 import inWords from '/functions/numToWords';
 
 const CLPrint = ({ records, invoice }) => {
+    console.log("invoice",invoice)
     const [values, setValues] = useState({
         tax: 0,
         taxPercent:0,
@@ -21,7 +22,7 @@ const CLPrint = ({ records, invoice }) => {
         let taxPercent = 0;
         let serviceCharges = 0;
         let netBalance = 0;
-        records.forEach((x) => {
+        records?.forEach((x) => {
             temptax = temptax + parseFloat(x.tax_amount);
             taxPercent = parseFloat(x.taxPerc)
             result = result + parseFloat(x.local_amount);
@@ -72,8 +73,8 @@ const CLPrint = ({ records, invoice }) => {
                         <div className='d-flex'>
                             <div className='fs-10 pe-3 fw-bold'>M/S :</div>
                             <div className='fs-10'>
-                                <span className='fs-10'>{invoice.SE_Job.Client ? invoice.SE_Job.Client.name : ""}</span> <br />
-                                <span className='fs-10'>{invoice.SE_Job.Client ? invoice.SE_Job.Client.address1 : ""}</span> <br />
+                                <span className='fs-10'>{invoice?.SE_Job.Client ? invoice?.SE_Job.Client.name : ""}</span> <br />
+                                <span className='fs-10'>{invoice?.SE_Job.Client ? invoice?.SE_Job.Client.address1 : ""}</span> <br />
                             </div>
                         </div>
                     </Col>
@@ -87,11 +88,11 @@ const CLPrint = ({ records, invoice }) => {
                                 <span className='fs-10 pe-3 fw-bold'>Job Type :</span><br />
                             </div>
                             <div className='text-start' style={{ lineHeight: "-20px" }}>
-                                <span className='fs-10'>{invoice.invoice_No ? invoice.invoice_No : ""}</span><br />
-                                <span className='fs-10'>{invoice.createdAt ? moment(invoice.createdAt).format("ll") : ""}</span><br />
+                                <span className='fs-10'>{invoice?.invoice_No ? invoice?.invoice_No : ""}</span><br />
+                                <span className='fs-10'>{invoice?.createdAt ? moment(invoice?.createdAt).format("ll") : ""}</span><br />
                                 <span className='fs-10'></span><br />
                                 <span className='fs-10'></span><br />
-                                <span className='fs-10'>{invoice.operation ? invoice.operation : ""}</span><br />
+                                <span className='fs-10'>{invoice?.operation ? invoice?.operation : ""}</span><br />
                             </div>
                         </div>
                     </Col>
@@ -110,11 +111,11 @@ const CLPrint = ({ records, invoice }) => {
                                 <span className='fs-10 pe-3 fw-bold'>MBL No :</span><br />
                             </div>
                             <div className='text-start'>
-                                <span className='fs-10'>{invoice.SE_Job.jobNo ? invoice.SE_Job.jobNo : ""}</span><br />
-                                <span className='fs-10'>{invoice.SE_Job.pcs ? invoice.SE_Job.pcs : ""} Cartons</span><br />
-                                <span className='fs-10'>{invoice.SE_Job.commodity ? invoice.SE_Job.commodity.name : ""}</span><br />
+                                <span className='fs-10'>{invoice?.SE_Job.jobNo ? invoice?.SE_Job.jobNo : ""}</span><br />
+                                <span className='fs-10'>{invoice?.SE_Job.pcs ? invoice?.SE_Job.pcs : ""} Cartons</span><br />
+                                <span className='fs-10'>{invoice?.SE_Job.commodity ? invoice?.SE_Job.commodity.name : ""}</span><br />
                                 <span className='fs-10'></span><br />
-                                <span className='fs-10'>{invoice.SE_Job.vessel ? invoice.SE_Job.vessel.name : ""}</span><br />
+                                <span className='fs-10'>{invoice?.SE_Job.vessel ? invoice?.SE_Job.vessel.name : ""}</span><br />
                             </div>
                         </div>
                     </Col>
@@ -127,7 +128,7 @@ const CLPrint = ({ records, invoice }) => {
                                 <span className='fs-10 pe-3 fw-bold'>IGM No :</span><br />
                             </div>
                             <div className='text-start'>
-                                <span className='fs-10'>{invoice.SE_Job ? invoice.SE_Job.jobNo : ""}</span><br />
+                                <span className='fs-10'>{invoice?.SE_Job ? invoice?.SE_Job.jobNo : ""}</span><br />
                                 <span className='fs-10 mt-6'></span><br />
                                 <span className='fs-10'></span><br />
                                 <span className='fs-10'></span><br />
@@ -143,7 +144,7 @@ const CLPrint = ({ records, invoice }) => {
                                 <span className='fs-10 pe-3 fw-bold'>LC No :</span><br />
                                 <span className='fs-10 pe-3 fw-bold'>GD/Machine No :</span><br />
                                 <span className='fs-10 pe-3 fw-bold'>
-                                    {(invoice.operation == "CAE" || invoice.operation == "CSE")
+                                    {(invoice?.operation == "CAE" || invoice?.operation == "CSE")
                                         ? "Departure Date" : "Arrival Date"
                                     } # :</span><br />
                                 <span className='fs-10 pe-3 fw-bold'>Form E # :</span><br />
@@ -175,7 +176,7 @@ const CLPrint = ({ records, invoice }) => {
                                 <th>TOTALS</th>
                             </thead>
                             <tbody>
-                                {records.map((x, i) => {
+                                {records?.map((x, i) => {
                                     return (
                                         <>
                                             <tr key={x.id} className='fs-10 text-start' style={{ lineHeight: 1 }}>

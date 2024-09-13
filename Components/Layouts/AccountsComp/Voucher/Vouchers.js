@@ -29,6 +29,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
   let inputRef = useRef(null);
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
+
   //toggle state for opening and closing voucher History modal
   const [isOpen,setIsOpen] = useState(false)
 
@@ -39,24 +40,31 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
       required: "Please append at least 1 item",
     },
   });
+
   const [accountLoad, setAccountLoad] = useState(true);
   const [totalDebit, setTotalDebit] = useState(0);
   const [totalCredit, setTotalCredit] = useState(0);
   const [closing, setClosing] = useState(0);
   const [first, setFirst] = useState(true);
-  const allValues = useWatch({ control });
+  const [voucherNarration, setVoucherNarration] = useState("");
+  const [isButtonHide, setIsButtonHide] = useState(true);
 
+  const allValues = useWatch({ control });
+  
   const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ");
   const box = { border: '1px solid silver', paddingLeft: 10, paddingTop: 5, paddingBottom: 3, minHeight: 31 }
 
-  useEffect(() => { getValues(); }, []);
+  useEffect(() => { 
+    getValues();
+    setVoucherNarration(allValues?.Voucher_Narration)
+   }, []);
 
   useEffect(() => {
     (allValues.vType != "" && CompanyId != NaN && allValues.vType) ?
       getAccounts() :
       null;
+     
   }, [allValues.vType]);
-
   useEffect(() => {
     let totalDebit = 0.00;
     let totalCredit = 0.00;
@@ -70,9 +78,26 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
     setTotalDebit(totalDebit);
     setTotalCredit(totalCredit);
   }, [allValues.Voucher_Heads]);
+const narration = (e) =>{
+   let temp = allValues
+  if(allValues.Voucher_Heads&&allValues.Voucher_Heads.length >0){
+    if(allValues.Voucher_Heads[0].narration != voucherNarration){
+     temp.Voucher_Heads[0].narration = e
+    }
+  }
+
+  // if (e.trim() !== '') {
+  //   setIsButtonDisabled(false);
+  // } else {
+  //   setIsButtonDisabled(true);
+  // }
+
+  reset(temp)
+}
+
 
   async function getValues() {
-    const { chequeNo, payTo, vType, type, exRate, currency } = voucherData;
+    const { chequeNo, payTo, vType, type, exRate, currency,voucherNarration } = voucherData;
     let iD = "";
     let settleId = "";
     let ChildAccountId = "";
@@ -87,7 +112,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
       }
     });
     reset({
-      CompanyId, vType, chequeDate, chequeNo, payTo, type, createdAt,
+      CompanyId, vType, chequeDate, chequeNo, voucherNarration,payTo, type, createdAt,
       Voucher_Heads, exRate, currency: currency == undefined ? "PKR" : currency,
       ChildAccountId, settleId, id: iD, voucher_Id:voucherData.voucher_Id
     });
@@ -98,6 +123,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
       }
     }).then((x) => {
       setChild(x.data.result);
+
     })
   }
 
@@ -218,7 +244,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
     }
     queryClient.setQueryData(['voucherData', {id}], (x)=>voucher)
   };
-
+   
   return (
     <>
     <Row>
@@ -251,7 +277,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
           </Col>
           <Col md={12}>
             <SelectSearchComp className="form-select" name="ChildAccountId" label="Settlement Account" register={register} control={control} width={"100%"}
-              options={settlement.length > 0 ? settlement.map((x) => { return { id: x?.id, name: `(${x.code}) ${x?.title}` } }) : []}
+              options={settlement.length > 0 ? settlement.map((x) => { return { id: x?.id, name: `(${x.code}) ${x?.title}` }}) : []}
               disabled={(allValues.vType == "CPV" || allValues.vType == "CRV" || allValues.vType == "BRV" || allValues.vType == "BPV" || allValues.vType == "TV") ? false : true}
             />
           </Col>
@@ -300,6 +326,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
         <div style={{ color: closing>0?'green':'red', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}><b>{commas(closing)}</b></div>
       </Col>
       <Col md={4}>
+      <div className="d-flex justify-content-between my-3">
         <button type="button" className="btn-custom fs-11 px-4" 
           onClick={async () => {
             queryClient.removeQueries(['voucherData', { id: 'new' }]);
@@ -323,6 +350,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
             )}
           />
         </button>}
+  
         {/* voucher history modal toggle states  */}
         {id !== "new" && <button type="button" className="btn-custom fs-11 px-4" onClick={()=>setIsOpen(true)}> <FaHistory/> History</button>}
         {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
@@ -331,17 +359,21 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
         </button>
         
         {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+        </div>
       </Col>
 
     </Row>
-    <button type="button" className="btn-custom mb-3" style={{ width: "110px", float: 'right' }}
+    <div className="d-flex justify-content-end"> 
+    <button type="button" className="btn-custom  px-4" 
+     style={{ minWidth: '50px' }}
       onClick={() => append({
         type: (allValues.vType == "BRV" || allValues.vType == "CRV") ? "credit" : "debit",
         ChildAccountId: "",
         narration: "",
         amount: 0,
         defaultAmount: 0
-      })}>Add</button>
+      })}>+  Add</button>
+</div>
     <div className="table-sm-1 col-12" style={{ maxHeight: 300, overflowY: "auto" }} >
       <Table className="tableFixHead" bordered>
         <thead>
@@ -377,6 +409,7 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
             return true; // Keep the original data if Type is not BPV or TV
           })
           .map((x) => {
+      
             return {
               id: x?.id,
               name: `${x?.title} (${x?.Parent_Account?.title})`,
@@ -417,6 +450,38 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
         </tbody>
       </Table>
     </div>
+    <Row>
+  <Col md={4}>
+    <div>Remarks</div>
+    <div style={{ display: 'flex', alignItems: 'center' }}>
+      <InputComp 
+        type="text" 
+        name="voucherNarration"
+        placeholder="Remarks"
+        onChange1={(e) => {
+          setIsButtonHide(false)
+          setVoucherNarration(e.target.value)
+        }}
+        control={control} 
+        register={register} 
+        style={{ marginLeft: '8px' }} 
+      />
+     </div>
+  </Col>
+  <Col style={{ display: 'flex' ,alignItems: 'center' ,    marginTop: '15px'}}>
+ {!isButtonHide &&  <button
+  className="btn-custom fs-11"
+  onClick={(e) => {
+    e.preventDefault(); 
+    narration(voucherNarration);
+  }}
+>
+  Apply to Narration
+</button>}
+
+  </Col>
+</Row>
+
     {(accountLoad && allValues.vType) && <Spinner size="sm" className="my-2" />}
     <br />
     <div style={{

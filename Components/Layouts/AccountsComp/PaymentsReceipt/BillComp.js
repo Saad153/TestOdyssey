@@ -10,32 +10,25 @@ import { incrementTab } from '/redux/tabs/tabSlice';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
 import Gl from './Gl';
-import {checkEditAccess} from "../../../../functions/checkEditAccess";
 
-const BillComp = ({companyId, state, dispatch }) => {
+const BillComp = ({companyId, state, dispatch}) => {
+
   const router = useRouter();
   const dispatchNew = useDispatch();
   const { payType } = state;
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};  
-  const [edit, setEdit] = useState(false);
-
-const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2)
-
+  
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
-    // edit = checkEditAccess()
-    setEdit(checkEditAccess())
-    console.log("edit",edit)
   }, [state.selectedParty, state.payType]);  
   
   useEffect(() => { 
     if(state.invoices.length>0){
       set('totalrecieving', totalRecieveCalc(state.invoices));
       calculateTransactions();
+      //}
     }
-
-    
   }, [
     state.invoices,
     state.manualExRate,
@@ -53,7 +46,6 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
     state.exRate, 
     state.manualExRate
   ]);  
-
 
   async function calculateTax(){
     let tempRate = state.autoOn? state.exRate:state.manualExRate
@@ -165,7 +157,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
     } else {
       let transTwo = [];
       let removing = 0;
-      let tempInvoices = [...state.invoices];
+      let tempInvoices = [...state.invoices]; 
       let invNarration = "";
       let gainAndLossAmount = 0
       tempInvoices.forEach((x)=>{
@@ -329,7 +321,7 @@ const Transaction_Amount = Math.abs(state.debitReceiving - state.creditReceiving
     }
     return () => clearTimeout(delayDebounceFn)
   }, [state.auto])
-console.log(edit)
+
   return (
   <>
   <Row>
@@ -370,6 +362,11 @@ console.log(edit)
         </Col>
         <Col md={3}>
           <br/>
+          {/* <button className={state.autoOn?'btn-custom':'btn-custom-disabled'}
+            style={{fontSize:10}}
+            disabled={!state.autoOn}
+            onClick={()=>autoKnocking()}
+          >Set</button> */}
         </Col>
         {!state.autoOn &&
         <Col md={12}>
@@ -557,26 +554,19 @@ console.log(edit)
           <td className='px-1' style={{width:300}}> {commas(x.remBalance - x.receiving)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
-              checked={x.remBalance - x.receiving == 0.0 } 
-              disabled={x.remBalance - x.receiving == 0.0}
+              checked={x.check} 
+              disabled={state.autoOn}
               onChange={() => {
                 let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;
                 if(state.payType=="Recievable"){
-                  console.log(x.inVbalance)
-                  console.log(x.recieved)
-                  const rem = x.inVbalance - x.recieved;
-                  console.log(rem)
                   tempState[index].receiving = tempState[index].check?
                   (
-                    parseFloat(x.inVbalance)
                     // parseFloat(x.inVbalance) - parseFloat(x.recieved) + 
-                    // parseFloat(x.remBalance) +
-                    // parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
+                    parseFloat(x.remBalance) + 
+                    parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
                   ):
                   0.00
-
-                  parseFloat(state.edit?x.Invoice_Transactions[0].amount:0)+rem
                 } else {
                   tempState[index].receiving = tempState[index].check?
                   (
@@ -609,11 +599,9 @@ console.log(edit)
         <button>
           {/* Submit */}
         </button>
-      {edit && <div className='text-end'>
-      <button onClick={submitPrices} 
-      disabled={Transaction_Amount === "0.00"}
-      className='btn-custom mb-2'>Make Transaction</button>
-        </div>}
+        <div className='text-end'>
+          <button onClick={submitPrices} className='btn-custom mb-2'>Make Transaction</button>
+        </div>
     </div>
     }
   </>

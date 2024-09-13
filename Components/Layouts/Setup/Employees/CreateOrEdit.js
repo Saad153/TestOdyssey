@@ -10,6 +10,7 @@ import Vouchers from "./Vouchers";
 import { getJobValues } from '/apis/jobs';
 import { useQuery } from '@tanstack/react-query';
 // import { useFormikContext } from 'formik';
+import moment from 'moment';
 
 const SignupSchema = Yup.object().shape({
   empName: Yup.string().min(3, 'Too Short!').max(45, 'Too Long!').required('Required'),
@@ -71,7 +72,7 @@ const CreateOrEdit = ({appendClient, edit, setVisible, setEdit, selectedEmployee
     accountNo: '', userName: '', address: '',
     empName: '', phone: '',  email: '',
     pass: '', cnic: '', bank: '',
-    code: '', date:'', id:'', represent:[""]
+    code: '', date:moment().format('YYYY-MM-DD'), id:'', represent:[""]
   });
 
   const [load, setLoad] = useState(false);
@@ -365,12 +366,15 @@ return(
         </Form.Item>
         </Col>
       </Row>
-      <button className="btn-custom my-3" style={{border:'none'}} type="submit" disabled={isSubmitting}>
-        {load?<Spinner animation="border" role="status" size="sm" className="mx-3" />:'Submit'}
-      </button> 
-      <button className="btn-custom my-3 mx-3" type="button" style={{border:'none'}} onClick={loadVouchers}>
-        {load?<Spinner animation="border" role="status" size="sm" className="mx-3" />:'Show Vouchers'}
-      </button> 
+      <div className="d-flex justify-content-between my-3">
+      <button className="btn-custom" style={{ border: 'none' }} type="submit" disabled={isSubmitting}>
+    {load ? <Spinner animation="border" role="status" size="sm" className="mx-3" /> : 'Submit'}
+  </button>
+  <button className="btn-custom" style={{ border: 'none' }} type="button" onClick={loadVouchers}>
+    {load ? <Spinner animation="border" role="status" size="sm" className="mx-3" /> : 'Show Vouchers'}
+  </button>
+
+</div>
     </Form> 
   )} 
   </Formik>

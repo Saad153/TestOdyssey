@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Tabs } from "antd";
 import { useForm, useFormContext } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -22,7 +22,8 @@ const SignupSchema = yup.object().shape({
 });
 
 const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
-  
+    const [register_date, setRegisterdate] = useState(moment().format('YYYY-MM-DD'));
+
     const company = useSelector((state) => state.company.companies);
     const { register, control, handleSubmit, reset, formState: { errors } } = useForm({
         resolver: yupResolver(SignupSchema),
@@ -122,7 +123,7 @@ const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
                 {errors.name && <div className='error-line'>{errors.name.message}*</div>}
             </Col>
             <Col className='py-1'>     
-                <DateComp register={register} name='registerDate' control={control} label='Register Date' />
+                <DateComp register={register} name='registerDate' defaultValues={register_date} control={control} label='Register Date' />
                 {errors.registerDate && <div className='error-line'>Required*</div>}
             </Col>
             <Col md={2} className='py-1'>

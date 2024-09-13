@@ -15,14 +15,19 @@ const SeJob = ({id, type}) => {
 
   const companyId = useSelector((state) => state.company.value);
   const [ state, dispatch ] = useReducer(recordsReducer, initialState);
-
   useEffect(() => {
     getData();
+
+
   }, [dataSuccess, isSuccess])
   
   const getData = async() => {
+
+
     // let tempPerms = await JSON.parse(Cookies.get('permissions'));
     if(dataSuccess && newdata) {
+      // state.fetched && console.log("state",state)
+      // console.log("dataSuccess && newdata",dataSuccess , newdata)
       dispatch({type:'set',
         payload:{
           fields:data.result,
