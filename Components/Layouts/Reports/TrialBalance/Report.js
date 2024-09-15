@@ -68,6 +68,7 @@ const Report = ({query, result}) => {
               type:'child',
               ...makeTransaction(y.Voucher_Heads)
             });
+            console.log(y.Voucher_Heads)
           })
         }
       })

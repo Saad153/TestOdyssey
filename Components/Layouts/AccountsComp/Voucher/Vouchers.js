@@ -325,9 +325,9 @@ const narration = (e) =>{
         <div className="mt-2"><b>Closing Balance</b></div>
         <div style={{ color: closing>0?'green':'red', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}><b>{commas(closing)}</b></div>
       </Col>
-      <Col md={4}>
-      <div className="d-flex justify-content-between my-3">
-        <button type="button" className="btn-custom fs-11 px-4" 
+      <Col md={1}  style={{ marginLeft: 'auto' }}>
+      <div className="d-flex flex-column">
+      <button type="button" className="btn-custom fs-11 px-4 my-1" style={{ minWidth: '100px', maxWidth: '100px' }}
           onClick={async () => {
             queryClient.removeQueries(['voucherData', { id: 'new' }]);
             await Router.push("/accounts/vouchers/new")
@@ -336,30 +336,68 @@ const narration = (e) =>{
         >
           <b>+</b> New
         </button>
-        {id !== "new" && <button type="button" className="btn-red mb-3 fs-11 mx-2" 
+        {id !== "new" && <div type="button">
+          <ReactToPrint
+            content={() => inputRef}
+            trigger={() => (
+              <div className="btn-custom fs-11 px-4 my-1 mx-0 d-flex" style={{ minWidth: '100px', maxWidth: '100px'}}><FaPrint/> Print</div>
+            )}
+          />
+        </div>}
+        {id !== "new" && <button type="button" style={{ minWidth: '100px', maxWidth: '100px'}} className="btn-custom fs-11 px-4 my-1 d-flex" onClick={()=>setIsOpen(true)}> <FaHistory/> History</button>}
+        {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+          <button type="button" style={{ minWidth: '100px', whiteSpace: 'nowrap', maxWidth: '100px' }} className="btn-custom fs-11 px-4 my-1 d-flex" onClick={()=>Router.push("/accounts/voucherList")}> 
+            <CiBoxList/> Show old
+          </button>
+          {id !== "new" && <button type="button" className="btn-red fs-11 px-4 my-1 w-100" style={{ minWidth: '100px', maxWidth: '100px' }}
           onClick={() => {handleDelete()}}
         >
           <MdDeleteOutline className="pr-b2" /> Delete
         </button>}
+          
+      </div>
+          {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+      {/* <Row>
+        <button type="button" className="btn-custom fs-11 px-4 my-1" 
+          onClick={async () => {
+            queryClient.removeQueries(['voucherData', { id: 'new' }]);
+            await Router.push("/accounts/vouchers/new")
+            dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": "new" }))
+          } }
+        >
+          <b>+</b> New
+        </button>
+      </Row> */}
+      {/* <Row>
+
+        {id !== "new" && <button type="button" className="btn-red fs-11 px-4 my-1 w-100" 
+          onClick={() => {handleDelete()}}
+        >
+          <MdDeleteOutline className="pr-b2" /> Delete
+        </button>}
+      </Row> */}
+      {/* <Row>
+
         {id !== "new" && <button type="button">
-          {/* //print button  */}
           <ReactToPrint
             content={() => inputRef}
             trigger={() => (
-              <div className="btn-custom px-4"><FaPrint/> Print</div>
+              <div className="div-btn fs-11 px-4 my-1 w-1000"><FaPrint/> Print</div>
             )}
           />
         </button>}
-  
-        {/* voucher history modal toggle states  */}
-        {id !== "new" && <button type="button" className="btn-custom fs-11 px-4" onClick={()=>setIsOpen(true)}> <FaHistory/> History</button>}
-        {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
-        <button type="button" className="btn-custom fs-11 px-4" onClick={()=>Router.push("/accounts/voucherList")}> 
-          <CiBoxList/> Show old
-        </button>
-        
-        {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
-        </div>
+      </Row> */}
+      {/* <Row>
+        {id !== "new" && <button type="button" className="btn-custom fs-11 px-4 my-1" onClick={()=>setIsOpen(true)}> <FaHistory/> History</button>}
+      </Row> */}
+        {/* <Row>
+          {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+          <button type="button" className="btn-custom fs-11 px-4 my-1" onClick={()=>Router.push("/accounts/voucherList")}> 
+            <CiBoxList/> Show old
+          </button>
+          
+          {isOpen && <VoucherHistory id={id} isOpen={isOpen} onClose={()=>setIsOpen(false)}/>}
+        </Row> */}
       </Col>
 
     </Row>
