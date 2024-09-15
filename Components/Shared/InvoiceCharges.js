@@ -611,11 +611,14 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
           </div>
         }
         {/* Printing Component */}
+        
         <div
           style={{
             display: "none"
           }}
         >
+          <Row>
+            <Col>
           <div ref={(response) => (inputRef = response)}>
             {invoice && companyId !== "2" ?
               <InvoicePrint
@@ -641,10 +644,13 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
               {" "}
               {invoice.total==invoice.recieved?commas((parseFloat(invoice?.total) + parseFloat(invoice?.roundOff)).toFixed(2)):commas((parseFloat(invoice?.recieved)).toFixed(2))}
             </span>
+            </div>
           </Col>
         </Row>
+        
       </div>
-      }
+      
+      
       {/* Printing Component */}
       <div 
         style={{

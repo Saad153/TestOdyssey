@@ -6,6 +6,8 @@ import { useEffect, useState } from "react";
 
 const upload_CoA = () => {
 
+    const [invoicesData, setInvoices] = useState([]);
+
     const [partiesAccounts1, setPartiesAccounts] = useState({
         "Clients": [],
         "Vendors": [],
@@ -733,7 +735,7 @@ const upload_CoA = () => {
                     type: "credit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: parseInt(x.ChildAccountId)
+                    ChildAccountId: x.ChildAccountId
                 });
             }
 
@@ -744,7 +746,7 @@ const upload_CoA = () => {
                     type: "debit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: parseInt(x.ChildAccountId)
+                    ChildAccountId: x.ChildAccountId
                 });
             }
             let voucher = {
@@ -795,6 +797,7 @@ const upload_CoA = () => {
     }
 
     const handleInvoices = async (data, fileInfo) => {
+        let invoices = []
         console.log(data)
         let agentInvoices  = false
         data[0].agent_name?agentInvoices = true:agentInvoices = false
@@ -809,6 +812,9 @@ const upload_CoA = () => {
         console.log(vendors)
         // console.log(removeBracketedPart(data[0].party))
         let lastValue = 0
+        let counter1 = 0
+        let counter2 = 0
+        let counter3 = 0
         !agentInvoices?data.forEach((x, i)=>{
             counter = (((i+1)/data.length)*100).toFixed(2)
             
@@ -824,6 +830,7 @@ const upload_CoA = () => {
                     party_id = a.id
                     party_name = a.name
                     matched = true
+                    counter3++
                 }
             })
             vendors.forEach((a)=>{
@@ -831,6 +838,7 @@ const upload_CoA = () => {
                     party_id = a.id
                     party_name = a.name
                     matched = true
+                    counter3++
                 }
             })
             !matched?count++:null
@@ -839,18 +847,19 @@ const upload_CoA = () => {
             let companyID = "0"
             if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
                 companyID = "3"
+                counter1++
             }
             if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
                 companyID = "1"
+                counter2++
             }
-            if(x.invoice___bill_date){
-                let temp =  parseDateString(x.invoice___bill_date)
+            if(x.invoice_bill_date){
+                let temp =  parseDateString(x.invoice_bill_date)
                 const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                x.invoice___bill_date = isoString
+                x.invoice_bill_date = isoString
             }
             let invoice = {}
-            
-            companyID!="0"?invoice = {
+            invoice = {
                 invoice_No: x.invoice___bill_+"-O",
                 type: "Old Job Invoice",
                 payType: x.payable!=0?"Payble":"Receivable",
@@ -866,16 +875,15 @@ const upload_CoA = () => {
                 total: x.payable!=0?x.payable.toString():x.receivable.toString(),
                 approved: "1",
                 companyId: companyID,
-                createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-            }:null
+                createdAt: x.invoice_bill_date?x.invoice_bill_date:null
+            }
             if(x.job__ == "Advance"){
-                console.log("Advance")
-                console.log(x.invoice___bill_date)
+                // console.log(x.invoice___bill_date)
                 invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
                 invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
             }
-            companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
-            !matched?invoicewoAcc.push(x):null
+            invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+            invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
         }):null
         if(agentInvoices){
             console.log(vendors)
@@ -889,6 +897,7 @@ const upload_CoA = () => {
                         party_id = a.id
                         party_name = a.name
                         matched = true
+                        counter3++
                     }
                 })
                 vendors.forEach((y)=>{
@@ -896,6 +905,7 @@ const upload_CoA = () => {
                         party_id = y.id
                         party_name = y.name
                         matched = true
+                        counter3++
                     }
                 })
                 if(x.agent_name && x.agent_name.includes("TRANSMODAL LOGISTICS")){
@@ -912,9 +922,11 @@ const upload_CoA = () => {
                 let companyID = "0"
                 if(x.invoice_no && (x.invoice_no.slice(0, 3)=="SNS")){
                     companyID = "1"
+                    counter1++
                 }
                 if(x.invoice_no && (x.invoice_no.slice(0, 3)=="ACS")){
                     companyID = "3"
+                    counter2++
                 }
                 // !matched?console.log("no match", x.agent_name):null
                 let invoice = {}
@@ -929,9 +941,9 @@ const upload_CoA = () => {
                     party_Id: party_id,
                     party_Name: party_name,
                     paid: "0",
-                    recieved: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))-x.balance<0?((parseFloat(removeCommas(x.local_amount.toString()))-x.balance)*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))-x.balance).toString():"0",
+                    recieved: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance<0?((parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance)*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))-x.balance).toString():"0",
                     roundOff: "0",
-                    total: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))<0?((parseFloat(removeCommas(x.local_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))).toString():"0",
+                    total: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))<0?((parseFloat(removeCommas(x.invoice_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))).toString():"0",
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
@@ -942,8 +954,12 @@ const upload_CoA = () => {
                 !matched?invoicewoAcc.push(x):null
             }
         }
+        console.log(counter1)
+        console.log(counter2)
+        console.log(counter3)
         console.log(count)
         console.log(invoices)
+        setInvoices(invoices)
         console.log(invoicewoAcc)
     }
 
@@ -953,7 +969,7 @@ const upload_CoA = () => {
 
     const uploadInvoices = async() => {
         let count = 0
-        for(let x of invoices){
+        for(let x of invoicesData){
             count++
             if(count%1000 == 0){
                 console.log(count)
@@ -1169,8 +1185,6 @@ const upload_CoA = () => {
         "income": [],
         "Capital": []
     }
-
-    let invoices = []
 
     let invoicewoAcc = []
 

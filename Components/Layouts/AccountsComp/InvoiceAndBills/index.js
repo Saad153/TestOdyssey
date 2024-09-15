@@ -76,6 +76,7 @@ const InvoiceAndBills = ({invoiceData}) => {
           <Radio value={"Job Bill"}>Job Bill</Radio>
           <Radio value={"Agent Invoice"}>Agent Invoice</Radio>
           <Radio value={"Agent Bill"}>Agent Bill</Radio>
+          <Radio value={"Old Job Invoice"}>Old Job Invoice</Radio>
         </Radio.Group>
         </Col>
       </Row>
@@ -126,7 +127,7 @@ const InvoiceAndBills = ({invoiceData}) => {
                 <td>{index + 1}</td>
                 <td><span className='blue-txt fw-7'>{x.invoice_No}</span></td>
                 <td><span className='blue-txt fw-7'>{x.SE_Job?.jobNo}</span></td>
-                <td style={{maxWidth:250}}><span className='blue-txt'>{x.partyType.toUpperCase()}  </span></td>
+                <td style={{maxWidth:250}}><span className='blue-txt'>{x.partyType?x.partyType.toUpperCase():null}  </span></td>
                 <td><span className='blue-txt fw-7'>{x.party_Name}</span></td>
                 <td><span className='grey-txt'>{x.approved==1?"Approved":"Un-Approved"}    </span></td>
                 <td><span className='grey-txt'>{x.operation} </span></td>

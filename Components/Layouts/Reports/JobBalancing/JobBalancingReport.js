@@ -20,7 +20,7 @@ const JobBalancingReport = ({ result, query }) => {
   const [records, setRecords] = useState([]);
   const [username, setUserName] = useState("");
   const dispatch = useDispatch();
-  const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") : '0.0';
+  const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.0';
 
   const getTotal = (type, list) => {
     let values = 0.00;
@@ -92,7 +92,7 @@ const JobBalancingReport = ({ result, query }) => {
       
       y.Receivable = y.payType == "Receivable" ? commas(y.total) : "-";
       y.payble = y.payType != "Receivable" ? commas(y.total) : "-";
-      y.balanced = parseFloat(y.payType == "Receivable" ? y.recieved : y.paid);
+      y.balanced = parseFloat(y.payType == "Receivable" ? commas(y.recieved) : y.paid);
       y.finalBalance = y.payType != "Receivable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
       // <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.total : "-"}</td>
