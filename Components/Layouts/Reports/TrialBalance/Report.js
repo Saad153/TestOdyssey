@@ -33,13 +33,11 @@ const Report = ({query, result}) => {
       data.forEach((x)=>{
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
-          // transaction
           // console.log('transaction--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
             transactions.trDebit = parseFloat(x.amount):
             transactions.trCredit = parseFloat(x.amount)
         } else {
-          // opening
           // console.log('opening--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
             transactions.opDebit = parseFloat(x.amount):
@@ -56,11 +54,14 @@ const Report = ({query, result}) => {
     }
 
     useEffect(() => {
+      // console.log(result?.result)
       let temp = [];
       result?.result?.forEach((x)=>{
+        // console.log(x)
         if(x?.Child_Accounts?.length>0){
           temp.push({
-            title:x.title, type:'parent'
+            title:x.title, type:'parent',
+            ...makeParentTransactions(x.Child_Accounts)
           });
           x.Child_Accounts.forEach((y)=>{
             temp.push({
@@ -68,13 +69,41 @@ const Report = ({query, result}) => {
               type:'child',
               ...makeTransaction(y.Voucher_Heads)
             });
-            console.log(y.Voucher_Heads)
+            // console.log(makeTransaction(y.Voucher_Heads))
+            // console.log(y.Voucher_Heads)
           })
         }
       })
       makeTotal(temp)
       setRecords(temp)
     }, []);
+
+    const makeParentTransactions = (data) => {
+      console.log(data)
+      let transactions  = {
+        opDebit:0,
+        opCredit:0,
+        trDebit:0,
+        trCredit:0,
+        clDebit:0,
+        clCredit:0,
+      }
+      data.forEach((x)=>{
+        x.Voucher_Heads.forEach((y)=>{
+          const createdAtDate = moment(y.createdAt);
+        if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
+          y.type=="debit"?
+            transactions.trDebit = transactions.trDebit + parseFloat(y.amount):
+            transactions.trCredit = transactions.trCredit + parseFloat(y.amount)
+        } else {
+          y.type=="debit"?
+            transactions.opDebit = transactions.opDebit + parseFloat(y.amount):
+            transactions.opCredit = transactions.opCredit + parseFloat(y.amount)
+        }
+        })
+      })
+      return transactions
+    }
 
     const makeTotal = (data) => {
       let temp = {
@@ -121,7 +150,7 @@ const Report = ({query, result}) => {
     const indexOfFirst = indexOfLast - recordsPerPage;
     const currentRecords = records ? records.slice(indexOfFirst,indexOfLast) : [];
     const noOfPages = records ? Math.ceil(records.length / recordsPerPage) : 0 ;
-
+// console.log(records)
   const TableComponent = ({overFlow}) => {
     return (
       <div className="">
@@ -167,7 +196,11 @@ const Report = ({query, result}) => {
                   if(x.type=="parent"){
                     return(
                     <tr key={i}>
-                      <td colSpan={7}><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
                     </tr>
                     )
                   } else {
@@ -187,11 +220,16 @@ const Report = ({query, result}) => {
               {reportView =="6- Columns Simplified View"  && option =="showall" && <>
                 {                 
                 currentRecords.map((x, i) => {
-             
                   if(x.type=="parent"){
                     return(
                     <tr key={i}>
-                      <td colSpan={7}><b>{x.title}</b></td>
+                      <td><b>{x.title}</b></td>
+                      {reportView =="6- Columns Simplified View" && <td className="fs-12">{commas(x.opDebit)}</td> }
+                      {reportView =="6- Columns Simplified View" && <td className="fs-12">{commas(x.opCredit)}</td>}
+                      {reportView =="6- Columns Simplified View" &&<td className="fs-12">{commas(x.trDebit)}</td>}
+                      {reportView =="6- Columns Simplified View" &&<td className="fs-12">{commas(x.trCredit)}</td>}
+                      <td className="fs-12">{commas(x.clDebit)}</td>
+                      <td className="fs-12">{commas(x.clCredit)}</td>
                     </tr>
                     )
                   } else {
@@ -240,7 +278,7 @@ const Report = ({query, result}) => {
                 {                 
                 currentRecords.filter(x => x.clDebit !== 0 && x.clCredit !== 0)
                 .map((x, i) => {
-                  console.log("executed")
+                  // console.log("executed")
                   if(x.type=="parent"){
                     return(
                     <tr key={i}>
@@ -290,7 +328,7 @@ const Report = ({query, result}) => {
                 {
                   reportView =="Debitors List" && <>
                    {currentRecords.filter(x => x.clDebit !== 0).map((x, i) => {
-                    console.log("x",x)
+                    // console.log("x",x)
     if (x.type === "parent") {
         return (
             <tr key={i}>
