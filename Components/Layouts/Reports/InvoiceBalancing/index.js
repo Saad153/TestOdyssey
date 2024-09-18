@@ -17,7 +17,7 @@ const InvoiceBalaincing = () => {
   const [company, setCompany] = useState(4);
   const [overseasAgent, setOverseasAgent] = useState("");
   const [representator, setRepresentator] = useState("");
-  const [currency, setCurrency] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [reportType, setReportType] = useState("viewer");
   const [balance, setBalance] = useState("all");
   const [jobTypes, setJobTypes] = useState([]);
@@ -59,6 +59,10 @@ const InvoiceBalaincing = () => {
     }
   }, [filters])
 
+  useEffect(() => {
+    console.log(currency)
+  },[currency])
+
   const filterOption = (input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
   const plainOptions = [
@@ -69,6 +73,7 @@ const InvoiceBalaincing = () => {
   ];
 
   const handleSearch = async () => {
+    console.log(currency)
     Router.push({
         pathname: `/reports/invoiceBalancing/report`,
         query: {
@@ -191,7 +196,7 @@ const InvoiceBalaincing = () => {
           <Row>
             <Col md={4}>
               Currency
-              <Select defaultValue="" style={{ width: '100%', marginBottom: 5 }} size='small'
+              <Select defaultValue={currency} style={{ width: '100%', marginBottom: 5 }} size='small'
                 onChange={(e) => { setCurrency(e) }}
                 options={[
                   { value:"PKR", label:"PKR"},
