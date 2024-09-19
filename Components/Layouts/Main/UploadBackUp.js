@@ -33,10 +33,10 @@ const upload_CoA = () => {
         if(C && V){
             setCV(true)
         }
-        console.log(C)
-        console.log(V)
-        console.log(GL)
-        console.log(partiesAccounts)
+        //console.log(C)
+        //console.log(V)
+        //console.log(GL)
+        //console.log(partiesAccounts)
     }, [C, V, GL])
     
     const parserOptions = {
@@ -66,28 +66,28 @@ const upload_CoA = () => {
                         element.Child_Account = []
                         accountsList.Capital.push(element)
                         lastAccount = 'c'
-                        // console.log(lastAccount)
+                        //console.log(lastAccount)
                         lastAccountNo = accountsList.Capital.length-1
                         break;
                     case "3":
                         element.Child_Account = []
                         accountsList.Liability.push(element)
                         lastAccount = 'l'
-                        // console.log(lastAccount)
+                        //console.log(lastAccount)
                         lastAccountNo = accountsList.Liability.length-1
                         break;
                     case "4":
                         element.Child_Account = []
                         accountsList.income.push(element)
                         lastAccount = 'i'
-                        // console.log(lastAccount)
+                        //console.log(lastAccount)
                         lastAccountNo = accountsList.income.length-1
                         break;
                     case "5":
                         element.Child_Account = []
                         accountsList.Expense.push(element)
                         lastAccount = 'e'
-                        // console.log(lastAccount)
+                        //console.log(lastAccount)
                         lastAccountNo = accountsList.Expense.length-1
                         break;
                     default:
@@ -106,11 +106,11 @@ const upload_CoA = () => {
                         accountsList.Liability[lastAccountNo].Child_Account.push(element)
                         break;
                     case 'i':
-                        // console.log("Income "+lastAccount)
+                        //console.log("Income "+lastAccount)
                         accountsList.income[lastAccountNo].Child_Account.push(element)
                         break;
                     case 'e':
-                        // console.log("Expense "+lastAccount)
+                        //console.log("Expense "+lastAccount)
                         accountsList.Expense[lastAccountNo].Child_Account.push(element)
                         break;
                     default:
@@ -118,7 +118,7 @@ const upload_CoA = () => {
                 }
             }
         });
-        console.log(accountsList)
+        //console.log(accountsList)
     }
 
     const uploadData = async () => {
@@ -148,7 +148,7 @@ const upload_CoA = () => {
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
-                // console.log(result1.data.result.id);
+                //console.log(result1.data.result.id);
                 // if(result1.data.result.id == undefined){
                 //     break;
                 // }
@@ -166,7 +166,7 @@ const upload_CoA = () => {
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
-                // console.log(result1.data.result.id);
+                //console.log(result1.data.result.id);
                 // if(result1.data.result.id == undefined){
                 //     break;
                 // }
@@ -203,37 +203,37 @@ const upload_CoA = () => {
     }
 
     const uploadDataParties = async () => {
-        console.log(partiesAccounts1)
-        console.log(withAccounts1)
+        //console.log(partiesAccounts1)
+        //console.log(withAccounts1)
         let index = 0
         let parties = partiesAccounts1
         if(parties.Clients.length >0){
-            console.log("uploading clients")
+            //console.log("uploading clients")
             for(let element of parties.Clients){
                 delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_CLIENT, element)
                 partiesAccounts.Clients[index] = result.data.result
                 index++
             }
-            console.log("Clients",index)
+            //console.log("Clients",index)
         }
         index =0
         if(parties.Vendors.length >0){
-            console.log("uploading vendors")
+            //console.log("uploading vendors")
             for(let element of parties.Vendors){
                 delete element.childAccountId
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_ADD_VENDOR, element)
                 partiesAccounts.Vendors[index] = result.data.result
                 index++
             }
-            console.log("Vendors",index)
+            //console.log("Vendors",index)
         }
     }
 
     const uploadDataAssociations = async () => {
-        console.log(partiesAccounts1)
+        //console.log(partiesAccounts1)
         for(let element of partiesAccounts1.Clients){
-            console.log(element.childAccountId, element.account_name, element.name)
+            //console.log(element.childAccountId, element.account_name, element.name)
             if(element.childAccountId){
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CLIENT_ASSOCIATIONS, {
                     companyId: Cookies.get("companyId"),
@@ -243,7 +243,7 @@ const upload_CoA = () => {
             }
         }
         for(let element of partiesAccounts1.Vendors){
-            // console.log(element.childAccountId, element.account_name, element.name)
+            //console.log(element.childAccountId, element.account_name, element.name)
             if(element.childAccountId){
                 const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_VENDOR_ASSOCIATIONS, {
                     companyId: Cookies.get("companyId"),
@@ -255,8 +255,8 @@ const upload_CoA = () => {
     }
 
     const handleDataParties = async (data, fileInfo) => {
-        console.log(data)
-        console.log(fileInfo)
+        //console.log(data)
+        //console.log(fileInfo)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
                 id: 1
@@ -266,7 +266,7 @@ const upload_CoA = () => {
         let Acc = 0
         let PAcc = 0
         let CAcc = 0
-        console.log(accountsData)
+        //console.log(accountsData)
         data.forEach((x, i)=>{
             let namematched = false
             accountsData.forEach((y)=>{
@@ -288,7 +288,7 @@ const upload_CoA = () => {
                                 withAccounts.push(x)
                                 namematched = true
                             }
-                            // console.log(x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S")
+                            //console.log(x.party_name.slice(0, x.party_name.indexOf(" ")-1) + x.party_name.slice(x.party_name.indexOf(" "))+"S")
                         }
                     })
                 })
@@ -296,7 +296,7 @@ const upload_CoA = () => {
             if(!namematched){
                 withoutAccounts.push(x)
             }
-            // console.log("Loop")
+            //console.log("Loop")
             if(fileInfo.name == "parties.csv"){
                 let party = {
                     code: x.party_code,
@@ -375,12 +375,12 @@ const upload_CoA = () => {
                         childAccountId: x.ChildAccountId
 
                 }
-                // console.log(party.types)
+                //console.log(party.types)
                 // if(party.types.includes("Air Line")){
-                //     console.log("Air Line", i)
+                //     //console.log("Air Line", i)
                 // }
                 if(!namematched && party.types.includes("Air Line")){
-                    console.log("No match=>", i, x.party_name)
+                    //console.log("No match=>", i, x.party_name)
                 }
                 if(party.types.includes("Shipper")||party.types.includes("Consignee")){
                     if(namematched){
@@ -428,7 +428,7 @@ const upload_CoA = () => {
             }
             if(fileInfo.name == 'clients.csv' || fileInfo.name == 'clientvendor.csv'){
                 setClients(true)
-                // console.log("Got client")
+                //console.log("Got client")
                 partiesAccounts.Clients.push(
                     {
                         code: x.party_code,
@@ -669,23 +669,23 @@ const upload_CoA = () => {
                     
                 )
             }
-            // console.log(x.party_name)
-            // console.log(accountsData[0].Parent_Accounts[0].Child_Accounts[0].name)
+            //console.log(x.party_name)
+            //console.log(accountsData[0].Parent_Accounts[0].Child_Accounts[0].name)
         })
-        // console.log(Acc,PAcc,CAcc)
+        //console.log(Acc,PAcc,CAcc)
 
-        console.log(partiesAccounts.Clients)
-        console.log(partiesAccounts.Vendors)
+        //console.log(partiesAccounts.Clients)
+        //console.log(partiesAccounts.Vendors)
         setPartiesAccounts(partiesAccounts)
-        console.log(withAccounts)
+        //console.log(withAccounts)
         setWithAccounts(withAccounts)
-        console.log(withoutAccounts)
+        //console.log(withoutAccounts)
 
     }
 
     const handleOpeningBalances = async (data, fileInfo) => {
-        console.log(data)
-        console.log(fileInfo)
+        //console.log(data)
+        //console.log(fileInfo)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
                 id: 1
@@ -693,6 +693,7 @@ const upload_CoA = () => {
         })
         let accountsData = accounts.data.result
         let couint = 0
+        let balances = []
         for(let x of data){
             let matched = false
             accountsData.forEach((y)=>{
@@ -759,11 +760,12 @@ const upload_CoA = () => {
                 payTo:"",
                 Voucher_Heads:Voucher_Heads
               }
+              matched?balances.push(voucher):null
             !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
             matched?await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher):null
             matched?couint++:null
         }
-        console.log(couint)
+        console.log(balances)
 
     }
 
@@ -778,39 +780,61 @@ const upload_CoA = () => {
     }
 
     function parseDateString(dateStr) {
-        // console.log(dateStr)
+        //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
             const [day, monthName, year] = dateStr.split('-');
+            //console.log(monthName, day, year)
+            // const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            // const month = monthNames.indexOf(monthName-1);
+            return new Date(year, monthName, day);
+        }else if(dateStr && dateStr.includes("/")){
+            const [monthName, day, year] = dateStr.split('/');
+            //console.log(dateStr)
+            //console.log(monthName, day, year)
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const month = monthNames.indexOf(monthName);
-            return new Date(year, month, day);
+            // const month = monthNames[monthName];
+            return new Date(year, monthName-1, day);
+        }
+      }
+
+      function parseDateString1(dateStr) {
+        //console.log(dateStr)
+        if(dateStr && dateStr.includes("-")){
+            const [day, monthName, year] = dateStr.split('-');
+            //console.log(monthName, day, year)
+            // const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            // const month = monthNames.indexOf(monthName-1);
+            return new Date(year, monthName, day);
         }else if(dateStr && dateStr.includes("/")){
             const [day, monthName, year] = dateStr.split('/');
+            //console.log(dateStr)
+            //console.log(monthName, day, year)
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            const month = monthNames.indexOf(monthName);
-            return new Date(year, month, day);
+            // const month = monthNames[monthName];
+            return new Date(year, monthName-1, day);
         }
       }
 
       function removeCommas(str) {
-        return str.replace(/,/g, '');
+        typeof str == 'string'?str = str.replace(/,/g, ''):str = str.toString().replace(/,/g, '')
+        return str;
     }
 
     const handleInvoices = async (data, fileInfo) => {
         let invoices = []
-        console.log(data)
+        //console.log(data)
         let agentInvoices  = false
         data[0].agent_name?agentInvoices = true:agentInvoices = false
-        console.log(agentInvoices)
+        //console.log(agentInvoices)
         let count = 0
         let counter  = 0
         const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
         const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
         let clients = client.data.result
         let vendors = vendor.data.result
-        console.log(clients)
-        console.log(vendors)
-        // console.log(removeBracketedPart(data[0].party))
+        //console.log(clients)
+        //console.log(vendors)
+        //console.log(removeBracketedPart(data[0].party))
         let lastValue = 0
         let counter1 = 0
         let counter2 = 0
@@ -821,7 +845,7 @@ const upload_CoA = () => {
             if(counter%10==0){
                 lastValue = counter%10
             }
-            i%1000==0?console.log(counter+"%"):null
+            // i%1000==0?console.log(counter+"%"):null
             let party_id = ""
             let party_name = ""
             let matched = false
@@ -853,10 +877,13 @@ const upload_CoA = () => {
                 companyID = "1"
                 counter2++
             }
-            if(x.invoice_bill_date){
-                let temp =  parseDateString(x.invoice_bill_date)
+            if(x.invoice___bill_date){
+                //console.log(x.invoice___bill_date)
+                let temp =  parseDateString1(x.invoice___bill_date)
+                //console.log(temp)
                 const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                x.invoice_bill_date = isoString
+                //console.log(isoString)
+                x.invoice___bill_date = isoString
             }
             let invoice = {}
             invoice = {
@@ -870,7 +897,7 @@ const upload_CoA = () => {
                 party_Id: party_id,
                 party_Name: party_name,
                 paid: "0",
-                recieved: x.balance?(x.receivable-(x.receivable-x.balance)).toString():"0",
+                recieved: x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString(),
                 roundOff: "0",
                 total: x.payable!=0?x.payable.toString():x.receivable.toString(),
                 approved: "1",
@@ -878,7 +905,7 @@ const upload_CoA = () => {
                 createdAt: x.invoice_bill_date?x.invoice_bill_date:null
             }
             if(x.job__ == "Advance"){
-                // console.log(x.invoice___bill_date)
+                //console.log(x.invoice___bill_date)
                 invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
                 invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
             }
@@ -886,8 +913,8 @@ const upload_CoA = () => {
             invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
         }):null
         if(agentInvoices){
-            console.log(vendors)
-            console.log(data)
+            //console.log(vendors)
+            //console.log(data)
             for(let x of data){
                 let party_id = ""
                 let party_name = ""
@@ -914,9 +941,11 @@ const upload_CoA = () => {
                     matched = true
                 }
                 if(x.invoice_date){
+                    //console.log(x.invoice_date)
                     let temp =  parseDateString(x.invoice_date.toString())
+                    //console.log(temp)
                     const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                    // console.log(isoString)
+                    //console.log(isoString)
                     x.invoice_date = isoString
                 }
                 let companyID = "0"
@@ -928,12 +957,12 @@ const upload_CoA = () => {
                     companyID = "3"
                     counter2++
                 }
-                // !matched?console.log("no match", x.agent_name):null
+                // !matched?//console.log("no match", x.agent_name):null
                 let invoice = {}
                 companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
-                    payType: x.local_amount?parseFloat(removeCommas(x.local_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
+                    payType: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
                     status: "1",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,
@@ -941,26 +970,26 @@ const upload_CoA = () => {
                     party_Id: party_id,
                     party_Name: party_name,
                     paid: "0",
-                    recieved: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance<0?((parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance)*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))-x.balance).toString():"0",
+                    recieved: removeCommas(x.balance)>=1?(removeCommas(x.invoice_amount)-removeCommas(x.balance)).toString():removeCommas(x.invoice_amount).toString(),
                     roundOff: "0",
-                    total: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))<0?((parseFloat(removeCommas(x.invoice_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.local_amount.toString()))).toString():"0",
+                    total: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))<0?((parseFloat(removeCommas(x.invoice_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.invoice_amount.toString()))).toString():"0",
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
                 companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
-                !matched?console.log("no match", x.agent_name):null
-                // !matched?console.log("no match", party_name):null
+                // !matched?console.log("no match", x.agent_name):null
+                // !matched?//console.log("no match", party_name):null
                 !matched?invoicewoAcc.push(x):null
             }
         }
-        console.log(counter1)
-        console.log(counter2)
-        console.log(counter3)
-        console.log(count)
-        console.log(invoices)
+        //console.log(counter1)
+        //console.log(counter2)
+        //console.log(counter3)
+        //console.log(count)
+        //console.log(invoices)
         setInvoices(invoices)
-        console.log(invoicewoAcc)
+        //console.log(invoicewoAcc)
     }
 
     function delay(ms) {
@@ -972,9 +1001,9 @@ const upload_CoA = () => {
         for(let x of invoicesData){
             count++
             if(count%1000 == 0){
-                console.log(count)
-                await delay(10000);
-                console.log("delay")
+                //console.log(count)
+                // await delay(10000);
+                //console.log("delay")
             }
             if(x.companyId != "1" || x.companyId != "3"){
                 await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
@@ -982,59 +1011,11 @@ const upload_CoA = () => {
         }
     }
 
-    const handleLedgerData = async(data, fileInfo) => {
-        console.log(data)
-        console.log(fileInfo)
-        let index = 0
-        let count = 0
-        let error = 0
-        let count1 = 0
-        let count2 = 0
-        let count3 = 0
-        let count4 = 0
-        let count5 = 0
-        data.forEach((x,i)=>{
-            if(x.voucher__ && x.voucher__.includes("AccountTitle")){
-                // console.log(x.voucher__.slice(0, 3))
-                let valueInBrackets = x.voucher__.slice(13, x.voucher__.length).match(/\((.*?)\)/)[1];
-                // console.log(valueInBrackets)
-                count++
-                index = i
-            }
-            if(i == index+1 && x.particular && !x.particular.includes("Opening")){
-                error++
-            }
-            if(x.particular && x.particular.includes("Opening")){
-                count1++
-            }
-
-            if(x.particular && (x.particular.includes("Receivable Against Job") || x.particular.includes("Payble Against Job"))){
-                count2++
-            }
-            if(x.particular && x.particular.includes('Received Cheque')){
-                count5++
-            }
-            if(x.particular && x.particular.includes("Inv")){
-                count4++
-            }
-            if(x.particular && x.particular.includes("INV")){
-                count3++
-            }
-        })
-        console.log("Number of Accounts=>",count)
-        console.log("Number of Errors=>",error)
-        console.log("Number of Opening balances=>",count1)
-        console.log("Number of Job Invoices=>",count2)
-        console.log("Number of Paid/Recieved Cheques=>",count5)
-        console.log("Number of Capital Invoices=>",count3)
-        console.log("Number of Small Invoices=>",count4)
-    }
-
     const [jobs, setJobs] = useState([])
 
     const handleJobData = async(data, fileInfo) => {
-        console.log(data)
-        console.log(fileInfo)
+        //console.log(data)
+        //console.log(fileInfo)
         let jobList = []
         let count = 0
         const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
@@ -1080,14 +1061,14 @@ const upload_CoA = () => {
                 }
             }
         }
-        console.log(SNS_AE)
-        console.log(SNS_AI)
-        console.log(SNS_SEJ)
-        console.log(SNS_SIJ)
-        console.log(ACS_AE)
-        console.log(ACS_AI)
-        console.log(ACS_SEJ)
-        console.log(ACS_SIJ)
+        //console.log(SNS_AE)
+        //console.log(SNS_AI)
+        //console.log(SNS_SEJ)
+        //console.log(SNS_SIJ)
+        //console.log(ACS_AE)
+        //console.log(ACS_AI)
+        //console.log(ACS_SEJ)
+        //console.log(ACS_SIJ)
         // for(let x of data){
         //     let clientId = ""
         //     let OAgentId = ""
@@ -1118,7 +1099,7 @@ const upload_CoA = () => {
         //             clientId = y.id
         //         }
         //         if(x.consignee && y.name.trim().toLowerCase() === x.consignee.trim().toLowerCase()){
-        //             console.log(index)
+        //             //console.log(index)
         //             count++
         //             ConsigneeId = y.id
         //         }
@@ -1165,15 +1146,15 @@ const upload_CoA = () => {
         //     index++
         // // }
         // setJobs(jobList)
-        // console.log(jobList)
-        // console.log("Count: ",count)
+        //console.log(jobList)
+        //console.log("Count: ",count)
     }
 
     const uploadJobs = async()=>{
-        console.log(jobs)
+        //console.log(jobs)
         for(let x of jobs){
             const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_SEAJOB, x)
-            console.log(result)
+            //console.log(result)
         }
     }
     

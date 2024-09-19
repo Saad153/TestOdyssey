@@ -95,6 +95,9 @@ const Report = ({query, result}) => {
           y.type=="debit"?
             transactions.trDebit = transactions.trDebit + parseFloat(y.amount):
             transactions.trCredit = transactions.trCredit + parseFloat(y.amount)
+          y.type=="debit"?
+            transactions.clDebit = transactions.clDebit + parseFloat(y.amount):
+            transactions.clCredit = transactions.clCredit + parseFloat(y.amount)
         } else {
           y.type=="debit"?
             transactions.opDebit = transactions.opDebit + parseFloat(y.amount):
@@ -128,7 +131,12 @@ const Report = ({query, result}) => {
     }
 
     const exportData = () => {
-      let temp = [...records];
+      let temp = records.filter((x)=>{
+        if(x.type!="parent"){
+          return x
+        }
+      })
+      // let temp = [...records];
       temp.push({title:'', ...total})
       exportExcelFile(
         temp,

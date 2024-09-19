@@ -78,9 +78,9 @@ const JobBalancingReport = ({ result, query }) => {
     let newArray = [...value.result];
     await newArray.forEach((y, i) => {
       y.no = i + 1;
-      y.balance = y.payType == "Receivable" ?
+      y.balance = y.total!="0"?y.payType == "Receivable" ?
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid));
+        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.balance)
       y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
       y.paid = (parseFloat(y.paid)) + parseFloat(y.roundOff)
       y.recieved = (parseFloat(y.recieved)) + parseFloat(y.roundOff)
@@ -92,7 +92,8 @@ const JobBalancingReport = ({ result, query }) => {
       
       y.Receivable = y.payType == "Receivable" ? commas(y.total) : "-";
       y.payble = y.payType != "Receivable" ? commas(y.total) : "-";
-      y.balanced = parseFloat(y.payType == "Receivable" ? commas(y.recieved) : y.paid);
+      y.balanced = y.payType == "Receivable" ? commas(y.recieved) : y.paid;
+      // console.log(y.balanced, y.recieved, commas(y.recieved))
       y.finalBalance = y.payType != "Receivable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
       // <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.total : "-"}</td>
@@ -101,9 +102,12 @@ const JobBalancingReport = ({ result, query }) => {
       // <td style={{ textAlign: 'right' }} >{x.payType != "Receivable" ? (${x.balance}) : x.balance}</td>
     })
     if(query.options!="showall"){
+      console.log(newArray)
       newArray = await newArray.filter((x)=>{
-        return x.balance>10
+        return x.balance!=0
       })
+      console.log(newArray)
+
     }
     setRecords(newArray);
     } else {}
@@ -182,7 +186,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td style={{ maxWidth: 10 }}>{i + 1}</td>
                   <td 
                     className="blue-txt"
-                    style={{ width: 90, cursor:"pointer"}} 
+                    style={{ width: 90, cursor:"pointer"}}
                     onClick={async ()=>{
                       await Router.push(`/reports/invoice/${x.id}`)
                       dispatch(incrementTab({ "label": "Invoice Details", "key": "2-11", "id":`${x.id}`}))
