@@ -24,36 +24,64 @@ const InvoiceBalancingReport = ({ result, query }) => {
 
   const getTotal = (type, list) => {
     let result = 0.00;
-    list.forEach((x) => {
-      if (type == x.payType) {
-        result = result + parseFloat(x.total)
-      }
-    })
+    if(query.balance=="exclude0"){
+      list.filter((x)=>x.balance!=0).forEach((x) => {
+        if (type == x.payType) {
+          result = result + parseFloat(x.total)
+        }
+      })
+    }else{
+      list.forEach((x) => {
+        if (type == x.payType) {
+          result = result + parseFloat(x.total)
+        }
+      })
+    }
+    // list.forEach((x) => {
+    //   if (type == x.payType) {
+    //     result = result + parseFloat(x.total)
+    //   }
+    // })
     return commas(result);
   }
 
   const paidReceivedTotal = (list) => {
+    console.log(list)
     let paid = 0.00, Received = 0.00, total = 0.00;
-    list.forEach((x) => {
-      if (x.payType == "Payble") {
-        paid = paid + parseFloat(x.paid)/parseFloat(x.ex_rate)
-      } else {
-        Received = Received + parseFloat(x.recieved)/parseFloat(x.ex_rate)
-      }
-    })
+    if(query.balance=="exclude0"){
+      list.filter((x)=>x.balance!=0).forEach((x) => {
+        if (x.payType != "Payble") {
+          paid = paid + parseFloat(x.paid)
+        } else {
+          Received = Received + parseFloat(x.recieved)
+        }
+      })
+    }else{
+      list.forEach((x) => {
+        if (x.payType != "Payble") {
+          paid = paid + parseFloat(x.paid)
+        } else {
+          Received = Received + parseFloat(x.recieved)
+        }
+      })
+    }
     total = Received - paid
     return total > 0 ? commas(total) : `(${commas(total * -1)})`;
   }
 
   const balanceTotal = (list) => {
     let balance = 0.00;
-    list.forEach((x) => {
-      if (x.payType == "Payble") {
-        balance = balance - parseFloat(x.balance)
-      } else {
-        balance = balance + parseFloat(x.balance)
-      }
-    })
+    if(query.balance=="exclude0"){
+      list.filter((x)=>x.balance!=0).forEach((x) => {
+        console.log(x.balance)
+        balance = balance + x.balance
+      })
+    }else{
+      list.forEach((x) => {
+        balance = balance + x.balance
+      })
+    }
+    console.log(balance)
     return balance > 0 ? commas(balance) : `(${commas(balance * -1)})`;
   }
 
@@ -65,6 +93,8 @@ const InvoiceBalancingReport = ({ result, query }) => {
   }
 
   useEffect(() => {
+    //console.log(result)
+    console.log("Query",query)
     getValues(result);
     getUserName();
     async function getUserName() {
@@ -77,15 +107,25 @@ const InvoiceBalancingReport = ({ result, query }) => {
     if (value.status == "success") {
       let newArray = [...value.result];
       newArray.forEach((x) => {
-        console.log(x)
+        //console.log(x)
         let invAmount = 0;
-        invAmount = parseFloat(x.total) / parseFloat(x.ex_rate);
+        query.currency == "PKR"? invAmount = parseFloat(x.total) * parseFloat(x.ex_rate):invAmount = parseFloat(x.total);
+        // invAmount = parseFloat(x.total) * parseFloat(x.ex_rate);
+        x.currency = query.currency
         x.total = invAmount;
         x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
-        x.debit = x.payType == "Recievable" ? invAmount : 0
-        x.credit = x.payType != "Recievable" ? invAmount : 0
-        x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved)/parseFloat(x.ex_rate) : parseFloat(x.paid)/parseFloat(x.ex_rate);
-        console.log(x.payType == "Recievable" ? (x.recieved):parseFloat(x.paid))
+        x.debit = x.payType == "Receivable" ? invAmount : 0
+        x.credit = x.payType != "Receivable" ? invAmount : 0
+        if(query.currency == "PKR"){
+          if(x.payType != "Receivable"){
+            x.paidRec = parseFloat(x.recieved)*parseFloat(x.ex_rate);
+          }else{
+            x.paidRec = parseFloat(x.paid)*parseFloat(x.ex_rate);
+          }
+        }else{
+          x.paidRec = x.payType!="Receivable"?parseFloat(x.recieved):parseFloat(x.paid);
+        }
+        //console.log(parseFloat(x.recieved), parseFloat(x.ex_rate), x.paidRec, parseFloat(x.recieved))
         x.balance = invAmount - x.paidRec
         x.age = getAge(x.createdAt);
       })
@@ -181,7 +221,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                     )})}
                     <tr>
                       <td colSpan={9} style={{ textAlign: 'right' }}><b>Total</b></td>
-                      <td style={{ textAlign: 'right' }}>{getTotal("Recievable", records)}</td>
+                      <td style={{ textAlign: 'right' }}>{getTotal("Receivable", records)}</td>
                       <td style={{ textAlign: 'right' }}>{getTotal("Payble", records)}</td>
                       <td style={{ textAlign: 'right' }}>{paidReceivedTotal(records)}</td>
                       <td style={{ textAlign: 'right' }}>{balanceTotal(records)}</td>
