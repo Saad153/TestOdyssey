@@ -180,7 +180,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const searchParties = async () => {
     if (state.search.length > 2) {
       setShowTable(false); // Hide table and pagination
-      console.log(state.partyType)
+      // console.log(state.partyType)
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
         { search: state.search, type: state.partytype }
       ).then((x) => {
@@ -194,7 +194,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           setAll({ partyOptions: [] });
         }
       });
-      console.log(state.partyOptions)
+      // console.log(state.partyOptions)
     } else {
       setShowTable(true); // Show table and pagination if search is cleared
     }
@@ -344,10 +344,10 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                 value = "Receivable";
                 TempInvoiceCurrency = "PKR"
               } else if (e.target.value == "agent") {
-                value = "Payable";
+                value = "Payble";
                 TempInvoiceCurrency = "USD"
               }
-              console.log(e.target.value)
+              // console.log(e.target.value)
               setAll({
                 selectedParty: { id: "", name: "" }, partytype: e.target.value,
                 search: "", payType: value, invoiceCurrency: TempInvoiceCurrency

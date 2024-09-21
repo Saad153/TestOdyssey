@@ -21,6 +21,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
+    // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
   }, [state.selectedParty, state.payType]);  
   
   useEffect(() => { 
@@ -74,13 +75,13 @@ const BillComp = ({companyId, state, dispatch}) => {
         let tempAmount = (parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))).toFixed(2)
         let invoieLossValue = {}
         // console.log(x.receiving)
-        x.payType == 'Recievable'?
+        x.payType == 'Receivable'?
           debitReceiving = debitReceiving + parseFloat(x.receiving):
           creditReceiving = creditReceiving + parseFloat(x.receiving)
         invoieLossValue = {
           amount:x.receiving,
           InvoiceId:x.id,
-          gainLoss: x.payType =="Recievable"?
+          gainLoss: x.payType =="Receivable"?
             parseFloat(tempAmount)==0?
               0:parseFloat(tempAmount)*(-1)
             :
@@ -272,7 +273,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           transTwo.push({
             particular:state.partyAccountRecord,
             tran:{
-              type:payType=="Recievable"?'credit':'debit',
+              type:payType=="Receivable"?'credit':'debit',
               amount:parseFloat(partyAmount).toFixed(2),
               defaultAmount:(parseFloat(partyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
@@ -282,7 +283,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           transTwo.push({
             particular:state.payAccountRecord,  
             tran:{ 
-              type:payType=="Recievable"?'debit':'credit',// <-Checks the account type to make Debit or Credit
+              type:payType=="Receivable"?'debit':'credit',// <-Checks the account type to make Debit or Credit
               amount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount)).toFixed(2), 
               defaultAmount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate).toFixed(2),//-removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
@@ -438,8 +439,8 @@ const BillComp = ({companyId, state, dispatch}) => {
         <Col md={4} className="mt-3">
           <div className='grey-txt fs-14'>
             {/* 
-            {(state.gainLossAmount>0 && payType!="Recievable") && <span style={{color:'red'}}><b>Loss</b></span>}
-            {(state.gainLossAmount>0 && payType=="Recievable") && <span style={{color:'green'}}><b>Gain</b></span>}*/}
+            {(state.gainLossAmount>0 && payType!="Receivable") && <span style={{color:'red'}}><b>Loss</b></span>}
+            {(state.gainLossAmount>0 && payType=="Receivable") && <span style={{color:'green'}}><b>Gain</b></span>}*/}
             {state.gainLossAmount==0.00 && <br/>}
             {state.gainLossAmount>0 && <span style={{color:'green'}}><b>Gain</b></span>}
             {state.gainLossAmount<0 && <span style={{color:'red'}}><b>Loss</b></span>} 
@@ -495,14 +496,17 @@ const BillComp = ({companyId, state, dispatch}) => {
           <th>Ex.</th>
           <th>Type</th>
           <th>Amount </th>
-          <th>{state.payType=="Recievable"? 'Receiving Amount':'Paying Amount'}</th>
+          <th>{state.payType=="Receivable"? 'Receiving Amount':'Paying Amount'}</th>
           <th>Balance</th>
           <th className='text-center'>-</th>
           <th>Container</th>
           </tr>
         </thead>
         <tbody>
+          
+
         {state.invoices.map((x, index) => {
+          // {console.log(x)}
         return (
         <tr key={index} className={`f fs-12 ${state.edit?'grey-row':''}`}>
           <td style={{width:30}}>{index + 1}</td>
@@ -551,6 +555,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               }}
             />
           </td>
+          {console.log(x.remBalance, x.receiving)}
           <td className='px-1' style={{width:300}}> {commas(x.remBalance - x.receiving)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
@@ -559,7 +564,8 @@ const BillComp = ({companyId, state, dispatch}) => {
               onChange={() => {
                 let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;
-                if(state.payType=="Recievable"){
+                if(state.payType=="Receivable"){
+                  // console.log(">>>", x.Invoice_Transactions[0].amount)
                   tempState[index].receiving = tempState[index].check?
                   (
                     // parseFloat(x.inVbalance) - parseFloat(x.recieved) + 
@@ -568,8 +574,11 @@ const BillComp = ({companyId, state, dispatch}) => {
                   ):
                   0.00
                 } else {
+                  // console.log(">>>", x.Invoice_Transactions[0].amount)
+
                   tempState[index].receiving = tempState[index].check?
                   (
+                    
                     // parseFloat(x.inVbalance) -parseFloat(x.paid) + 
                     parseFloat(x.remBalance) + 
                     parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 

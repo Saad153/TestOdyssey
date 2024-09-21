@@ -125,7 +125,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
         }else{
           x.paidRec = x.payType!="Receivable"?parseFloat(x.recieved):parseFloat(x.paid);
         }
-        //console.log(parseFloat(x.recieved), parseFloat(x.ex_rate), x.paidRec, parseFloat(x.recieved))
+        console.log(parseFloat(x.recieved), parseFloat(x.ex_rate), x.paidRec, parseFloat(x.recieved))
         x.balance = invAmount - x.paidRec
         x.age = getAge(x.createdAt);
       })

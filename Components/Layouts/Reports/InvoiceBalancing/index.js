@@ -43,7 +43,14 @@ const InvoiceBalaincing = () => {
   const filters = filterValues.find(page => page.pageName === "AgentInvoiceBalancing");
   const value = filters ? filters.values : null
 
-  useEffect(() => { if (status == "success") setValues(data.result) }, [status]);
+  useEffect(() => { if (status == "success") {
+
+    setValues(data.result) 
+  }else{
+    console.log("error")
+  }
+
+  }, [status]);
   useEffect(() => {
     if (filters) {
       setFrom(value.from),
@@ -59,9 +66,6 @@ const InvoiceBalaincing = () => {
     }
   }, [filters])
 
-  useEffect(() => {
-    console.log(currency)
-  },[currency])
 
   const filterOption = (input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 

@@ -67,8 +67,9 @@ const Ledger = () => {
   }
 
   async function getLedger(){
-    console.log("getLedger Ran")
+    // console.log("getLedger Ran")
     try{
+      console.log(currency)
       const result = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER, {
         headers: {
           companyid: company,
@@ -78,7 +79,7 @@ const Ledger = () => {
           to: to,
         }
       });
-      console.log(result)
+      // console.log(result.data)
       return result.data.result
     }catch(e){
       console.error(e)
@@ -152,6 +153,7 @@ const Ledger = () => {
             <Radio value={"AED"}>AED</Radio>
             <Radio value={"OMR"}>OMR</Radio>
             <Radio value={"BDT"}>BDT</Radio>
+            <Radio value={""}>ALL</Radio>
         </Radio.Group>
       </Col>
       <Col md={6}>
@@ -167,24 +169,21 @@ const Ledger = () => {
           filterSort={(optionA, optionB) => (optionA?.label ?? "").toLowerCase().localeCompare((optionB?.label ?? "").toLowerCase())}
         />
       </Col>
-      <Col md={12}>
+      <Col md={12} className='d-flex'>
         <button className='btn-custom mt-3' onClick={async () => {
           let count = await getLedger();
-          console.log(count)
           if(count>0){
             if (account != "" && account != null) {
-              console.log("if")
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,
-                query: {from: from, to: to, name: name, company: company, currency: currency }
+                query: {from: from, to: to, name: name, company: company, currency: currency, old: false }
               });
               dispatch(incrementTab({
                 "label": "Ledger Report",
                 "key": "5-7",
-                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
+                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}&old=${false}`
               }))
             }
             else{
-              console.log("else")
               Router.push({
                 pathname: `/reports/ledgerReport/undefined/`,  
                 query: { from: from, to: to, name: name, company: company, currency: currency }
@@ -210,6 +209,45 @@ const Ledger = () => {
           }
         }
         }> Go </button>
+        <button className='btn-custom mt-3 mx-2' onClick={async () => {
+          let count = await getLedger();
+          if(count>0){
+            if (account != "" && account != null) {
+              Router.push({ pathname: `/reports/ledgerReport/${account}/`,
+                query: {from: from, to: to, name: name, company: company, currency: currency, old: true }
+              });
+              dispatch(incrementTab({
+                "label": "Ledger Report",
+                "key": "5-7",
+                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}&old=${true}`
+              }))
+            }
+            else{
+              Router.push({
+                pathname: `/reports/ledgerReport/undefined/`,  
+                query: { from: from, to: to, name: name, company: company, currency: currency }
+              });
+              dispatch(incrementTab({
+                "label": "Ledger Report",
+                "key": "5-7",
+                "id": `from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
+              }));
+              
+            }
+          }
+          else{
+            let message = "No records found in "+ name;
+            notification.open({
+              message: "No Records Found",
+              description: message,
+              icon: <ExclamationCircleOutlined style={{ color: 'orange' }} />,
+              onClick: () => {
+                console.log('Notification Clicked!');
+              },
+            });
+          }
+        }
+        }>Show Old</button>
       </Col>
     </Row>
   </div>

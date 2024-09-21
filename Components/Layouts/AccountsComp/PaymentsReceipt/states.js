@@ -58,8 +58,8 @@ const initialState = {
   tranVisible:false,
   search:"",
   selectedParty:{id:'', name:''},
-  payType:'Recievable',
-  payTypeByDifference:'Recievable',
+  payType:'Receivable',
+  payTypeByDifference:'Receivable',
   partyType:'client',
   invoiceCurrency:'PKR',
   partyOptions:[],
@@ -148,6 +148,7 @@ const getInvoices = async(state, companyId, dispatch) => {
       invoiceCurrency:state.invoiceCurrency} }
   ).then(async(x)=> {
     let temp = x.data.result;
+    // console.log(temp)
     let accountData = {};
     if(x.data.status=="success" && x.data.account!=null){
       x.data.account.forEach((z)=>{
@@ -157,13 +158,18 @@ const getInvoices = async(state, companyId, dispatch) => {
       })
       
       temp = temp.map((y, index)=>{
-        let tempRemBalance = state.partytype=="agent"?
-        (state.payType=="Recievable"?
-          (parseFloat(y.total)/parseFloat(y.ex_rate) - (parseFloat(y.recieved==null?0:y.recieved)/parseFloat(y.ex_rate)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
-          (parseFloat(y.total)/parseFloat(y.ex_rate) - (parseFloat(y.paid==null?0:y.paid)/parseFloat(y.ex_rate)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2)):
-        (state.payType=="Recievable"?
-          (parseFloat(y.total) - parseFloat(y.recieved==null?0:y.recieved) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
-          (parseFloat(y.total) - parseFloat(y.paid==null?0:y.paid) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
+        console.log(state.payType)
+        // console.log(y.SE_Job)
+        console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
+        let tempRemBalance =state.payType != "Receivable"?parseFloat(y.total)-parseFloat(y.recieved):parseFloat(y.total)-parseFloat(y.paid)
+        // let tempRemBalance =
+        // (state.payType=="Receivable"?
+        //   (parseFloat(y.total) - (parseFloat(y.recieved==null?0:y.recieved)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
+        //   (parseFloat(y.total) - (parseFloat(y.paid==null?0:y.paid)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
+        // (state.payType=="Receivable"?
+        //   (parseFloat(y.total) - parseFloat(y.recieved==null?0:y.recieved) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
+        //   (parseFloat(y.total) - parseFloat(y.paid==null?0:y.paid) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
+        console.log(tempRemBalance)
         return{
           ...y,
           check:false,
@@ -172,8 +178,9 @@ const getInvoices = async(state, companyId, dispatch) => {
           ex_rate:state.partytype=="agent"?y.ex_rate:1.00,
           receiving:state.edit? y.Invoice_Transactions[0].amount:0.00,
           //inVbalance:(parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
-          inVbalance:state.partytype=="agent"?
-            ((parseFloat(y.total) / parseFloat(y.ex_rate)) + parseFloat(y.roundOff)).toFixed(2):
+          inVbalance:
+          // state.partytype=="agent"
+            // ((parseFloat(y.total) * parseFloat(y.ex_rate)) + parseFloat(y.roundOff)).toFixed(2):
             (parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
           remBalance:tempRemBalance=='0'?
             0:
@@ -182,6 +189,15 @@ const getInvoices = async(state, companyId, dispatch) => {
         }
       });
     }
+    console.log(temp)
+    if(temp.length>1){
+      let temp1 = temp.filter((x) => {
+        return parseInt(x.total) != parseInt(x.recieved);
+      });
+      temp = temp1
+    }
+    // console.log(temp1)
+    // console.log(temp)
     dispatch({
     type:"setAll", 
     

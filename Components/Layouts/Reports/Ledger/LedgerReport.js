@@ -23,13 +23,13 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
         ) {
           closingBalance =
             y.type === "debit" ? 
-              closingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
-              closingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
+              closingBalance + (currency!="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
+              closingBalance - (currency!="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
           if (y["Voucher.vType"] === "OP") {
             openingBalance =
               y.type === "debit" ? 
-                openingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
-                openingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
+                openingBalance + (currency!="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
+                openingBalance - (currency!="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
             finalClosing = closingBalance
           } else {
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
@@ -37,7 +37,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
               date: y.createdAt,
               voucherType: y["Voucher.type"],
               voucherId: y["Voucher.id"],
-              amount: currency=="PKR"? parseFloat(y.amount) :parseFloat(y.amount) / exRate,
+              amount: currency!="PKR"? parseFloat(y.amount) :parseFloat(y.amount) * exRate,
               balance: tempBalance,
               voucher: y["Voucher.voucher_Id"],
               type: y.type,
@@ -48,7 +48,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
           }
           
         } else {
-          openingBalance = y.type === "debit" ? openingBalance + parseFloat(y.amount) / exRate : openingBalance - parseFloat(y.amount) / exRate;
+          openingBalance = y.type === "debit" ? openingBalance + parseFloat(y.amount) * exRate : openingBalance - parseFloat(y.amount) * exRate;
           prevBalance = isDone?prevBalance:openingBalance;
         }
       });

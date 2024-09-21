@@ -47,7 +47,9 @@ const JobBalancingReport = ({ result, query }) => {
 
   const balanceTotal = (list) => {
     let balance = 0.00;
+    console.log(list)
     list.forEach((x) => {
+      console.log(balance, x.balance)
       if (x.payType == "Payble") {
         balance = balance - parseFloat(x.balance)
       } else {
@@ -80,7 +82,7 @@ const JobBalancingReport = ({ result, query }) => {
       y.no = i + 1;
       y.balance = y.total!="0"?y.payType == "Receivable" ?
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.balance)
+        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
       y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
       y.paid = (parseFloat(y.paid)) + parseFloat(y.roundOff)
       y.recieved = (parseFloat(y.recieved)) + parseFloat(y.roundOff)
@@ -93,7 +95,7 @@ const JobBalancingReport = ({ result, query }) => {
       y.Receivable = y.payType == "Receivable" ? commas(y.total) : "-";
       y.payble = y.payType != "Receivable" ? commas(y.total) : "-";
       y.balanced = y.payType == "Receivable" ? commas(y.recieved) : y.paid;
-      // console.log(y.balanced, y.recieved, commas(y.recieved))
+      console.log(y.balanced, y.recieved, commas(y.recieved))
       y.finalBalance = y.payType != "Receivable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
       // <td style={{ textAlign: 'right' }} >{x.payType == "Receivable" ? x.total : "-"}</td>

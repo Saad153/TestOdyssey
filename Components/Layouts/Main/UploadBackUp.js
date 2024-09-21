@@ -685,7 +685,15 @@ const upload_CoA = () => {
 
     const handleOpeningBalances = async (data, fileInfo) => {
         //console.log(data)
-        //console.log(fileInfo)
+        console.log(fileInfo)
+        let currency = "PKR"
+        if(fileInfo.name.includes("USD")){
+            currency = "USD"
+        }
+        if(fileInfo.name.includes("Euro")){
+            currency = "EUR"
+        }
+        console.log(currency)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
                 id: 1
@@ -755,8 +763,8 @@ const upload_CoA = () => {
                 costCenter:"KHI",
                 type:"Opening Balance",
                 vType:"OP",
-                currency:"PKR",
-                exRate:"1.00",
+                currency:currency,
+                exRate:"0.00",
                 payTo:"",
                 Voucher_Heads:Voucher_Heads
               }
@@ -807,8 +815,8 @@ const upload_CoA = () => {
             return new Date(year, monthName, day);
         }else if(dateStr && dateStr.includes("/")){
             const [day, monthName, year] = dateStr.split('/');
-            //console.log(dateStr)
-            //console.log(monthName, day, year)
+            // console.log(dateStr)
+            // console.log(monthName, day, year)
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             // const month = monthNames[monthName];
             return new Date(year, monthName-1, day);
@@ -819,102 +827,144 @@ const upload_CoA = () => {
         typeof str == 'string'?str = str.replace(/,/g, ''):str = str.toString().replace(/,/g, '')
         return str;
     }
+    const [voucherList, setVoucherList] = useState([]);
 
     const handleInvoices = async (data, fileInfo) => {
         let invoices = []
-        //console.log(data)
+        console.log(data)
         let agentInvoices  = false
         data[0].agent_name?agentInvoices = true:agentInvoices = false
-        //console.log(agentInvoices)
         let count = 0
         let counter  = 0
         const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
         const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
         let clients = client.data.result
         let vendors = vendor.data.result
-        //console.log(clients)
-        //console.log(vendors)
-        //console.log(removeBracketedPart(data[0].party))
-        let lastValue = 0
-        let counter1 = 0
-        let counter2 = 0
-        let counter3 = 0
-        !agentInvoices?data.forEach((x, i)=>{
-            counter = (((i+1)/data.length)*100).toFixed(2)
-            
-            if(counter%10==0){
-                lastValue = counter%10
-            }
-            // i%1000==0?console.log(counter+"%"):null
-            let party_id = ""
-            let party_name = ""
-            let matched = false
-            clients.forEach((a)=>{
-                if(x.party && a.name.trim() == removeBracketedPart(x.party)){
-                    party_id = a.id
-                    party_name = a.name
-                    matched = true
-                    counter3++
+        let vouchers = []
+        let  i = 0
+        if(!agentInvoices){
+            for(let x of data){
+                let party_id = ""
+                let party_name = ""
+                let matched = false
+                clients.forEach((a)=>{
+                    if(x.party && a.name.trim() == removeBracketedPart(x.party)){
+                        party_id = a.id
+                        party_name = a.name
+                        matched = true
+                    }
+                })
+                !matched?vendors.forEach((a)=>{
+                    if(x.party && a.name.trim() == removeBracketedPart(x.party)){
+                        party_id = a.id
+                        party_name = a.name
+                        matched = true
+                    }
+                }):null
+                x.job_no?extractCode(x.job_no):""
+                let companyID = "0"
+                if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
+                    companyID = "3"
                 }
-            })
-            vendors.forEach((a)=>{
-                if(x.party && a.name.trim() == removeBracketedPart(x.party)){
-                    party_id = a.id
-                    party_name = a.name
-                    matched = true
-                    counter3++
+                if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
+                    companyID = "1"
                 }
-            })
-            !matched?count++:null
-            x.job_no?extractCode(x.job_no):""
-
-            let companyID = "0"
-            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
-                companyID = "3"
-                counter1++
+                if(x.invoice___bill_date){
+                    let temp =  parseDateString1(x.invoice___bill_date)
+                    const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                    x.invoice___bill_date = isoString
+                }
+                let invoice = {}
+                invoice = {
+                    invoice_No: x.invoice___bill_+"-O",
+                    type: "Old Job Invoice",
+                    payType: x.payable!=0?"Payble":"Receivable",
+                    status: "2",
+                    operation: x.op_code?x.op_code:null,
+                    currency: x.curr,
+                    ex_rate: x.curr=="PKR"?"1":"0",
+                    party_Id: party_id,
+                    party_Name: party_name,
+                    paid: x.payable!=0?x.balance>=1?(x.payable-x.balance).toString():x.payable.toString():"0",
+                    recieved: x.payable==0?x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString():"0",
+                    roundOff: "0",
+                    total: x.payable!=0?x.payable.toString():x.receivable.toString(),
+                    approved: "1",
+                    companyId: companyID,
+                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                }
+                let ChildAccountId = ""
+                let Voucher_Heads = [];
+                Voucher_Heads.push({
+                    defaultAmount: "-",
+                    amount: x.payable!=0?x.payable.toString():x.receivable.toString(),
+                    type: x.payable==0?"debit":"credit",
+                    narration: invoice.invoice_No,
+                    settlement: "",
+                    ChildAccountId: ChildAccountId,
+                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                });
+                invoice.recieved != "0"?
+                Voucher_Heads.push({
+                    defaultAmount: "-",
+                    amount: x.payable==0?x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString():x.balance>=1?(x.payable-x.balance).toString():x.payable.toString(),
+                    type: x.payable==0?"credit":"debit",
+                    narration: invoice.invoice_No,
+                    settlement: "",
+                    ChildAccountId: ChildAccountId,
+                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                }):null
+                let voucher = {
+                    CompanyId:Cookies.get("companyId"),
+                    costCenter:"KHI",
+                    type:"Opening Invoice",
+                    vType:x.payable!=0?"OB":"OI",
+                    currency:x.curr,
+                    exRate: x.exchange_rate?x.exchange_rate:"1.00",
+                    payTo:"",
+                    Voucher_Heads:Voucher_Heads
+                }
+                  
+                if(x.job__ == "Advance"){
+                    invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
+                    invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
+                    Voucher_Heads.push({
+                        defaultAmount: "-",
+                        amount: invoice.total,
+                        type: x.payable==0?"debit":"credit",
+                        narration: invoice.invoice_No,
+                        settlement: "",
+                        ChildAccountId: ChildAccountId,
+                        createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                    });
+                    invoice.recieved != "0"?
+                    Voucher_Heads.push({
+                        defaultAmount: "-",
+                        amount: invoice.recieved,
+                        type: x.payable==0?"credit":"debit",
+                        narration: invoice.invoice_No,
+                        settlement: "",
+                        ChildAccountId: ChildAccountId,
+                        createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                    }):null
+                    voucher = {
+                        CompanyId:Cookies.get("companyId"),
+                        costCenter:"KHI",
+                        type:"Opening Invoice",
+                        vType:x.payable!=0?"OB":"OI",
+                        currency:x.curr,
+                        exRate: x.exchange_rate?x.exchange_rate:"1.00",
+                        payTo:"",
+                        Voucher_Heads:Voucher_Heads
+                    }
+                }
+                vouchers.push(voucher)
+                invoice.voucher = voucher
+                invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+                invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
             }
-            if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
-                companyID = "1"
-                counter2++
-            }
-            if(x.invoice___bill_date){
-                //console.log(x.invoice___bill_date)
-                let temp =  parseDateString1(x.invoice___bill_date)
-                //console.log(temp)
-                const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                //console.log(isoString)
-                x.invoice___bill_date = isoString
-            }
-            let invoice = {}
-            invoice = {
-                invoice_No: x.invoice___bill_+"-O",
-                type: "Old Job Invoice",
-                payType: x.payable!=0?"Payble":"Receivable",
-                status: "1",
-                operation: x.op_code?x.op_code:null,
-                currency: x.curr,
-                ex_rate: x.curr=="PKR"?"1":"0",
-                party_Id: party_id,
-                party_Name: party_name,
-                paid: "0",
-                recieved: x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString(),
-                roundOff: "0",
-                total: x.payable!=0?x.payable.toString():x.receivable.toString(),
-                approved: "1",
-                companyId: companyID,
-                createdAt: x.invoice_bill_date?x.invoice_bill_date:null
-            }
-            if(x.job__ == "Advance"){
-                //console.log(x.invoice___bill_date)
-                invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
-                invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
-            }
-            invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
-            invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
-        }):null
+        }
         if(agentInvoices){
-            //console.log(vendors)
-            //console.log(data)
             for(let x of data){
                 let party_id = ""
                 let party_name = ""
@@ -924,7 +974,6 @@ const upload_CoA = () => {
                         party_id = a.id
                         party_name = a.name
                         matched = true
-                        counter3++
                     }
                 })
                 vendors.forEach((y)=>{
@@ -932,7 +981,6 @@ const upload_CoA = () => {
                         party_id = y.id
                         party_name = y.name
                         matched = true
-                        counter3++
                     }
                 })
                 if(x.agent_name && x.agent_name.includes("TRANSMODAL LOGISTICS")){
@@ -941,73 +989,83 @@ const upload_CoA = () => {
                     matched = true
                 }
                 if(x.invoice_date){
-                    //console.log(x.invoice_date)
                     let temp =  parseDateString(x.invoice_date.toString())
-                    //console.log(temp)
                     const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                    //console.log(isoString)
                     x.invoice_date = isoString
                 }
                 let companyID = "0"
                 if(x.invoice_no && (x.invoice_no.slice(0, 3)=="SNS")){
                     companyID = "1"
-                    counter1++
                 }
                 if(x.invoice_no && (x.invoice_no.slice(0, 3)=="ACS")){
                     companyID = "3"
-                    counter2++
                 }
-                // !matched?//console.log("no match", x.agent_name):null
                 let invoice = {}
                 companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
                     payType: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
-                    status: "1",
+                    status: "2",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,
                     ex_rate: x.currency=="PKR"?"1":x.exchange_rate,
                     party_Id: party_id,
                     party_Name: party_name,
                     paid: "0",
-                    recieved: removeCommas(x.balance)>=1?(removeCommas(x.invoice_amount)-removeCommas(x.balance)).toString():removeCommas(x.invoice_amount).toString(),
+                    recieved: removeCommas(x.rcvd___paid),
                     roundOff: "0",
                     total: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))<0?((parseFloat(removeCommas(x.invoice_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.invoice_amount.toString()))).toString():"0",
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
+                let ChildAccountId = ""
+            let Voucher_Heads = [];
+            Voucher_Heads.push({
+                defaultAmount: "-",
+                amount: x.invoice_amount?removeCommas(x.invoice_amount.toString()):"0.00",
+                type: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"debit":"credit":null,
+                narration: invoice.invoice_No,
+                settlement: "",
+                ChildAccountId: ChildAccountId
+            });
+            invoice.recieved != "0"?Voucher_Heads.push({
+                defaultAmount: "-",
+                amount: x.rcvd___paid?removeCommas(x.rcvd___paid.toString()):"0.00",
+                type: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"credit":"debit":null,
+                narration: invoice.invoice_No,
+                settlement: "",
+                ChildAccountId: ChildAccountId
+            }):null
+            console.log(x.currency)
+            let voucher = {
+                CompanyId:Cookies.get("companyId"),
+                costCenter:"KHI",
+                type:"Opening Invoice",
+                vType:"OI",
+                currency:x.currency,
+                exRate: x.exchange_rate?x.exchange_rate:"1.00",
+                payTo:"",
+                Voucher_Heads:Voucher_Heads
+              }
+              invoice.voucher = voucher
+              vouchers.push(voucher)
                 companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
-                // !matched?console.log("no match", x.agent_name):null
-                // !matched?//console.log("no match", party_name):null
                 !matched?invoicewoAcc.push(x):null
             }
-        }
-        //console.log(counter1)
-        //console.log(counter2)
-        //console.log(counter3)
-        //console.log(count)
-        //console.log(invoices)
-        setInvoices(invoices)
-        //console.log(invoicewoAcc)
-    }
 
-    function delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        setInvoices(invoices)
+        console.log(invoices)
+        
     }
 
     const uploadInvoices = async() => {
-        let count = 0
         for(let x of invoicesData){
-            count++
-            if(count%1000 == 0){
-                //console.log(count)
-                // await delay(10000);
-                //console.log("delay")
-            }
             if(x.companyId != "1" || x.companyId != "3"){
                 await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
             }
+            // break
         }
     }
 
