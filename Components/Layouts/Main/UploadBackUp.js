@@ -898,7 +898,7 @@ const upload_CoA = () => {
                 Voucher_Heads.push({
                     defaultAmount: "-",
                     amount: x.payable!=0?x.payable.toString():x.receivable.toString(),
-                    type: x.payable==0?"debit":"credit",
+                    type: invoice.payType=="Payble"?"credit":"debit",
                     narration: invoice.invoice_No,
                     settlement: "",
                     ChildAccountId: ChildAccountId,
@@ -908,7 +908,7 @@ const upload_CoA = () => {
                 Voucher_Heads.push({
                     defaultAmount: "-",
                     amount: x.payable==0?x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString():x.balance>=1?(x.payable-x.balance).toString():x.payable.toString(),
-                    type: x.payable==0?"credit":"debit",
+                    type: invoice.payType=="Payble"?"debit":"credit",
                     narration: invoice.invoice_No,
                     settlement: "",
                     ChildAccountId: ChildAccountId,
@@ -1004,7 +1004,7 @@ const upload_CoA = () => {
                 companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
-                    payType: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"Payble":"Receivable":null,
+                    payType: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance<0?"Payble":"Receivable":null,
                     status: "2",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,
@@ -1024,7 +1024,7 @@ const upload_CoA = () => {
             Voucher_Heads.push({
                 defaultAmount: "-",
                 amount: x.invoice_amount?removeCommas(x.invoice_amount.toString()):"0.00",
-                type: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"debit":"credit":null,
+                type: invoice.payType=="Payble"?"credit":"debit",
                 narration: invoice.invoice_No,
                 settlement: "",
                 ChildAccountId: ChildAccountId
@@ -1032,7 +1032,7 @@ const upload_CoA = () => {
             invoice.recieved != "0"?Voucher_Heads.push({
                 defaultAmount: "-",
                 amount: x.rcvd___paid?removeCommas(x.rcvd___paid.toString()):"0.00",
-                type: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance>0?"credit":"debit":null,
+                type: invoice.payType=="Payble"?"debit":"credit",
                 narration: invoice.invoice_No,
                 settlement: "",
                 ChildAccountId: ChildAccountId
