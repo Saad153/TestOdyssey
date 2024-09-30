@@ -42,13 +42,14 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       if (element.check) {
         console.log("2")
         console.log(element)
-        // element.check = false
+        element.check = false
         // element.new = true
         let tempCharge = { ...element }; 
         delete tempCharge.id
         element.description = element.id
         tempCharge.description = element.id
         tempCharge.new = true
+        // tempCharge.amount = tempCharge.amount * -1
         tempCharge.amount = '0'
         tempCharge.type = tempCharge.type === "Recievable" ? "Payble" : "Recievable";
         updatedChargeList.push(tempCharge);
@@ -178,6 +179,14 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     () => {
                         let tempState = [...chargeList];
                         let tempDeleteList = [...state.deleteList];
+                        if(x.description){
+                          tempState.forEach((y, i)=>{
+                            if(y.description == x.description){
+                              tempDeleteList.push(tempState[i].id)
+                              tempState.splice(i, 1);
+                            }
+                          })
+                        }
                         tempDeleteList.push(tempState[index].id);
                         tempState.splice(index, 1);
                         reset({ chargeList: tempState });
@@ -264,9 +273,9 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     }
                     let partyData = partyType == "Client" ? await getClients(searchPartyId) : await getVendors(searchPartyId);
                     if (state.chargesTab == '1') {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Bill" : "Job Invoice";
+                      tempChargeList[index].invoiceType = partyData[0].types.includes("Agent") ? "Agent Bill" : "Job Invoice";
                     } else {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Bill";
+                      tempChargeList[index].invoiceType = partyData[0].types.includes("Agent") ? "Agent Invoice" : "Job Bill";
                     }
                     tempChargeList[index].name = partyData[0].name;
                     tempChargeList[index].partyId = partyData[0].id;
