@@ -19,6 +19,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const {approved} = useSelector((state) => state.invoice);
 
   useEffect(() => {
+    console.log(chargeList)
     if(chargeList){
 
       let list = chargeList.filter((x)=>x.check);
@@ -31,6 +32,29 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       })
     }
   }, [chargeList]);
+
+  const duplicate = () => {
+    let tempChargeList = [...chargeList]
+    let updatedChargeList = [];
+
+    for (let element of tempChargeList) {
+      if (element.check) {
+        element.check = false
+        // element.new = true
+        console.log(element)
+        let tempCharge = { ...element }; 
+        delete tempCharge.id
+        tempCharge.new = true
+        tempCharge.amount = '0'
+        tempCharge.type = tempCharge.type === "Recievable" ? "Payble" : "Recievable";
+        updatedChargeList.push(tempCharge);
+      }
+    }
+
+    tempChargeList = [...tempChargeList, ...updatedChargeList];
+    console.log(tempChargeList)
+    reset({ chargeList: tempChargeList });
+  }
 
   const calculate  = () => {
     let tempChargeList = [...chargeList];
@@ -352,6 +376,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
+    <div className='div-btn-custom mt-3 mx-2 py-1 px-3 fl-right' onClick={()=>{duplicate(chargeList)}}>Duplicate</div>
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

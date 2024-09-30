@@ -48,13 +48,13 @@ import { Tabs } from 'antd';
     <>
     <div style={{minHeight:525, maxHeight:525}}>
       <Tabs defaultActiveKey="1" onChange={(e)=> dispatch({type:'toggle', fieldName:'chargesTab',payload:e})}>
-      <Tabs.TabPane tab="Recievable" key="1">
+      <Tabs.TabPane tab="Receivable" key="1">
         <Charges state={state} dispatch={dispatch} type={"Recievable"} register={register}
           chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
       </Tabs.TabPane>
-      <Tabs.TabPane tab="Payble" key="2">
+      <Tabs.TabPane tab="Payable" key="2">
         <Charges state={state} dispatch={dispatch} type={"Payble"} register={register}
           chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
@@ -68,7 +68,7 @@ import { Tabs } from 'antd';
       <Col md={9}>
         <Row className='my-1'>
           <Col style={{maxWidth:100}} className="py-4">
-            Recievable:
+            Receivable:
           </Col>
           <Col>
             <div className='text-center'>PP</div>

@@ -271,6 +271,9 @@ const getHeadsNew = async(id, dispatch, reset) => {
 }
 
 const saveHeads = async(charges, state, dispatch, reset) => {
+  console.log(charges)
+  console.log(state)
+
   const result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_SAVE_SE_HEADS_NEW, 
     { charges, deleteList:state.deleteList, id:state.selectedRecord.id, exRate:state.exRate }
   ).then(async(x)=>{
