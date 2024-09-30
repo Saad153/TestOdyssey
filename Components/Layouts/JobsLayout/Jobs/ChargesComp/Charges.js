@@ -19,7 +19,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const {approved} = useSelector((state) => state.invoice);
 
   useEffect(() => {
-    console.log(chargeList)
     if(chargeList){
 
       let list = chargeList.filter((x)=>x.check);
@@ -41,7 +40,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       if (element.check) {
         element.check = false
         // element.new = true
-        console.log(element)
         let tempCharge = { ...element }; 
         delete tempCharge.id
         tempCharge.new = true
@@ -52,7 +50,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     }
 
     tempChargeList = [...tempChargeList, ...updatedChargeList];
-    console.log(tempChargeList)
     reset({ chargeList: tempChargeList });
   }
 
