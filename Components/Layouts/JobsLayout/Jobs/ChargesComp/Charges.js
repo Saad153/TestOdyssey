@@ -13,7 +13,7 @@ import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew } from "
 import { v4 as uuidv4 } from 'uuid';
 import { useDispatch, useSelector } from 'react-redux';
 
-const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, companyId, operationType, allValues, chargesData}) => {
+const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, setValue, companyId, operationType, allValues, chargesData}) => {
   const { permissions } = state;
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
   const {approved} = useSelector((state) => state.invoice);
@@ -37,11 +37,17 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     let updatedChargeList = [];
 
     for (let element of tempChargeList) {
+      console.log("1")
+      console.log(element)
       if (element.check) {
-        element.check = false
+        console.log("2")
+        console.log(element)
+        // element.check = false
         // element.new = true
         let tempCharge = { ...element }; 
         delete tempCharge.id
+        element.description = element.id
+        tempCharge.description = element.id
         tempCharge.new = true
         tempCharge.amount = '0'
         tempCharge.type = tempCharge.type === "Recievable" ? "Payble" : "Recievable";
@@ -104,6 +110,12 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       await makeInvoice(chargeList, companyId, reset, operationType, dispatch, state);
     }
   };
+
+  const checkBox = async (index) => {
+
+  }
+
+  // console.log(register(`chargeList.${0}.check`))
 
   return(
   <>
@@ -184,6 +196,19 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     false:
                     true
               }
+              onChange={(e)=>{
+                setValue(`chargeList.${index}.check`, e.target.checked)
+                if(x.description){
+                  fields.forEach((y, i)=>{
+                    console.log(x.description)
+                    console.log(y.description)
+                    if(y.description == x.description){
+                      y.check = e.target.checked
+                      setValue(`chargeList.${i}.check`, e.target.checked)
+                    }
+                  })
+                }
+              }}
             />}
           </td>
           <td className='text-center'>{/* Invoice Number */}

@@ -15,7 +15,7 @@ import { Tabs } from 'antd';
   const queryClient = useQueryClient();
   const companyId = useSelector((state) => state.company.value);
   const {approved} = useSelector((state) => state.invoice);
-  const { register, control, handleSubmit, reset } = useForm({});
+  const { register, setValue, control, handleSubmit, reset } = useForm({});
   const { fields, append, remove } = useFieldArray({ control, name:"chargeList" });
   const chargeList = useWatch({ control, name:'chargeList' });
 
@@ -49,13 +49,13 @@ import { Tabs } from 'antd';
     <div style={{minHeight:525, maxHeight:525}}>
       <Tabs defaultActiveKey="1" onChange={(e)=> dispatch({type:'toggle', fieldName:'chargesTab',payload:e})}>
       <Tabs.TabPane tab="Receivable" key="1">
-        <Charges state={state} dispatch={dispatch} type={"Recievable"} register={register}
+        <Charges state={state} dispatch={dispatch} type={"Recievable"} register={register} setValue={setValue}
           chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
       </Tabs.TabPane>
       <Tabs.TabPane tab="Payable" key="2">
-        <Charges state={state} dispatch={dispatch} type={"Payble"} register={register}
+        <Charges state={state} dispatch={dispatch} type={"Payble"} register={register} setValue={setValue}
           chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
