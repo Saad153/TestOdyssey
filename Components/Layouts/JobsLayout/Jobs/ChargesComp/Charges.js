@@ -200,10 +200,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                 setValue(`chargeList.${index}.check`, e.target.checked)
                 if(x.description){
                   fields.forEach((y, i)=>{
-                    console.log(x.description)
-                    console.log(y.description)
                     if(y.description == x.description){
-                      y.check = e.target.checked
                       setValue(`chargeList.${i}.check`, e.target.checked)
                     }
                   })
