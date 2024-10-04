@@ -16,7 +16,7 @@ const MainTable = ({ ledger, closing, opening, name, company, currency, from, to
   const [isPrinting, setIsPrinting] = useState(false);
   const dispatch = useDispatch();
   const [username, setUserName] = useState("");
-  const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
+  const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
   const TableComponent = ({overFlow}) => {
     return (
@@ -29,10 +29,10 @@ const MainTable = ({ ledger, closing, opening, name, company, currency, from, to
             <b>
               {opening > 0 ?
                 <span className="blue-txt">
-                  {opening.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") + " Dr"}
+                  {opening.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " Dr"}
                 </span> :
                 <span className="grey-txt">
-                 {Math.abs(opening).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") + " Cr"}
+                 {Math.abs(opening).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " Cr"}
                 </span>
               }
             </b>
@@ -93,11 +93,11 @@ const MainTable = ({ ledger, closing, opening, name, company, currency, from, to
           <b>
             {closing > 0 ?
               <span className="blue-txt">
-                {closing.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") + " Dr"}
+                {closing.toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " Dr"}
               </span>
               :
               <span className="grey-txt">
-                {Math.abs(closing).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") + " Cr"}
+                {Math.abs(closing).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") + " Cr"}
               </span>
             }
           </b>

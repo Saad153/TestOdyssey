@@ -46,6 +46,7 @@ const JobBalancing = () => {
 
   useEffect(() => {
     if(status=="success"){
+      console.log(data.result)
       setValues(data.result)
     }
   }, [status]);

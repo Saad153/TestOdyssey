@@ -73,12 +73,17 @@ const InvoiceBalancingReport = ({ result, query }) => {
     let balance = 0.00;
     if(query.balance=="exclude0"){
       list.filter((x)=>x.balance!=0).forEach((x) => {
-        console.log(x.balance)
+        // console.log(x.balance)
         balance = balance + x.balance
       })
     }else{
       list.forEach((x) => {
-        balance = balance + x.balance
+        if(x.payType=="Receivable"){
+          balance = balance + x.balance
+        }else{
+          balance = balance - x.balance
+
+        }
       })
     }
     console.log(balance)
@@ -117,13 +122,13 @@ const InvoiceBalancingReport = ({ result, query }) => {
         x.debit = x.payType == "Receivable" ? invAmount : 0
         x.credit = x.payType != "Receivable" ? invAmount : 0
         if(query.currency == "PKR"){
-          if(x.payType != "Receivable"){
+          if(x.payType == "Receivable"){
             x.paidRec = parseFloat(x.recieved)*parseFloat(x.ex_rate);
           }else{
             x.paidRec = parseFloat(x.paid)*parseFloat(x.ex_rate);
           }
         }else{
-          x.paidRec = x.payType!="Receivable"?parseFloat(x.recieved):parseFloat(x.paid);
+          x.paidRec = x.payType=="Receivable"?parseFloat(x.recieved):parseFloat(x.paid);
         }
         console.log(parseFloat(x.recieved), parseFloat(x.ex_rate), x.paidRec, parseFloat(x.recieved))
         x.balance = invAmount - x.paidRec

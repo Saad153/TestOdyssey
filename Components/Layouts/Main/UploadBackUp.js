@@ -4,10 +4,9 @@ import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 
 
-const upload_CoA = () => {
+const Upload_CoA = () => {
 
     const [invoicesData, setInvoices] = useState([]);
-
     const [partiesAccounts1, setPartiesAccounts] = useState({
         "Clients": [],
         "Vendors": [],
@@ -129,8 +128,10 @@ const upload_CoA = () => {
                 CompanyId: Cookies.get("companyId")
             });
             for(const child of element.Child_Account){
+                console.log(child)
                 const result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT, {
                     title: child[1].trim(),
+                    category: child[4],
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
@@ -145,13 +146,10 @@ const upload_CoA = () => {
             for(const child of element.Child_Account){
                 const result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT, {
                     title: child[1].trim(),
+                    category: child[4],
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
-                //console.log(result1.data.result.id);
-                // if(result1.data.result.id == undefined){
-                //     break;
-                // }
             }
         }
         for (const element of accountsList.Expense) {
@@ -163,13 +161,10 @@ const upload_CoA = () => {
             for(const child of element.Child_Account){
                 const result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT, {
                     title: child[1].trim(),
+                    category: child[4],
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
-                //console.log(result1.data.result.id);
-                // if(result1.data.result.id == undefined){
-                //     break;
-                // }
             }
         }
         for (const element of accountsList.income) {
@@ -181,6 +176,7 @@ const upload_CoA = () => {
             for(const child of element.Child_Account){
                 const result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT, {
                     title: child[1].trim(),
+                    category: child[4],
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
@@ -195,6 +191,7 @@ const upload_CoA = () => {
             for(const child of element.Child_Account){
                 const result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT, {
                     title: child[1].trim(),
+                    category: child[4],
                     ParentAccountId: result.data.result.id.toString(),
                     CompanyId: Cookies.get("companyId")
                 });
@@ -832,6 +829,13 @@ const upload_CoA = () => {
     const handleInvoices = async (data, fileInfo) => {
         let invoices = []
         console.log(data)
+        let companyID = "0"
+        if(fileInfo.name.includes("ACS")){
+            companyID = "3"
+        }
+        if(fileInfo.name.includes("SNS")){
+            companyID = "1"
+        }
         let agentInvoices  = false
         data[0].agent_name?agentInvoices = true:agentInvoices = false
         let count = 0
@@ -840,21 +844,20 @@ const upload_CoA = () => {
         const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
         let clients = client.data.result
         let vendors = vendor.data.result
-        let vouchers = []
         let  i = 0
         if(!agentInvoices){
             for(let x of data){
                 let party_id = ""
                 let party_name = ""
                 let matched = false
-                clients.forEach((a)=>{
+                vendors.forEach((a)=>{
                     if(x.party && a.name.trim() == removeBracketedPart(x.party)){
                         party_id = a.id
                         party_name = a.name
                         matched = true
                     }
                 })
-                !matched?vendors.forEach((a)=>{
+                !matched?clients.forEach((a)=>{
                     if(x.party && a.name.trim() == removeBracketedPart(x.party)){
                         party_id = a.id
                         party_name = a.name
@@ -862,13 +865,7 @@ const upload_CoA = () => {
                     }
                 }):null
                 x.job_no?extractCode(x.job_no):""
-                let companyID = "0"
-                if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "ACS"){
-                    companyID = "3"
-                }
-                if(x.invoice___bill_ && x.invoice___bill_.toString().slice(0, 3) == "SNS"){
-                    companyID = "1"
-                }
+                
                 if(x.invoice___bill_date){
                     let temp =  parseDateString1(x.invoice___bill_date)
                     const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
@@ -885,8 +882,8 @@ const upload_CoA = () => {
                     ex_rate: x.curr=="PKR"?"1":"0",
                     party_Id: party_id,
                     party_Name: party_name,
-                    paid: x.payable!=0?x.balance>=1?(x.payable-x.balance).toString():x.payable.toString():"0",
-                    recieved: x.payable==0?x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString():"0",
+                    paid: x.payable!=0?(x.payable-x.balance).toString():"0",
+                    recieved: x.payable==0?(x.receivable-x.balance).toString():"0",
                     roundOff: "0",
                     total: x.payable!=0?x.payable.toString():x.receivable.toString(),
                     approved: "1",
@@ -895,9 +892,14 @@ const upload_CoA = () => {
                 }
                 let ChildAccountId = ""
                 let Voucher_Heads = [];
+                if(x.job__ == "Advance"){
+                    invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
+                    invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
+                    
+                }
                 Voucher_Heads.push({
                     defaultAmount: "-",
-                    amount: x.payable!=0?x.payable.toString():x.receivable.toString(),
+                    amount: invoice.total,
                     type: invoice.payType=="Payble"?"credit":"debit",
                     narration: invoice.invoice_No,
                     settlement: "",
@@ -907,7 +909,7 @@ const upload_CoA = () => {
                 invoice.recieved != "0"?
                 Voucher_Heads.push({
                     defaultAmount: "-",
-                    amount: x.payable==0?x.balance>=1?(x.receivable-x.balance).toString():x.receivable.toString():x.balance>=1?(x.payable-x.balance).toString():x.payable.toString(),
+                    amount: invoice.payType=="Payble"?invoice.paid:invoice.recieved,
                     type: invoice.payType=="Payble"?"debit":"credit",
                     narration: invoice.invoice_No,
                     settlement: "",
@@ -924,41 +926,6 @@ const upload_CoA = () => {
                     payTo:"",
                     Voucher_Heads:Voucher_Heads
                 }
-                  
-                if(x.job__ == "Advance"){
-                    invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
-                    invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
-                    Voucher_Heads.push({
-                        defaultAmount: "-",
-                        amount: invoice.total,
-                        type: x.payable==0?"debit":"credit",
-                        narration: invoice.invoice_No,
-                        settlement: "",
-                        ChildAccountId: ChildAccountId,
-                        createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-                    });
-                    invoice.recieved != "0"?
-                    Voucher_Heads.push({
-                        defaultAmount: "-",
-                        amount: invoice.recieved,
-                        type: x.payable==0?"credit":"debit",
-                        narration: invoice.invoice_No,
-                        settlement: "",
-                        ChildAccountId: ChildAccountId,
-                        createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-                    }):null
-                    voucher = {
-                        CompanyId:Cookies.get("companyId"),
-                        costCenter:"KHI",
-                        type:"Opening Invoice",
-                        vType:x.payable!=0?"OB":"OI",
-                        currency:x.curr,
-                        exRate: x.exchange_rate?x.exchange_rate:"1.00",
-                        payTo:"",
-                        Voucher_Heads:Voucher_Heads
-                    }
-                }
-                vouchers.push(voucher)
                 invoice.voucher = voucher
                 invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
                 invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
@@ -993,37 +960,33 @@ const upload_CoA = () => {
                     const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
                     x.invoice_date = isoString
                 }
-                let companyID = "0"
-                if(x.invoice_no && (x.invoice_no.slice(0, 3)=="SNS")){
-                    companyID = "1"
-                }
-                if(x.invoice_no && (x.invoice_no.slice(0, 3)=="ACS")){
-                    companyID = "3"
-                }
                 let invoice = {}
                 companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
-                    payType: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))-x.balance<0?"Payble":"Receivable":null,
+                    payType: x.type_dn_cn=="Credit"?"Payble":"Receivable",
                     status: "2",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,
                     ex_rate: x.currency=="PKR"?"1":x.exchange_rate,
                     party_Id: party_id,
                     party_Name: party_name,
-                    paid: "0",
-                    recieved: removeCommas(x.rcvd___paid),
+                    paid: x.type_dn_cn=="Credit"?removeCommas(x.rcvd_paid):"0",
+                    recieved: x.type_dn_cn=="Credit"?"0":removeCommas(x.rcvd_paid),
                     roundOff: "0",
-                    total: x.invoice_amount?parseFloat(removeCommas(x.invoice_amount.toString()))<0?((parseFloat(removeCommas(x.invoice_amount.toString())))*-1).toString():(parseFloat(removeCommas(x.invoice_amount.toString()))).toString():"0",
+                    total: x.type_dn_cn=="Credit"?removeCommas(x.invoice_amount.toString().slice(1)):removeCommas(x.invoice_amount.toString()),
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
+                if(x.type_dn_cn=="Credit"){
+                    console.log(invoice.payType)   
+                }
                 let ChildAccountId = ""
             let Voucher_Heads = [];
             Voucher_Heads.push({
                 defaultAmount: "-",
-                amount: x.invoice_amount?removeCommas(x.invoice_amount.toString()):"0.00",
+                amount: invoice.total,
                 type: invoice.payType=="Payble"?"credit":"debit",
                 narration: invoice.invoice_No,
                 settlement: "",
@@ -1031,13 +994,12 @@ const upload_CoA = () => {
             });
             invoice.recieved != "0"?Voucher_Heads.push({
                 defaultAmount: "-",
-                amount: x.rcvd___paid?removeCommas(x.rcvd___paid.toString()):"0.00",
+                amount: invoice.payType=="Payble"?invoice.paid:invoice.recieved,
                 type: invoice.payType=="Payble"?"debit":"credit",
                 narration: invoice.invoice_No,
                 settlement: "",
                 ChildAccountId: ChildAccountId
             }):null
-            console.log(x.currency)
             let voucher = {
                 CompanyId:Cookies.get("companyId"),
                 costCenter:"KHI",
@@ -1047,13 +1009,11 @@ const upload_CoA = () => {
                 exRate: x.exchange_rate?x.exchange_rate:"1.00",
                 payTo:"",
                 Voucher_Heads:Voucher_Heads
-              }
-              invoice.voucher = voucher
-              vouchers.push(voucher)
-                companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
-                !matched?invoicewoAcc.push(x):null
             }
-
+            invoice.voucher = voucher
+            companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+            !matched?invoicewoAcc.push(x):null
+            }
         }
         setInvoices(invoices)
         console.log(invoices)
@@ -1061,12 +1021,15 @@ const upload_CoA = () => {
     }
 
     const uploadInvoices = async() => {
+        let count = 0
         for(let x of invoicesData){
             if(x.companyId != "1" || x.companyId != "3"){
-                await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
+                await axios.post("http://localhost:8088/invoice/createBulkInvoices", x)
+                count++
             }
             // break
         }
+        console.log(count)
     }
 
     const [jobs, setJobs] = useState([])
@@ -1229,11 +1192,6 @@ const upload_CoA = () => {
 
     return (
         <>
-        <p>Step 1: Upload Chart of accounts file as a csv and remove all extra lines including the headers, you'll see the resulting accounts that will be uploaded in the console.</p>
-        <p>Step 2: Click the upload button and you'll see the response in the server</p>
-        <p>Step 3: Upload the parties files with headers and with the names 'clients.csv', 'vendors.csv', clientvendors.csv' and 'nongl.csv'</p>
-        <p>Step 4: After Each file, click the upload button, then the create party associations button</p>
-        <p>Step 5: Upload Opening Balances file with headers and the opening balances will be uploaded and shown in console</p>
         <span className="py-2">Chart of Accounts</span>
         <CSVReader onFileLoaded={handleData}/>
         <button onClick={uploadData} style={{maxWidth: 75}} className='btn-custom mt-3 px-3 mx-3'>Upload</button>
@@ -1254,4 +1212,4 @@ const upload_CoA = () => {
     )
 }
 
-export default upload_CoA
+export default Upload_CoA

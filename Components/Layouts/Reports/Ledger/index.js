@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import LedgerReport from '/Components/Layouts/Reports/Ledger/LedgerReport';
 import { Row, Col, Form } from "react-bootstrap";
 import moment from "moment";
@@ -62,7 +62,7 @@ const Ledger = () => {
       let acName = foundAccount?.label;
       dispatch(setName(acName))
           }else{
-      dispatch(setName(""))
+      // dispatch(setName(""))
     }
   }
 
@@ -88,9 +88,26 @@ const Ledger = () => {
 
   useEffect(() => { if (company != "") 
     getAccounts();
- 
 
    }, [company,account]);
+
+   const isInitialMount = useRef(true);
+
+   useEffect(() => {
+     if (isInitialMount.current) {
+       isInitialMount.current = false;
+     } else {
+       if (company !== "") {
+        records.forEach(element => {
+          const index = element.label.indexOf(') ');
+          if(element.label.slice(element.label.indexOf(') ') + 2) == name.slice(name.indexOf(') ') + 2)){
+            dispatch(setAccount(element.value));
+          }
+        });
+        // dispatch(setAccount(null));
+       }
+     }
+   }, [records]);
 
 
   // useEffect(()=>{
@@ -125,16 +142,16 @@ const Ledger = () => {
       <Col md={3} className="my-3">
         <b>Company</b>
         <Radio.Group
-  className="mt-1"
-  value={company}
-  onChange={(e) => {
-    const selectedCompany = e.target.value;
-    
-    // Dispatch setCompany and then dispatch setAccount(null)
-    dispatch(setCompany(selectedCompany));
+          className="mt-1"
+          value={company}
+          onChange={(e) => {
+            const selectedCompany = e.target.value;
+            
+            // Dispatch setCompany and then dispatch setAccount(null)
+            dispatch(setCompany(selectedCompany));
 
-  }}
->
+          }}
+        >
           <Radio value={1}>SEA NET SHIPPING & LOGISTICS</Radio>
           <Radio value={2}>CARGO LINKERS</Radio>
           <Radio value={3}>AIR CARGO SERVICES</Radio>

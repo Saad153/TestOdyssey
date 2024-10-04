@@ -22,6 +22,7 @@ const Report = ({query, result}) => {
     const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
 
     const makeTransaction = (data) => {
+      // console.log(data)
       let transactions  = {
         opDebit:0,
         opCredit:0,
@@ -35,13 +36,13 @@ const Report = ({query, result}) => {
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           // console.log('transaction--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
-            transactions.trDebit = parseFloat(x.amount):
-            transactions.trCredit = parseFloat(x.amount)
+            transactions.trDebit += parseFloat(x.amount):
+            transactions.trCredit += parseFloat(x.amount)
         } else {
           // console.log('opening--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
-            transactions.opDebit = parseFloat(x.amount):
-            transactions.opCredit = parseFloat(x.amount)
+            transactions.opDebit += parseFloat(x.amount):
+            transactions.opCredit += parseFloat(x.amount)
         }
       });
 
@@ -79,7 +80,7 @@ const Report = ({query, result}) => {
     }, []);
 
     const makeParentTransactions = (data) => {
-      console.log(data)
+      // console.log(data)
       let transactions  = {
         opDebit:0,
         opCredit:0,

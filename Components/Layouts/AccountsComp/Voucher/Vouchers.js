@@ -150,9 +150,10 @@ const narration = (e) =>{
         y = "Cash";
         break;
       case "TV":
-        y = "All";
+        y = "Bank";
         break;
       default:
+        y = "All"
         break;
     }
     if (y != "") {

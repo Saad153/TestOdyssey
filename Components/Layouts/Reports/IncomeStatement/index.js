@@ -157,9 +157,9 @@ const IncomeStatement = () => {
           {records.map((x, index) => {
             if(x.AccountId == '2'){
               console.log(x)
-              return <Select.OptGroup label={x.title}>
+              return <Select.OptGroup key={index} label={x.title}>
                 {x.Child_Accounts.map((y, index) => {
-                  return <Select.Option value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>
+                  return <Select.Option key={index} value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>
                 })}
               </Select.OptGroup>
             }
@@ -171,9 +171,9 @@ const IncomeStatement = () => {
         {records.map((x, index) => {
             if(x.AccountId == '1'){
               console.log(x)
-              return <Select.OptGroup label={x.title}>
+              return <Select.OptGroup key={index} label={x.title}>
                 {x.Child_Accounts.map((y, index) => {
-                  return <Select.Option value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>
+                  return <Select.Option key={index} value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>
                 })}
               </Select.OptGroup>
             }
