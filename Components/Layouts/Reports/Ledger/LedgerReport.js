@@ -11,7 +11,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
   const dispatch = useDispatch();
   
   useEffect(() => {
-    console.log(voucherData)
+    // console.log(voucherData)
     if (voucherData.status == "success") {
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
       voucherData.result.forEach((y) => {

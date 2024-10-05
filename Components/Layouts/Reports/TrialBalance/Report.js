@@ -6,7 +6,8 @@ import exportExcelFile from "/functions/exportExcelFile";
 import Pagination from "/Components/Shared/Pagination";
 
 const Report = ({query, result}) => {
-  // console.log("query",query)
+  console.log("query",query)
+  // console.log(result.result)
   const reportView = query.reportType;
   const option = query.options;
   // console.log(option)
@@ -19,7 +20,7 @@ const Report = ({query, result}) => {
       clDebit:0,
       clCredit:0,
     });
-    const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
+    const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
     const makeTransaction = (data) => {
       // console.log(data)
@@ -34,12 +35,10 @@ const Report = ({query, result}) => {
       data.forEach((x)=>{
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
-          // console.log('transaction--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
             transactions.trDebit += parseFloat(x.amount):
             transactions.trCredit += parseFloat(x.amount)
         } else {
-          // console.log('opening--->', moment(x.createdAt).format("DD?MMMM?YYYY"))
           x.type=="debit"?
             transactions.opDebit += parseFloat(x.amount):
             transactions.opCredit += parseFloat(x.amount)
@@ -55,7 +54,7 @@ const Report = ({query, result}) => {
     }
 
     useEffect(() => {
-      // console.log(result?.result)
+      console.log(result?.result)
       let temp = [];
       result?.result?.forEach((x)=>{
         // console.log(x)

@@ -114,10 +114,10 @@ const TrialBalance = () => {
         <div>Company</div>
         <Radio.Group className='mt-1'
           value={company}
-          onChange={handleCompanyChange}
+          onChange={(e)=>{setCompany(e.target.value)}}
         >
           <Radio value={1}>SEA NET SHIPPING & LOGISTICS</Radio>
-          <Radio value={2}>AIR CARGO SERVICES</Radio>
+          <Radio value={3}>AIR CARGO SERVICES</Radio>
         </Radio.Group>
       </Col>
       <Col md={9} className="mb-3">

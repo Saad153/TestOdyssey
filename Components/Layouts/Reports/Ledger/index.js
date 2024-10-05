@@ -56,17 +56,23 @@ const Ledger = () => {
   const getAccountName = (temprecords) =>{
 
     const data = temprecords || records
-    const foundAccount = data?.find(x => x.value == account);
-    console.log("found", foundAccount)
-    if (foundAccount) {
-      let acName = foundAccount?.label;
-      dispatch(setName(acName))
-          }else{
-      // dispatch(setName(""))
-    }
+    data.forEach(element => {
+      if(element.label.slice(element.label.indexOf(') ') + 2) == name.slice(name.indexOf(') ') + 2)){
+        dispatch(setAccount(element.value));
+        dispatch(setName(element.label))
+      }
+      
+    })
+    // console.log("found", foundAccount)
+    // if (foundAccount) {
+    //   let acName = foundAccount?.label;
+    //   dispatch(setName(acName))
+    //       }else{
+    //   // dispatch(setName(""))
+    // }
   }
 
-  async function getLedger(){
+  async function getLedger(old){
     // console.log("getLedger Ran")
     try{
       console.log(currency)
@@ -77,6 +83,7 @@ const Ledger = () => {
           currency: currency,
           from: from,
           to: to,
+          old, old
         }
       });
       // console.log(result.data)
@@ -91,23 +98,21 @@ const Ledger = () => {
 
    }, [company,account]);
 
-   const isInitialMount = useRef(true);
+  //  const isInitialMount = useRef(true);
 
-   useEffect(() => {
-     if (isInitialMount.current) {
-       isInitialMount.current = false;
-     } else {
-       if (company !== "") {
-        records.forEach(element => {
-          const index = element.label.indexOf(') ');
-          if(element.label.slice(element.label.indexOf(') ') + 2) == name.slice(name.indexOf(') ') + 2)){
-            dispatch(setAccount(element.value));
-          }
-        });
-        // dispatch(setAccount(null));
-       }
-     }
-   }, [records]);
+  //  useEffect(() => {
+  //    if (isInitialMount.current) {
+  //      isInitialMount.current = false;
+  //    } else {
+  //      if (company !== "") {
+  //       records.forEach(element => {
+  //         const index = element.label.indexOf(') ');
+          
+  //       });
+  //       // dispatch(setAccount(null));
+  //      }
+  //    }
+  //  }, [records]);
 
 
   // useEffect(()=>{
@@ -123,6 +128,15 @@ const Ledger = () => {
 
   const handleAccountChange = (value) => {
     dispatch(setAccount(value));
+    if(value == undefined){
+      dispatch(setName(""))
+    }else{
+      records.forEach(element => {
+        if(element.value == value){
+          dispatch(setName(element.label))
+        }
+      })
+    }
   };
 
   return (
@@ -188,7 +202,7 @@ const Ledger = () => {
       </Col>
       <Col md={12} className='d-flex'>
         <button className='btn-custom mt-3' onClick={async () => {
-          let count = await getLedger();
+          let count = await getLedger(false);
           if(count>0){
             if (account != "" && account != null) {
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,
@@ -227,7 +241,7 @@ const Ledger = () => {
         }
         }> Go </button>
         <button className='btn-custom mt-3 mx-2' onClick={async () => {
-          let count = await getLedger();
+          let count = await getLedger(true);
           if(count>0){
             if (account != "" && account != null) {
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,

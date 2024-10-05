@@ -160,8 +160,8 @@ const getInvoices = async(state, companyId, dispatch) => {
       temp = temp.map((y, index)=>{
         console.log(state.payType)
         // console.log(y.SE_Job)
-        console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
-        let tempRemBalance =state.payType != "Receivable"?parseFloat(y.total)-parseFloat(y.recieved):parseFloat(y.total)-parseFloat(y.paid)
+        // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
+        let tempRemBalance =state.payType == "Receivable"?parseFloat(y.total)-parseFloat(y.recieved):parseFloat(y.total)-parseFloat(y.paid)
         // let tempRemBalance =
         // (state.payType=="Receivable"?
         //   (parseFloat(y.total) - (parseFloat(y.recieved==null?0:y.recieved)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
@@ -169,7 +169,7 @@ const getInvoices = async(state, companyId, dispatch) => {
         // (state.payType=="Receivable"?
         //   (parseFloat(y.total) - parseFloat(y.recieved==null?0:y.recieved) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
         //   (parseFloat(y.total) - parseFloat(y.paid==null?0:y.paid) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
-        console.log(tempRemBalance)
+        // console.log(tempRemBalance)
         return{
           ...y,
           check:false,
@@ -192,7 +192,7 @@ const getInvoices = async(state, companyId, dispatch) => {
     console.log(temp)
     if(temp.length>1){
       let temp1 = temp.filter((x) => {
-        return parseInt(x.total) != parseInt(x.recieved);
+        return x.remBalance != 0;
       });
       temp = temp1
     }

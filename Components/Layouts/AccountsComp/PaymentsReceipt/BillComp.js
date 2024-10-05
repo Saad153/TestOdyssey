@@ -17,7 +17,8 @@ const BillComp = ({companyId, state, dispatch}) => {
   const dispatchNew = useDispatch();
   const { payType } = state;
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
-  const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};  
+  const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
+  const [checked, setChecked] = useState(false);
   
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
@@ -498,7 +499,36 @@ const BillComp = ({companyId, state, dispatch}) => {
           <th>Amount </th>
           <th>{state.payType=="Receivable"? 'Receiving Amount':'Paying Amount'}</th>
           <th>Balance</th>
-          <th className='text-center'>-</th>
+          <th className='text-center'>
+          <input type='checkbox' style={{cursor:'pointer'}} 
+              checked={checked} 
+              disabled={state.autoOn}
+              onChange={() => {
+                let tempState = [...state.invoices];
+                tempState.forEach((x) => {
+                  x.check = !checked
+                  if(state.payType=="Receivable"){
+                    x.receiving = x.check?
+                    (
+                      parseFloat(x.remBalance) + 
+                      parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
+                    ):
+                    0.00
+                  } else {
+                    x.receiving = x.check?
+                    (
+                      parseFloat(x.remBalance) + 
+                      parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
+                    ):
+                    0.00
+                  }
+                })
+                setChecked(!checked)
+                
+                set('invoices', tempState);
+              }}
+            />
+          </th>
           <th>Container</th>
           </tr>
         </thead>
@@ -555,7 +585,6 @@ const BillComp = ({companyId, state, dispatch}) => {
               }}
             />
           </td>
-          {console.log(x.remBalance, x.receiving)}
           <td className='px-1' style={{width:300}}> {commas(x.remBalance - x.receiving)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
@@ -565,21 +594,15 @@ const BillComp = ({companyId, state, dispatch}) => {
                 let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;
                 if(state.payType=="Receivable"){
-                  // console.log(">>>", x.Invoice_Transactions[0].amount)
                   tempState[index].receiving = tempState[index].check?
                   (
-                    // parseFloat(x.inVbalance) - parseFloat(x.recieved) + 
                     parseFloat(x.remBalance) + 
                     parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
                   ):
                   0.00
                 } else {
-                  // console.log(">>>", x.Invoice_Transactions[0].amount)
-
                   tempState[index].receiving = tempState[index].check?
                   (
-                    
-                    // parseFloat(x.inVbalance) -parseFloat(x.paid) + 
                     parseFloat(x.remBalance) + 
                     parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
                   ):

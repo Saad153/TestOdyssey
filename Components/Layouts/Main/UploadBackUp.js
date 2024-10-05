@@ -256,7 +256,7 @@ const Upload_CoA = () => {
         //console.log(fileInfo)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
-                id: 1
+                id: Cookies.get("companyId")
             }
         })
         let accountsData = accounts.data.result
@@ -842,14 +842,30 @@ const Upload_CoA = () => {
         let counter  = 0
         const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
         const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
+        const clientAssociations = await axios.get("http://localhost:8081/clientRoutes/getClientAssociations", {
+            headers: {
+                company: companyID
+            }
+        })
+        const vendorAssociations = await axios.get("http://localhost:8081/vendor/getVendorAssociations", {
+            headers: {
+                company: companyID
+            }
+        })
+        console.log(clientAssociations.data.result)
+        console.log(vendorAssociations.data.result)
         let clients = client.data.result
         let vendors = vendor.data.result
+        let clientAssociationsList = clientAssociations.data.result
+        let vendorAssociationsList = vendorAssociations.data.result
         let  i = 0
         if(!agentInvoices){
             for(let x of data){
                 let party_id = ""
                 let party_name = ""
                 let matched = false
+                let matched1 = false
+                let ChildAccountId = ""
                 vendors.forEach((a)=>{
                     if(x.party && a.name.trim() == removeBracketedPart(x.party)){
                         party_id = a.id
@@ -857,6 +873,14 @@ const Upload_CoA = () => {
                         matched = true
                     }
                 })
+                if(matched){
+                    vendorAssociationsList.forEach((a)=>{
+                        if(party_id == a.VendorId){
+                            ChildAccountId = a.ChildAccountId
+                            matched1 = true
+                        }
+                    })
+                }
                 !matched?clients.forEach((a)=>{
                     if(x.party && a.name.trim() == removeBracketedPart(x.party)){
                         party_id = a.id
@@ -864,6 +888,15 @@ const Upload_CoA = () => {
                         matched = true
                     }
                 }):null
+                if(matched && !matched1){
+                    clientAssociationsList.forEach((a)=>{
+                        if(party_id == a.ClientId){
+                            ChildAccountId = a.ChildAccountId
+                            matched1 = true
+                        }
+                    })
+                }
+
                 x.job_no?extractCode(x.job_no):""
                 
                 if(x.invoice___bill_date){
@@ -890,7 +923,6 @@ const Upload_CoA = () => {
                     companyId: companyID,
                     createdAt: x.invoice___bill_date?x.invoice___bill_date:null
                 }
-                let ChildAccountId = ""
                 let Voucher_Heads = [];
                 if(x.job__ == "Advance"){
                     invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
@@ -936,13 +968,28 @@ const Upload_CoA = () => {
                 let party_id = ""
                 let party_name = ""
                 let matched = false
+                let matched1 = false
+                let ChildAccountId = ""
                 clients.forEach((a)=>{
                     if(x.agent_name && a.name.trim() == removeBracketedPart(x.agent_name).trim()){
                         party_id = a.id
                         party_name = a.name
                         matched = true
                     }
+                    if(x.agent_name && x.agent_name.includes("TRANSMODAL LOGISTICS") && a.name.trim() == "TRANSMODAL LOGISTICS INT'L (USA)"){
+                        party_id = a.id
+                        party_name = a.name
+                        matched = true
+                    }
                 })
+                if(matched){
+                    clientAssociationsList.forEach((a)=>{
+                        if(party_id == a.ClientId){
+                            ChildAccountId = a.ChildAccountId
+                            matched1 = true
+                        }
+                    })
+                }
                 vendors.forEach((y)=>{
                     if(x.agent_name && x.agent_name == y.name.trim()){
                         party_id = y.id
@@ -950,10 +997,14 @@ const Upload_CoA = () => {
                         matched = true
                     }
                 })
-                if(x.agent_name && x.agent_name.includes("TRANSMODAL LOGISTICS")){
-                    party_id = "813"
-                    party_name = "TRANSMODAL LOGISTICS INT'L (USA)"
-                    matched = true
+                
+                if(matched && !matched1){
+                    vendorAssociationsList.forEach((a)=>{
+                        if(party_id == a.VendorId){
+                            ChildAccountId = a.ChildAccountId
+                            matched1 = true
+                        }
+                    })
                 }
                 if(x.invoice_date){
                     let temp =  parseDateString(x.invoice_date.toString())
@@ -979,11 +1030,8 @@ const Upload_CoA = () => {
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
-                if(x.type_dn_cn=="Credit"){
-                    console.log(invoice.payType)   
-                }
-                let ChildAccountId = ""
             let Voucher_Heads = [];
+            console.log(invoice.recieved, invoice.paid)
             Voucher_Heads.push({
                 defaultAmount: "-",
                 amount: invoice.total,
@@ -994,7 +1042,15 @@ const Upload_CoA = () => {
             });
             invoice.recieved != "0"?Voucher_Heads.push({
                 defaultAmount: "-",
-                amount: invoice.payType=="Payble"?invoice.paid:invoice.recieved,
+                amount: invoice.recieved,
+                type: invoice.payType=="Payble"?"debit":"credit",
+                narration: invoice.invoice_No,
+                settlement: "",
+                ChildAccountId: ChildAccountId
+            }):null
+            invoice.paid != "0"?Voucher_Heads.push({
+                defaultAmount: "-",
+                amount: invoice.paid,
                 type: invoice.payType=="Payble"?"debit":"credit",
                 narration: invoice.invoice_No,
                 settlement: "",
@@ -1022,13 +1078,19 @@ const Upload_CoA = () => {
 
     const uploadInvoices = async() => {
         let count = 0
+        let failed = []
         for(let x of invoicesData){
             if(x.companyId != "1" || x.companyId != "3"){
-                await axios.post("http://localhost:8088/invoice/createBulkInvoices", x)
+                const result = await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
                 count++
+                // console.log(result)
+                if(result.data.status != "success"){
+                    failed.push(x)
+                }
             }
             // break
         }
+        console.log(failed)
         console.log(count)
     }
 
