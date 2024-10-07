@@ -21,17 +21,13 @@ const Ledger = () => {
   const filters = filterValues.find(page => page.pageName === "ledgerReport");
   const values = filters ? filters.values : null;
 
-
   const getAccounts = async () => {
-   
     try{  
       const gotAccounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHILD_ACCOUNTS, {
       headers: {
         companyid: company
       } 
-    
     });
-
         const {data}= gotAccounts;
         const {result} = data
         let temprecords=[];
@@ -41,16 +37,10 @@ const Ledger = () => {
             });
             dispatch(setRecords(temprecords));
             getAccountName(temprecords);
-  
-     
     }catch(e){
       console.log("e",e)
 
     }
-  
-
-
-
   };
 
   const getAccountName = (temprecords) =>{
@@ -63,17 +53,9 @@ const Ledger = () => {
       }
       
     })
-    // console.log("found", foundAccount)
-    // if (foundAccount) {
-    //   let acName = foundAccount?.label;
-    //   dispatch(setName(acName))
-    //       }else{
-    //   // dispatch(setName(""))
-    // }
   }
 
   async function getLedger(old){
-    // console.log("getLedger Ran")
     try{
       console.log(currency)
       const result = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER, {
@@ -86,7 +68,6 @@ const Ledger = () => {
           old, old
         }
       });
-      // console.log(result.data)
       return result.data.result
     }catch(e){
       console.error(e)
@@ -95,36 +76,7 @@ const Ledger = () => {
 
   useEffect(() => { if (company != "") 
     getAccounts();
-
    }, [company,account]);
-
-  //  const isInitialMount = useRef(true);
-
-  //  useEffect(() => {
-  //    if (isInitialMount.current) {
-  //      isInitialMount.current = false;
-  //    } else {
-  //      if (company !== "") {
-  //       records.forEach(element => {
-  //         const index = element.label.indexOf(') ');
-          
-  //       });
-  //       // dispatch(setAccount(null));
-  //      }
-  //    }
-  //  }, [records]);
-
-
-  // useEffect(()=>{
-  //   if(filters){
-  //     setFrom(values.from),
-  //     setTo(values.to),
-  //     setCompany(values.company),
-  //     setAccount(values.account),
-  //     setCurrency(values.currency)
-
-  //   }
-  // },[filters])
 
   const handleAccountChange = (value) => {
     dispatch(setAccount(value));

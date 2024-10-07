@@ -2,7 +2,6 @@ import axios from "axios";
 import moment from "moment";
 
 function recordsReducer(state, action){
-  // console.log(state, action.payload)
   switch (action.type) {
     case"receiving":{
       return {
@@ -148,7 +147,6 @@ const getInvoices = async(state, companyId, dispatch) => {
       invoiceCurrency:state.invoiceCurrency} }
   ).then(async(x)=> {
     let temp = x.data.result;
-    // console.log(temp)
     let accountData = {};
     if(x.data.status=="success" && x.data.account!=null){
       x.data.account.forEach((z)=>{
@@ -158,18 +156,12 @@ const getInvoices = async(state, companyId, dispatch) => {
       })
       
       temp = temp.map((y, index)=>{
-        console.log(state.payType)
-        // console.log(y.SE_Job)
-        // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
-        let tempRemBalance =state.payType == "Receivable"?parseFloat(y.total)-parseFloat(y.recieved):parseFloat(y.total)-parseFloat(y.paid)
-        // let tempRemBalance =
-        // (state.payType=="Receivable"?
-        //   (parseFloat(y.total) - (parseFloat(y.recieved==null?0:y.recieved)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
-        //   (parseFloat(y.total) - (parseFloat(y.paid==null?0:y.paid)) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
-        // (state.payType=="Receivable"?
-        //   (parseFloat(y.total) - parseFloat(y.recieved==null?0:y.recieved) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2):
-        //   (parseFloat(y.total) - parseFloat(y.paid==null?0:y.paid) - parseFloat(y.receiving==null?0:y.receiving) + parseFloat(y.roundOff)).toFixed(2))
-        // console.log(tempRemBalance)
+        let tempRemBalance = 0
+        if(y.payType == "Receivable"){
+          tempRemBalance = parseFloat(y.total) - parseFloat(y.recieved)
+        }else{
+          tempRemBalance = parseFloat(y.total) - parseFloat(y.paid)
+        }
         return{
           ...y,
           check:false,
@@ -177,27 +169,20 @@ const getInvoices = async(state, companyId, dispatch) => {
           jobSubType:y.SE_Job==null?'Old':y.SE_Job.subType,
           ex_rate:state.partytype=="agent"?y.ex_rate:1.00,
           receiving:state.edit? y.Invoice_Transactions[0].amount:0.00,
-          //inVbalance:(parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
           inVbalance:
-          // state.partytype=="agent"
-            // ((parseFloat(y.total) * parseFloat(y.ex_rate)) + parseFloat(y.roundOff)).toFixed(2):
             (parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
           remBalance:tempRemBalance=='0'?
             0:
             (parseFloat(tempRemBalance)+parseFloat(state.edit?y.Invoice_Transactions[0].amount:0.00)).toFixed(2),
-            //inVbalance:(parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2)//getNetInvoicesAmount(y.Charge_Heads).localAmount
         }
       });
     }
-    console.log(temp)
     if(temp.length>1){
       let temp1 = temp.filter((x) => {
         return x.remBalance != 0;
       });
       temp = temp1
     }
-    // console.log(temp1)
-    // console.log(temp)
     dispatch({
     type:"setAll", 
     

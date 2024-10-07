@@ -230,14 +230,9 @@ const BillComp = ({companyId, state, dispatch}) => {
             }
           })
   
-          // console.log(state.totalrecieving)
           let newPartyAmount = 0;
           let newPayAmount = 0;
-          // console.log(state.debitReceiving, 'debit')
-          // console.log(state.creditReceiving, 'credit')
-          // console.log(parseFloat(state.gainLossAmount), 'gain-loss')
           let TempTotalReceing = Math.abs(state.debitReceiving - state.creditReceiving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
-          // console.log(TempTotalReceing, 'Total')
           newPartyAmount = ((TempTotalReceing).toFixed(2));
   
           if(state.debitReceiving>state.creditReceiving){
@@ -245,10 +240,6 @@ const BillComp = ({companyId, state, dispatch}) => {
           } else {
             newPayAmount = (TempTotalReceing + removing )//- parseFloat(state.gainLossAmount))
           }
-          // console.log(newPartyAmount, 'Party')
-          // console.log(newPayAmount, 'Company')
-          // console.log(removing, 'tax & Charges')
-          // console.log(state.gainLossAmount, 'tax & Charges')
           transTwo.push({
             particular:state.partyAccountRecord,
             tran:{
@@ -294,9 +285,8 @@ const BillComp = ({companyId, state, dispatch}) => {
         }
       };
   
-      // console.log(getTotal('debit', transTwo,'PKR'))
-      // console.log(getTotal('credit', transTwo,'PKR'))
-      
+      console.log(removing)
+      console.log(transTwo)
       dispatch({type:'setAll', payload:{
         removing:removing,
         transactionCreation:transTwo,
