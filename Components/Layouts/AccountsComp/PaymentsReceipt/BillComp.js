@@ -211,7 +211,7 @@ const BillComp = ({companyId, state, dispatch}) => {
             transTwo.push({
               particular:state.gainLossAccountRecord,
               tran:{
-                type:parseFloat(state.gainLossAmount)<0?'credit':'debit',
+                type:parseFloat(state.gainLossAmount)>0?'credit':'debit',
                 amount:parseFloat(gainAndLossAmount).toFixed(2),//state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount)),
                 defaultAmount:(parseFloat(gainAndLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
                 narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} Against ${invNarration}`,
@@ -219,16 +219,16 @@ const BillComp = ({companyId, state, dispatch}) => {
               }
             })
           }
-          transTwo.push({
-            particular:state.partyAccountRecord,
-            tran:{
-              type:parseFloat(state.gainLossAmount)>0?'credit':'debit',
-              amount:Math.abs(parseFloat(state.gainLossAmount)).toFixed(2),
-              defaultAmount:(Math.abs(parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-              narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} Against ${invNarration}`,
-              accountType:'partyAccount'
-            }
-          })
+          // transTwo.push({
+          //   particular:state.partyAccountRecord,
+          //   tran:{
+          //     type:parseFloat(state.gainLossAmount)<0?'credit':'debit',
+          //     amount:Math.abs(parseFloat(state.gainLossAmount)).toFixed(2),
+          //     defaultAmount:(Math.abs(parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
+          //     narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} Against ${invNarration}`,
+          //     accountType:'partyAccount'
+          //   }
+          // })
   
           let newPartyAmount = 0;
           let newPayAmount = 0;
@@ -243,20 +243,19 @@ const BillComp = ({companyId, state, dispatch}) => {
           transTwo.push({
             particular:state.partyAccountRecord,
             tran:{
-              type:state.debitReceiving > state.creditReceiving?'debit':'credit',
+              type:state.payType=="Payble"?'debit':'credit',
               amount:newPartyAmount,
               defaultAmount:parseFloat(newPartyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate), //- removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
               accountType:'partyAccount'
             }
           })
-  
           transTwo.push({
             particular:state.payAccountRecord,  
             tran:{ 
-              type:state.debitReceiving > state.creditReceiving?'credit':'debit',
-              amount:parseFloat(newPayAmount).toFixed(2), 
-              defaultAmount:((parseFloat(newPayAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),//-removing
+              type:state.payType=="Payble"?'credit':'debit',
+              amount: state.payType=="Payble"?(parseFloat(newPayAmount)-parseFloat(state.gainLossAmount)).toFixed(2):(parseFloat(newPayAmount)+parseFloat(state.gainLossAmount)).toFixed(2),
+              defaultAmount: state.payType=="Payble"?((parseFloat(newPayAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate))-(parseFloat(state.gainLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)):(parseFloat(newPayAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate))+(parseFloat(state.gainLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)),//-removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
               accountType:'payAccount'
             }
@@ -284,9 +283,6 @@ const BillComp = ({companyId, state, dispatch}) => {
           })
         }
       };
-  
-      console.log(removing)
-      console.log(transTwo)
       dispatch({type:'setAll', payload:{
         removing:removing,
         transactionCreation:transTwo,
@@ -581,7 +577,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               checked={x.check} 
               disabled={state.autoOn}
               onChange={() => {
-                let tempState = [...state.invoices];
+                let tempState = [...state.invoices.filter(x=>x?.payType==state.payType)];
                 tempState[index].check = !tempState[index].check;
                 if(state.payType=="Receivable"){
                   tempState[index].receiving = tempState[index].check?
