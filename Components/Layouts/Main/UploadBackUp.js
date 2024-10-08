@@ -949,7 +949,7 @@ const Upload_CoA = () => {
                     createdAt: x.invoice___bill_date?x.invoice___bill_date:null
                 }):null
                 let voucher = {
-                    CompanyId:Cookies.get("companyId"),
+                    CompanyId:companyID,
                     costCenter:"KHI",
                     type:"Opening Invoice",
                     vType:x.payable!=0?"OB":"OI",
@@ -1057,7 +1057,7 @@ const Upload_CoA = () => {
                 ChildAccountId: ChildAccountId
             }):null
             let voucher = {
-                CompanyId:Cookies.get("companyId"),
+                CompanyId:companyID,
                 costCenter:"KHI",
                 type:"Opening Invoice",
                 vType:"OI",
