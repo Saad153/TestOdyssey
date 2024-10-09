@@ -1269,7 +1269,6 @@ const Upload_CoA = () => {
         <span className="py-2">Jobs</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
         <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
-        
         </>
     )
 }

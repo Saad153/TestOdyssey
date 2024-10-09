@@ -21,7 +21,8 @@ export async function getServerSideProps(context) {
       "from":query.from,
       "to":query.to,
       "accountid":query.accountid,
-      "currency":query.currency
+      "currency":query.currency,
+      "old": query.old
     }
   }).then((x)=>x.data);
 

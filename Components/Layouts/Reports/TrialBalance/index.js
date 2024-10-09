@@ -70,11 +70,28 @@ const TrialBalance = () => {
     console.log("here")
     console.log(debitAccount)
     // Router.push("/reports/trialBalance/report")
-    Router.push({ pathname: `/reports/trialBalance/report`, query: { from: from, to: to, company: company, reportType: reportType, currency: currency, accountid:debitAccount, options:options } });
+    Router.push({ pathname: `/reports/trialBalance/report`, query: { from: from, to: to, company: company, reportType: reportType, currency: currency, accountid:debitAccount, options:options, old:false } });
     dispatch(incrementTab({
       "label": "Trial Balance Report",
       "key": "5-10",
-      "id": `?from=${from}&to=${to}&company=${company}&reportType=${reportType}&currency=${currency}&accountid=${debitAccount}&options=${options}`
+      "id": `?from=${from}&to=${to}&company=${company}&reportType=${reportType}&currency=${currency}&accountid=${debitAccount}&options=${options}&old=${false}`
+    }))
+
+    dispatch(setFilterValues({
+      pageName:"trialBalance",
+      values:stateValues
+    }))
+  }
+
+  const handleOldSubmit = () => {
+    console.log("here")
+    console.log(debitAccount)
+    // Router.push("/reports/trialBalance/report")
+    Router.push({ pathname: `/reports/trialBalance/report`, query: { from: from, to: to, company: company, reportType: reportType, currency: currency, accountid:debitAccount, options:options, old:true } });
+    dispatch(incrementTab({
+      "label": "Trial Balance Report",
+      "key": "5-10",
+      "id": `?from=${from}&to=${to}&company=${company}&reportType=${reportType}&currency=${currency}&accountid=${debitAccount}&options=${options}&old=${true}`
     }))
 
     dispatch(setFilterValues({
@@ -140,6 +157,7 @@ const TrialBalance = () => {
         <div>Account</div>
         <Select
           showSearch
+          allowClear
           style={{ width: '100%' }}
           placeholder="Debit Account"
           onChange={(e) => setDebitAccount(e)}
@@ -185,9 +203,15 @@ const TrialBalance = () => {
             </Radio.Group>
           </Col>
           </Row>
+    <div className='d-flex'>
+
     <button className='btn-custom mt-3 px-3' onClick={handleSubmit}>
       Go
     </button>
+    <button className='btn-custom mt-3 px-3 mx-2' onClick={handleOldSubmit}>
+      Show Old
+    </button>
+    </div>
   </div>
   )
 }
