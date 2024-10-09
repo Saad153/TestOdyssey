@@ -126,10 +126,16 @@ const totalRecieveCalc = (vals) => {
   let total = 0.00;
   vals.forEach((x)=>{
     if(x.receiving>0){
-      total = total + parseFloat(x.receiving)
+      if(x.payType=="Payble"){
+        console.log("Payble", x.receiving)
+        total = total - parseFloat(x.receiving)
+      }else{
+        console.log("Receivable", x.receiving)
+        total = total + parseFloat(x.receiving)
+      }
     }
   });
-  return total;
+  return total.toFixed(2);
 }
 
 //const getInvoices = async(id, dispatch, partytype, selectedParty, payType, companyId, invoiceCurrency) => {

@@ -66,16 +66,14 @@ const BillComp = ({companyId, state, dispatch}) => {
     let creditReceiving = 0.00
     state.invoices.forEach((x)=>{
       if(x.receiving && (x.receiving!=0|| state.edit)){
+        console.log("Calculating profit/loss", x.receiving, x.ex_rate, state.manualExRate, x.payType)
         let tempExAmount = parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))
-        // console.log(x.payType);
         if(x.payType=="Payble"){
           tempExAmount = -1*tempExAmount
         }
         tempGainLoss = tempGainLoss + tempExAmount
-        // console.log(tempGainLoss);
         let tempAmount = (parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))).toFixed(2)
         let invoieLossValue = {}
-        // console.log(x.receiving)
         x.payType == 'Receivable'?
           debitReceiving = debitReceiving + parseFloat(x.receiving):
           creditReceiving = creditReceiving + parseFloat(x.receiving)
@@ -99,6 +97,7 @@ const BillComp = ({companyId, state, dispatch}) => {
       invoiceLosses:tempInvoiceLosses,
       debitReceiving:debitReceiving,
       creditReceiving:creditReceiving,
+      totalrecieving:debitReceiving-creditReceiving,
     }})
   };
 
@@ -135,6 +134,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         pendingFund = 0.00;
       })
       val.forEach((x)=>{
+        console.log(x.payType, x.receiving, state.exRate)
         newExAmount = parseFloat(newExAmount) + (parseFloat(x.receiving)*parseFloat(state.exRate));
         oldExAmount = parseFloat(oldExAmount) + (parseFloat(x.receiving)*parseFloat(x.ex_rate));
       })
@@ -232,7 +232,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   
           let newPartyAmount = 0;
           let newPayAmount = 0;
-          let TempTotalReceing = Math.abs(state.debitReceiving - state.creditReceiving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
+          let TempTotalReceing = Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
           newPartyAmount = ((TempTotalReceing).toFixed(2));
   
           if(state.debitReceiving>state.creditReceiving){
@@ -491,7 +491,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               disabled={state.autoOn}
               onChange={() => {
                 let tempState = [...state.invoices];
-                tempState.filter(x=>x?.payType==state.payType).forEach((x) => {
+                tempState.forEach((x) => {
                   x.check = !checked
                   if(state.payType=="Receivable"){
                     x.receiving = x.check?
@@ -521,8 +521,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         <tbody>
           
 
-        {state.invoices.filter(x=>x?.payType==state.payType).map((x, index) => {
-          // {console.log(x)}
+        {state.invoices.map((x, index) => {
         return (
         <tr key={index} className={`f fs-12 ${state.edit?'grey-row':''}`}>
           <td style={{width:30}}>{index + 1}</td>
@@ -577,7 +576,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               checked={x.check} 
               disabled={state.autoOn}
               onChange={() => {
-                let tempState = [...state.invoices.filter(x=>x?.payType==state.payType)];
+                let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;
                 if(state.payType=="Receivable"){
                   tempState[index].receiving = tempState[index].check?
@@ -606,11 +605,10 @@ const BillComp = ({companyId, state, dispatch}) => {
       </div>
       </div>
         <>
-        {/*  */}
         <div style={{position:'relative', top:20}}>
-          Total {state.payType} Amount:{" "}
+          Total {state.totalrecieving>0?"Recievable":"Payable"} Amount:{" "}
           <div style={{padding:3, border:'1px solid silver', minWidth:100, display:'inline-block', textAlign:'right'}}>
-            {Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")}
+            {Math.abs(state.totalrecieving).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")}
           </div>
         </div>
         </>
