@@ -208,9 +208,9 @@ const TrialBalance = () => {
     <button className='btn-custom mt-3 px-3' onClick={handleSubmit}>
       Go
     </button>
-    <button className='btn-custom mt-3 px-3 mx-2' onClick={handleOldSubmit}>
+    {/* <button className='btn-custom mt-3 px-3 mx-2' onClick={handleOldSubmit}>
       Show Old
-    </button>
+    </button> */}
     </div>
   </div>
   )

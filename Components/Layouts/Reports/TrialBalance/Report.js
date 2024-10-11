@@ -33,6 +33,11 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
+        console.log(x)
+
+        if(x.Voucher.currency != "PKR"){
+          x.amount = x.amount*x.Voucher.exRate
+        }
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           x.type=="debit"?
