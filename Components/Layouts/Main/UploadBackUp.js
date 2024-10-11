@@ -699,7 +699,10 @@ const Upload_CoA = () => {
         let accountsData = accounts.data.result
         let couint = 0
         let balances = []
+        let failed = []
         for(let x of data){
+            let partyid = ""
+            let partyname = ""
             let matched = false
             accountsData.forEach((y)=>{
                 y.Parent_Accounts.forEach((z)=>{
@@ -707,10 +710,14 @@ const Upload_CoA = () => {
                         if(x.title_of_account){
                             if(a.title == x.title_of_account.trim()){
                                 x.ChildAccountId = a.id
+                                partyid = a.id
+                                partyname = a.title
                                 matched = true      
                             }
-                            if(x.title_of_account.trim() == "ROYAL AIR MARACO"){
-                                x.ChildAccountId = 1380
+                            if(x.title_of_account.trim() == "ROYAL AIR MARACO" && a.title == "ROYAL AIR MARACO"){
+                                x.ChildAccountId = a.id
+                                partyid = a.id
+                                partyname = a.title
                                 matched = true
                             }
                         }
@@ -763,13 +770,20 @@ const Upload_CoA = () => {
                 currency:currency,
                 exRate:"0.00",
                 payTo:"",
+                partyId: partyid,
+                partyName: partyname,
                 Voucher_Heads:Voucher_Heads
               }
               matched?balances.push(voucher):null
             !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
-            matched?await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher):null
+            if(matched){
+                let result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
+                console.log(result)
+                result.data.status == "success"?null:failed.push(result.data.result)
+            }
             matched?couint++:null
         }
+        console.log(failed)
         console.log(balances)
 
     }
