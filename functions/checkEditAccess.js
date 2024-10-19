@@ -9,7 +9,7 @@ function checkEditAccess(){
     let firstCall = false;
     if(tempToken == Cookies.get('token')){
       token = jwt_decode(Cookies.get("token"));
-      console.log(token.access) 
+      // console.log(token.access) 
     }else{
       logout();
     }
@@ -33,7 +33,7 @@ function checkEditAccess(){
   newTemp.forEach((x)=>{
     x = x.trim()
     if(x == 'admin' || x == 'Edit'){
-      console.log("Edit triggered")
+      // console.log("Edit triggered")
       access = true
     }
    

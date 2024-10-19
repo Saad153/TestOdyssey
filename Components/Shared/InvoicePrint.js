@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Row, Col, Table } from 'react-bootstrap';
 import moment from "moment";
 import ports from "/jsonData/ports";
@@ -7,6 +7,17 @@ import inWords from '/functions/numToWords';
 import Cookies from 'js-cookie';
 
 const InvoicePrint = ({logo, compLogo, records, bank, bankDetails, invoice, calculateTotal}) => {
+
+    const [type, setType] = useState("PP")
+
+    useEffect(()=>{
+        records.forEach((x)=>{
+            if(x.pp_cc=="CC"){
+                setType("CC")
+            }
+        }) 
+    },[])
+
     const getPort = (id) => {
         const index = ports.ports.findIndex(element => element.id == id);
         let value = "";
@@ -19,6 +30,7 @@ const InvoicePrint = ({logo, compLogo, records, bank, bankDetails, invoice, calc
         }
         return value
     }
+    
     const getAirPort = (id) => {
         const index = airports.findIndex(element => element.id == id);
         let value = "";
@@ -328,6 +340,7 @@ const InvoicePrint = ({logo, compLogo, records, bank, bankDetails, invoice, calc
         <td className='p-0 text-center fw-6'>Qty         </td>
         <td className='p-0 text-center fw-6'>Rate        </td>
         <td className='p-0 text-center fw-6'>Curr        </td>
+        {type=="CC"?<td className='p-0 text-center fw-6'>Type        </td>:null}
         <td className='p-0 text-center fw-6'>Amount      </td>
         <td className='p-0 text-center fw-6'>Dis         </td>  
         <td className='p-0 text-center fw-6'>Tax         </td>  
@@ -336,6 +349,7 @@ const InvoicePrint = ({logo, compLogo, records, bank, bankDetails, invoice, calc
     </thead>
     <tbody>
     {records?.map((x, index) => {
+        console.log(x)
     return (
     <tr key={index} className='table-row-center-singleLine' style={{border:'1px solid black', fontSize:9}}>
         <td className='text-center p-0'>{index + 1}</td>
@@ -343,6 +357,7 @@ const InvoicePrint = ({logo, compLogo, records, bank, bankDetails, invoice, calc
         <td className='text-center p-0'>{x.qty}</td>
         <td className='text-center p-0'>{x.rate_charge}</td>
         <td className='text-center p-0'>{x.currency}</td>
+        {x.pp_cc=="CC"?<td className='text-center p-0'>{x.type=="Recievable"?"DN":"CN"}</td>:null}
         <td className='text-center p-0'>{x.amount}</td>
         <td className='text-center p-0'>{x.discount}</td>
         <td className='text-center p-0'>{x.tax_amount}</td>

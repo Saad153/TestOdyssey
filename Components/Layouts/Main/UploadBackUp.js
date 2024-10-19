@@ -23,6 +23,8 @@ const Upload_CoA = () => {
     const [withAccounts1, setWithAccounts] = useState([]);
     let withAccounts = []
     let withoutAccounts = []
+    const [status, setStatus] = useState("Waiting for file");
+    const [statusInvoices, setStatusInvoices] = useState("Waiting for file");
     const [C, setClients] = useState(false);
     const [V, setVendors] = useState(false);
     const [CV, setCV] = useState(false);
@@ -699,7 +701,6 @@ const Upload_CoA = () => {
         let accountsData = accounts.data.result
         let couint = 0
         let balances = []
-        let failed = []
         for(let x of data){
             let partyid = ""
             let partyname = ""
@@ -802,16 +803,9 @@ const Upload_CoA = () => {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
             const [day, monthName, year] = dateStr.split('-');
-            //console.log(monthName, day, year)
-            // const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            // const month = monthNames.indexOf(monthName-1);
             return new Date(year, monthName, day);
         }else if(dateStr && dateStr.includes("/")){
             const [monthName, day, year] = dateStr.split('/');
-            //console.log(dateStr)
-            //console.log(monthName, day, year)
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            // const month = monthNames[monthName];
             return new Date(year, monthName-1, day);
         }
       }
@@ -841,8 +835,9 @@ const Upload_CoA = () => {
     const [voucherList, setVoucherList] = useState([]);
 
     const handleInvoices = async (data, fileInfo) => {
-        let invoices = []
         console.log(data)
+        setStatusInvoices("File loaded, Fetching data...")
+        let invoices = []
         let companyID = "0"
         if(fileInfo.name.includes("ACS")){
             companyID = "3"
@@ -873,6 +868,7 @@ const Upload_CoA = () => {
         let clientAssociationsList = clientAssociations.data.result
         let vendorAssociationsList = vendorAssociations.data.result
         let  i = 0
+        setStatusInvoices("Data Fetched, Processing...")
         if(!agentInvoices){
             for(let x of data){
                 let party_id = ""
@@ -1045,7 +1041,7 @@ const Upload_CoA = () => {
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
             let Voucher_Heads = [];
-            console.log(invoice.recieved, invoice.paid)
+            // console.log(invoice.recieved, invoice.paid)
             Voucher_Heads.push({
                 defaultAmount: "-",
                 amount: invoice.total,
@@ -1085,26 +1081,27 @@ const Upload_CoA = () => {
             !matched?invoicewoAcc.push(x):null
             }
         }
+        setStatusInvoices("Success, see console for more details")
         setInvoices(invoices)
         console.log(invoices)
         
     }
 
     const uploadInvoices = async() => {
+        console.log(invoicesData)
         let count = 0
         let failed = []
+        setStatusInvoices("Uploading...")
         for(let x of invoicesData){
             if(x.companyId != "1" || x.companyId != "3"){
-                const result = await axios.post("http://localhost:8081/invoice/createBulkInvoices", x)
+                const result = await axios.post("http://localhost:8081/invoice/uploadbulkInvoices", x)
                 count++
-                // console.log(result)
-                if(result.data.status != "success"){
-                    failed.push(x)
-                }
+                console.log(result)
             }
-            // break
+            // break;
         }
-        console.log(failed)
+        setStatusInvoices("Success, see console for more details")
+        // console.log(failed)
         console.log(count)
     }
 
@@ -1166,86 +1163,301 @@ const Upload_CoA = () => {
         //console.log(ACS_AI)
         //console.log(ACS_SEJ)
         //console.log(ACS_SIJ)
-        // for(let x of data){
-        //     let clientId = ""
-        //     let OAgentId = ""
-        //     let shippingLineId = ""
-        //     let localVendorId = ""
-        //     let CAgentId = ""
-        //     let transporterId = ""
-        //     let ConsigneeId = ""
-        //     let forwarderId = ""
-        //     let airLineId = ""
-        //     let shipperId = ""
-        //     vendors.forEach((y)=>{
-        //         if(x.clearingagent && y.name.trim().toLowerCase() == x.clearingagent.trim().toLowerCase()){
-        //             CAgentId = y.id
-        //         }
-        //         if(x.local_agent && y.name.trim().toLowerCase() == x.local_agent.trim().toLowerCase()){
-        //             localVendorId = y.id
-        //         }
-        //         if(x.air_shipping_line && y.name.trim().toLowerCase() == x.air_shipping_line.trim().toLowerCase()){
-        //             shippingLineId = y.id
-        //         }
-        //         if(x.overseas_agent && y.name.trim().toLowerCase() == x.overseas_agent.trim().toLowerCase()){
-        //             OAgentId = y.id
-        //         }
-        //     })
-        //     clients.forEach((y)=>{
-        //         if(x.client && y.name.trim().toLowerCase() == x.client.trim().toLowerCase()){
-        //             clientId = y.id
-        //         }
-        //         if(x.consignee && y.name.trim().toLowerCase() === x.consignee.trim().toLowerCase()){
-        //             //console.log(index)
-        //             count++
-        //             ConsigneeId = y.id
-        //         }
-        //         if(x.shipper && y.name.trim().toLowerCase() == x.shipper.trim().toLowerCase()){
-        //             shipperId = y.id
-        //         }
-        //     })
-        //     let job={
-        //         jobNo: x.job__,
-        //         jobId: x.sr__,
-        //         pcs: x.number_of_pkgs?x.number_of_pkgs:null,
-        //         vol: x.vol?x.vol:null,
-        //         pol: x.port_of_loading?x.port_of_loading:null,
-        //         pod: x.final_dest?x.final_dest:null,
-        //         fd: x.port_of_delivery?x.port_of_delivery:null,
-        //         dg: x.hazmat_class_typeid?x.hazmat_class_typeid=="0"?"non-DG":"DG":null,
-        //         subType: x.sub_type_name?x.sub_type_name:null,
-        //         shpVol: x.vol?x.vol:null,
-        //         weight: x.wt?x.wt:null,
-        //         weightUnit: "KG",
-        //         costCenter: "KHI",
-        //         jobType: x.type_name?x.type_name:null,
-        //         jobKind: "Current",
-        //         companyId: "1",
-        //         freightType: x.freight_typeid?x.freight_typeid=="2"?"Collect":"Prepaid":null,
-        //         eta: x.sailing_arrival?x.sailing_arrival:null,
-        //         etd: x.delivery_date?x.delivery_date:null,
-        //         jobDate: x.jobdate?x.jobdate:null,
-        //         shipDate: x.sailing_date?x.sailing_date:null,
-        //         pkgUnit: x.pkg_unit?x.pkg_unit:null,
-        //         incoTerms: x.inconame?x.inconame.split(' ').map(word => word[0]).join(''):null,
-        //         approved: true,
-        //         operation: x.operation_types?x.operation_types:null,
-        //         ClientId: clientId?clientId:null,
-        //         overseasAgentId: OAgentId?OAgentId:null,
-        //         shippingLineId: shippingLineId?shippingLineId:null,
-        //         localVendorId: localVendorId?localVendorId:null,
-        //         customAgentId: CAgentId?CAgentId:null,
-        //         consigneeId: ConsigneeId?ConsigneeId:null,
-        //         shipperId: shipperId?shipperId:null
-        //     }
-
-        //     jobList.push(job)
-        //     index++
-        // // }
-        // setJobs(jobList)
-        //console.log(jobList)
-        //console.log("Count: ",count)
+        
     }
+
+    const [vouchers, setVouchers] = useState([])
+
+    const [voucherData, setVoucherData] = useState([])
+
+    const handleVoucher = async(data, fileInfo) => {
+        console.log(data)
+        setVoucherData(data)
+        console.log(fileInfo)
+        setStatus("Processing...")
+        let toBeUploaded = []
+        let openingBalances = []
+        let misc = []
+        let salesInvoices = []
+        let purchaseInvoices = []
+        let bankPayVoucher = []
+        let bankRecVoucher = []
+        let cashPayVoucher = []
+        let cashRecVoucher = []
+        let transferVoucher = []
+        let journalVoucher = []
+        let settlementVoucher = []
+        let creditNote = []
+        let debitNote = []
+        const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
+            headers: {
+                id: 1
+            }
+        })
+        let accountsData = accounts.data.result
+        let partyid = ""
+        let partyname = ""
+        let accountType = ""
+        let matched = false
+        for(let x of data){
+            if(x.exchangerate == 0){
+                x.exchangerate = 1
+            }
+            switch(x.currency){
+                case "PAK RUPEES":{
+                    x.currency = "PKR"
+                    break
+                }
+                case "US DOLLAR":{
+                    x.currency = "USD"
+                    break
+                }
+                case "US DOLLAR":{
+                    x.currency = "USD"
+                    break
+                }
+                case "USD":{
+                    x.currency = "USD"
+                    break
+                }
+                case "EURO":{
+                    x.currency = "EUR"
+                    break
+                }
+                case "BRITISH POUND":{
+                    x.currency = "GBP"
+                    break
+                }
+                case "CHF":{
+                    x.currency = "CHF"
+                    break
+                }
+                case null:{
+                    x.currency = "PKR"
+                    break
+                }
+                default:{
+                    console.log(x.currency)
+                    console.log(x)
+                }
+            }
+            accountsData.forEach((y)=>{
+                y.Parent_Accounts.forEach((z)=>{
+                    z.Child_Accounts.forEach((a)=>{
+                        if(x.accountname){
+                            if(a.title == x.accountname.trim()){
+                                x.partyId = a.id
+                                x.partyName = a.title
+                                x.accountType = a.subCategory
+                                matched = true      
+                            }
+                            if(x.accountname.trim() == "ROYAL AIR MARACO" && a.title == "ROYAL AIR MARACO"){
+                                x.partyId = a.id
+                                x.partyName = a.title
+                                x.accountType = a.subCategory
+                                matched = true
+                            }
+                        }
+                    })
+                })
+            })
+            !matched?console.log("Unmotched>>>", x):null
+            let pushed = false
+            if(x.voucher_type){
+
+                if(x.voucher_type.includes("SALES INVOICE") && matched){
+                    x.vType = "SI"
+                    salesInvoices.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("PURCHASE INVOICE") && matched){
+                    x.vType = "PI"
+                    purchaseInvoices.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("BANK PAYMENT VOUCHER") && matched){
+                    x.vType = "BPV"
+                    bankPayVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("BANK RECEIPT VOUCHER") && matched){
+                    x.vType = "BRV"
+                    bankRecVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("CASH PAYMENT VOUCHER") && matched){
+                    x.vType = "CPV"
+                    cashPayVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("CASH RECEIPT VOUCHER") && matched){
+                    
+                    x.vType = "CRV"
+                    cashRecVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("TRANSFER VOUCHER") && matched){
+                    
+                    x.vType = "TV"
+                    transferVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("JOURNAL VOUCHER") && matched){
+                    
+                    x.vType = "JV"
+                    journalVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("SETTLEMENT VOUCHER") && matched){
+                    
+                    x.vType = "SV"
+                    settlementVoucher.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("CREDIT NOTE") && matched){
+                    
+                    x.vType = "CN"
+                    creditNote.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("DEBIT NOTE") && matched){
+                    
+                    x.vType = "DN"
+                    debitNote.push(x)
+                    pushed = true
+                }
+                if(x.voucher_type.includes("OPENING BALANCE") && matched){
+                    
+                    x.vType = "OP"
+                    openingBalances.push(x)
+                    pushed = true
+                }
+            }
+            if(!pushed){
+                misc.push(x)
+            }
+
+        }
+        setStatus("Sorted, creating Vouchers...")
+
+        toBeUploaded.push(...bankRecVoucher)
+        toBeUploaded.push(...bankPayVoucher)
+        toBeUploaded.push(...salesInvoices)
+        toBeUploaded.push(...purchaseInvoices)
+        toBeUploaded.push(...cashPayVoucher)
+        toBeUploaded.push(...cashRecVoucher)
+        toBeUploaded.push(...transferVoucher)
+        toBeUploaded.push(...journalVoucher)
+        toBeUploaded.push(...settlementVoucher)
+        toBeUploaded.push(...creditNote)
+        toBeUploaded.push(...debitNote)
+        toBeUploaded.push(...openingBalances)
+
+        console.log("To be Uploaded", toBeUploaded)
+        console.log("SALES INVOICE", salesInvoices)
+        console.log("PURCHASE INVOICE", purchaseInvoices)
+        console.log("BANK PAYMENT VOUCHER", bankPayVoucher)
+        console.log("BANK RECEIPT VOUCHER", bankRecVoucher)
+        console.log("CASH PAYMENT VOUCHER", cashPayVoucher)
+        console.log("CASH RECEIPT VOUCHER", cashRecVoucher)
+        console.log("TRANSFER VOUCHER", transferVoucher)
+        console.log("JOURNAL VOUCHER", journalVoucher)
+        console.log("SETTLEMENT VOUCHER", settlementVoucher)
+        console.log("CREDIT NOTE", creditNote)
+        console.log("DEBIT NOTE", debitNote)
+        console.log("OPENING BALANCE", openingBalances)
+        console.log("Unsorted", misc)
+        let index = 0
+        let vouchers = []
+        let temp = toBeUploaded
+
+        for(let x of toBeUploaded){
+            if(!x.partyName){
+                console.log("No Party>>>>>",x)
+            }
+            let Voucher_Heads = []
+            let a ={}
+            let voucher = {
+                voucher_Id: x.voucher_no,
+                CompanyId: Cookies.get("companyId"),
+                costCenter: "KHI",
+                type: x.voucher_type,
+                vType: x.vType,
+                currency: x.currency,
+                voucherNarration: x.narration,
+                exRate: x.exchangerate?x.exchangerate:null,
+                chequeNo: x.cheque_number?x.cheque_number:null,
+                chequeDate: cheque_date,
+                payTo:"",
+                partyId: x.partyId,
+                partyName: x.partyName,
+                partyType: x.accountType,
+                createdBy: "Backup",
+                Voucher_Heads:Voucher_Heads,
+                createdAt: parseDateString(x.voucher_date)
+              }
+            for(let y of toBeUploaded){
+                if(x.voucher_no && y.voucher_no && (x.voucher_no == y.voucher_no)){
+                    a = {
+                        voucher_Id: y.voucher_no,
+                        defaultAmount: y.debit!=0?y.debit:y.credit,
+                        amount: y.currency!="PKR"?y.debit!=0?y.debit/y.exchangerate:y.credit/y.exchangerate:y.debit!=0?y.debit:y.credit,
+                        type: y.debit!=0?"debit":"credit",
+                        narration: y.narration,
+                        settlement: "",
+                        ChildAccountId: y.partyId,
+                        partyName: y.partyName,
+                        accountType: y.accountType,
+                        createdAt: parseDateString(y.voucher_date)
+                    };
+                    Voucher_Heads.push(a)
+                }
+            }
+            voucher.Voucher_Heads = Voucher_Heads
+            vouchers.push(voucher)
+        }
+
+        const uniqueVouchers = vouchers.filter((voucher, index, self) =>
+            index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)
+        );
+
+        console.log(uniqueVouchers)
+        setVouchers(uniqueVouchers)
+        console.log("Done")
+        setStatus("Vouchers created, waiting to upload...")
+    }
+
+    const uploadVouchers = async()=>{
+        setStatus("Uploading...")
+        let results = []
+        for(let voucher of vouchers){
+            let result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
+            // let result = await axios.post("http://localhost:8081/voucher/pushVoucehrHeads", voucher)
+            results.push(result.data)
+        }
+        console.log(results)
+        setStatus("Uploaded")
+    }
+
+    const verifyVouchers = async() => {
+        const voucher_heads = await axios.get("http://localhost:8081/voucher/getAllVoucehrHeads")
+        console.log(voucher_heads.data.result)
+        console.log(voucherData)
+        let notPresent = []
+        voucherData.forEach((x)=>{
+            let present = false
+            voucher_heads.data.result.forEach((y)=>{
+                if(y.Voucher.voucher_Id == x.voucher_no){
+                    present = true
+                }
+            })
+            !present?notPresent.push(x):null
+        })
+        console.log("Not Present in DB", notPresent)
+
+    }
+
+
 
     const uploadJobs = async()=>{
         //console.log(jobs)
@@ -1279,7 +1491,38 @@ const Upload_CoA = () => {
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleOpeningBalances(data, fileInfo)}}/>
         <span className="py-2">Invoices</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleInvoices(data, fileInfo)}}/>
+        <span
+            className="py-2"
+            style={{
+                color: statusInvoices === "Waiting for file" ? "grey" :
+                    statusInvoices === "File loaded, Fetching data..." ? "orange" :
+                    statusInvoices === "Data Fetched, Processing..." ? "blue" :
+                    statusInvoices === "Success, see console for more details" ? "green" :
+                    statusInvoices === "Uploading..." ? "blue" :
+                    "red"
+            }}
+            >
+            {statusInvoices}
+        </span>
         <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+        <span className="py-2">Vouchers</span>
+        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleVoucher(data, fileInfo)}}/>
+        <span
+            className="py-2"
+            style={{
+                color: status === "Waiting for file" ? "grey" :
+                    status === "Processing..." ? "orange" :
+                    status === "Sorted, creating Vouchers..." ? "blue" :
+                    status === "Vouchers created, waiting to upload..." ? "green" :
+                    status === "Uploading..." ? "blue" :
+                    status === "Uploaded" ? "green" :
+                    "red"
+            }}
+            >
+            {status}
+        </span>
+        <button onClick={uploadVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Vouchers</button>
+        <button onClick={verifyVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Verify Vouchers</button>
         <span className="py-2">Jobs</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
         <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
