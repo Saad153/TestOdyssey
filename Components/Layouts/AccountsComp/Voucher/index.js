@@ -83,7 +83,7 @@ const Voucher = ({ id }) => {
   
         // Set payTo field based on vType
         if (data.vType === "CPV" || data.vType === "BRV" || data.vType === "TV" || data.vType === "JV") {
-          data.payTo = `Paid Amount from ${settlementFinal.toLowerCase()} to ${settlementFinal.toLowerCase()}`;
+          data.payTo = `Paid Amount from ${settlementFinal.toLowerCase()} to ${accountTitle.toLowerCase()}`;
         } else {
           data.payTo = `Payment received from ${accountTitle.toLowerCase()} to ${settlementFinal.toLowerCase()}`;
         }

@@ -37,12 +37,10 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     let updatedChargeList = [];
 
     for (let element of tempChargeList) {
-      console.log("1")
-      console.log(element)
+      console.log(element.pp_cc)
       if (element.check) {
-        console.log("2")
-        console.log(element)
         element.check = false
+        element.pp_cc = "CC"
         // element.new = true
         let tempCharge = { ...element }; 
         delete tempCharge.id

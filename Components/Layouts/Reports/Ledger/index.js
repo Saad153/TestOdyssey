@@ -136,7 +136,7 @@ const Ledger = () => {
             <Radio value={"AED"}>AED</Radio>
             <Radio value={"OMR"}>OMR</Radio>
             <Radio value={"BDT"}>BDT</Radio>
-            <Radio value={""}>ALL</Radio>
+            <Radio value={"ALL"}>ALL</Radio>
         </Radio.Group>
       </Col>
       <Col md={6}>
@@ -158,12 +158,12 @@ const Ledger = () => {
           if(count>0){
             if (account != "" && account != null) {
               Router.push({ pathname: `/reports/ledgerReport/${account}/`,
-                query: {from: from, to: to, name: name, company: company, currency: currency, old: false }
+                query: {from: from, to: to, name: name, company: company, currency: currency }
               });
               dispatch(incrementTab({
                 "label": "Ledger Report",
                 "key": "5-7",
-                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}&old=${false}`
+                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
               }))
             }
             else{
@@ -192,7 +192,7 @@ const Ledger = () => {
           }
         }
         }> Go </button>
-        <button className='btn-custom mt-3 mx-2' onClick={async () => {
+        {/* <button className='btn-custom mt-3 mx-2' onClick={async () => {
           let count = await getLedger(true);
           if(count>0){
             if (account != "" && account != null) {
@@ -230,7 +230,7 @@ const Ledger = () => {
             });
           }
         }
-        }>Show Old</button>
+        }>Show Old</button> */}
       </Col>
     </Row>
   </div>

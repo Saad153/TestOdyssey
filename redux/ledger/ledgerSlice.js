@@ -5,7 +5,7 @@ import moment from 'moment';
     from: "2023-07-01",
     to: moment().format("YYYY-MM-DD"),
     company: 1,
-    currency: "",
+    currency: "ALL",
     records: [],
     account:"",
     name: "",

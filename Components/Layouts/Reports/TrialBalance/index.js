@@ -12,7 +12,7 @@ import Router from 'next/router';
 const TrialBalance = () => {
 
   const [records, setRecords] = useState([]);
-  const [debitAccount, setDebitAccount] = useState("");
+  const [debitAccount, setDebitAccount] = useState(null);
   const [company, setCompany] = useState(1);
   const [from, setFrom] = useState(moment("2023-07-01").format("YYYY-MM-DD"));
   const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
@@ -199,7 +199,7 @@ const TrialBalance = () => {
             <Radio.Group onChange={(e)=>setOptions(e.target.value)} value={options}>
                 {/* <Radio value={"exclude"}>Exclude 0 </Radio> */}
                 <Radio value={"excludeOpening"}>Exclude Opening</Radio>
-                <Radio value={"showall"}>Show All</Radio>
+                <Radio default value={"showall"}>Show All</Radio>
             </Radio.Group>
           </Col>
           </Row>
@@ -208,9 +208,6 @@ const TrialBalance = () => {
     <button className='btn-custom mt-3 px-3' onClick={handleSubmit}>
       Go
     </button>
-    {/* <button className='btn-custom mt-3 px-3 mx-2' onClick={handleOldSubmit}>
-      Show Old
-    </button> */}
     </div>
   </div>
   )
