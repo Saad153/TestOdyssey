@@ -46,8 +46,18 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
     <div className='px-2 pb-2 mt-3' style={{border:'1px solid silver'}}>
         {(type=="SE"||type=="SI") && <>
         <div className='custom-link mt-2' onClick={()=>pageLinking("vessel")} >Vessel *</div>
-        <SelectSearchComp register={register} name='vesselId' control={control} label=''disabled={getStatus(approved)} width={"100%"}
-            options={filterVessels(state.fields.vessel)} 
+        {/* <SelectSearchComp register={register} name='vesselId' control={control} label=''disabled={getStatus(approved)} width={"100%"}
+            options={filterVessels(state.fields.vessel)}
+        /> */}
+        <SelectSearchComp
+            register={register}
+            clear={true}
+            name='vesselId'
+            control={control}
+            label=''
+            disabled={getStatus(approved)}
+            options={filterVessels(state.fields.vessel)}
+            width={"100%"}
         />
         <div className='mt-2'>Voyage *</div>
         <div className="dummy-input"

@@ -67,31 +67,14 @@ const TrialBalance = () => {
   }
 
   const handleSubmit = () => {
-    console.log("here")
-    console.log(debitAccount)
+    // console.log("here")
+    // console.log(debitAccount)
     // Router.push("/reports/trialBalance/report")
     Router.push({ pathname: `/reports/trialBalance/report`, query: { from: from, to: to, company: company, reportType: reportType, currency: currency, accountid:debitAccount, options:options, old:false } });
     dispatch(incrementTab({
       "label": "Trial Balance Report",
       "key": "5-10",
       "id": `?from=${from}&to=${to}&company=${company}&reportType=${reportType}&currency=${currency}&accountid=${debitAccount}&options=${options}&old=${false}`
-    }))
-
-    dispatch(setFilterValues({
-      pageName:"trialBalance",
-      values:stateValues
-    }))
-  }
-
-  const handleOldSubmit = () => {
-    console.log("here")
-    console.log(debitAccount)
-    // Router.push("/reports/trialBalance/report")
-    Router.push({ pathname: `/reports/trialBalance/report`, query: { from: from, to: to, company: company, reportType: reportType, currency: currency, accountid:debitAccount, options:options, old:true } });
-    dispatch(incrementTab({
-      "label": "Trial Balance Report",
-      "key": "5-10",
-      "id": `?from=${from}&to=${to}&company=${company}&reportType=${reportType}&currency=${currency}&accountid=${debitAccount}&options=${options}&old=${true}`
     }))
 
     dispatch(setFilterValues({
@@ -108,8 +91,6 @@ const TrialBalance = () => {
     setCurrency(event.target.value);
 
 };
-
-
 
   return (
   <div className='base-page-layout'>

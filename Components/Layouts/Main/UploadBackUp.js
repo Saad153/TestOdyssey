@@ -254,7 +254,7 @@ const Upload_CoA = () => {
     }
 
     const handleDataParties = async (data, fileInfo) => {
-        //console.log(data)
+        console.log(data)
         //console.log(fileInfo)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
@@ -267,6 +267,9 @@ const Upload_CoA = () => {
         let CAcc = 0
         //console.log(accountsData)
         data.forEach((x, i)=>{
+            if(x.shipping_line == "Yes"){
+                console.log(x)
+            }
             let namematched = false
             accountsData.forEach((y)=>{
                 Acc++
@@ -340,7 +343,7 @@ const Upload_CoA = () => {
                             x.indentor === "Yes" ? "Indentor" : null,
                             x.transporter === "Yes" ? "Transporter" : null,
                             x.cha_chb === "Yes" ? "CHA/CHB" : null,
-                            x.shipping_line === "Yes" ? "Shipping Line" : null,
+                            x.shipping_line == "Yes" ? "Shipping Line" : null,
                             x.delivery_agent === "Yes" ? "Delivery Agent" : null,
                             x.warehouse_party === "Yes" ? "Warehouse Party" : null,
                             x.buying_house === "Yes" ? "Buying House" : null,
@@ -425,255 +428,12 @@ const Upload_CoA = () => {
                   
 
             }
-            if(fileInfo.name == 'clients.csv' || fileInfo.name == 'clientvendor.csv'){
-                setClients(true)
-                //console.log("Got client")
-                partiesAccounts.Clients.push(
-                    {
-                        code: x.party_code,
-                        name: x.party_name,
-                        city: x.city_name,
-                        zip: null,  
-                        person1: null,  
-                        mobile1: null,  
-                        person2: null,  
-                        mobile2: null,  
-                        telephone1: x.telephone_1,
-                        telephone2: x.telephone_2,
-                        address1: x.address_1,
-                        address2: x.address_2,
-                        website: x.website,
-                        accountsMail: x.email,
-                        infoMail: null,  
-                        strn: x.strn,
-                        ntn: x.vatno, 
-                        registerDate: x.registration_date,
-                        operations: [
-                            x.sea_export === "Yes" ? "Sea Export" : null,
-                            x.sea_import === "Yes" ? "Sea Import" : null,
-                            x.air_export === "Yes" ? "Air Export" : null,
-                            x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", "),
-                        types: [
-                            x.air_line === "Yes" ? "Air Line" : null,
-                            x.billing_party === "Yes" ? "Billing Party" : null,
-                            x.buyer === "Yes" ? "Buyer" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.ware_house === "Yes" ? "Warehouse" : null,
-                            x.depo === "Yes" ? "Depo" : null,
-                            x.shipper === "Yes" ? "Shipper" : null,
-                            x.consignee === "Yes" ? "Consignee" : null,
-                            x.notify === "Yes" ? "Notify" : null,
-                            x.potential_customer === "Yes" ? "Potential Customer" : null,
-                            x.forwarder_coloader === "Yes" ? "Forwarder/Coloader" : null,
-                            x.local_vendor === "Yes" ? "Local Vendor" : null,
-                            x.overseas_agent === "Yes" ? "Overseas Agent" : null,
-                            x.commission_agent === "Yes" ? "Commission Agent" : null,
-                            x.indentor === "Yes" ? "Indentor" : null,
-                            x.transporter === "Yes" ? "Transporter" : null,
-                            x.cha_chb === "Yes" ? "CHA/CHB" : null,
-                            x.shipping_line === "Yes" ? "Shipping Line" : null,
-                            x.delivery_agent === "Yes" ? "Delivery Agent" : null,
-                            x.warehouse_party === "Yes" ? "Warehouse Party" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.trucking === "Yes" ? "Trucking" : null,
-                            x.drayman === "Yes" ? "Drayman" : null,
-                            x.cartage === "Yes" ? "Cartage" : null,
-                            x.stevedore === "Yes" ? "Stevedore" : null,
-                            x.principal === "Yes" ? "Principal" : null,
-                            x.depoparty === "Yes" ? "Depoparty" : null,
-                            x.terminal_party === "Yes" ? "Terminal Party" : null,
-                            x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", "),
-                        bankAuthorizeDate: null,  
-                        bank: null,  
-                        branchName: null,  
-                        branchCode: null,  
-                        accountNo: x.account_code,
-                        iban: null,  
-                        swiftCode: null,  
-                        routingNo: null,  
-                        ifscCode: null,  
-                        micrCode: null,  
-                        currency: x.currency_code,
-                        createdBy: Cookies.get('username'), 
-                        nongl: null, 
-                        active: true,
-                        accountRepresentatorId: null,
-                        salesRepresentatorId: null,
-                        docRepresentatorId: null,
-                        authorizedById: null 
-                    }
-                    
-                )
-            }
-            if(fileInfo.name == 'vendors.csv' || fileInfo.name == 'clientvendor.csv'){
-                setVendors(true)
-                partiesAccounts.Vendors.push(
-                    {
-                        code: x.party_code,
-                        name: x.party_name,
-                        city: x.city_name,
-                        zip: null,  
-                        person1: null,  
-                        mobile1: null,  
-                        person2: null,  
-                        mobile2: null,  
-                        telephone1: x.telephone_1,
-                        telephone2: x.telephone_2,
-                        address1: x.address_1,
-                        address2: x.address_2,
-                        website: x.website,
-                        accountsMail: x.email,
-                        infoMail: null,  
-                        strn: x.strn,
-                        ntn: x.vatno, 
-                        registerDate: x.registration_date,
-                        operations: [
-                            x.sea_export === "Yes" ? "Sea Export" : null,
-                            x.sea_import === "Yes" ? "Sea Import" : null,
-                            x.air_export === "Yes" ? "Air Export" : null,
-                            x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", "),
-                        types: [
-                            x.air_line === "Yes" ? "Air Line" : null,
-                            x.billing_party === "Yes" ? "Billing Party" : null,
-                            x.buyer === "Yes" ? "Buyer" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.ware_house === "Yes" ? "Warehouse" : null,
-                            x.depo === "Yes" ? "Depo" : null,
-                            x.shipper === "Yes" ? "Shipper" : null,
-                            x.consignee === "Yes" ? "Consignee" : null,
-                            x.notify === "Yes" ? "Notify" : null,
-                            x.potential_customer === "Yes" ? "Potential Customer" : null,
-                            x.forwarder_coloader === "Yes" ? "Forwarder/Coloader" : null,
-                            x.local_vendor === "Yes" ? "Local Vendor" : null,
-                            x.overseas_agent === "Yes" ? "Overseas Agent" : null,
-                            x.commission_agent === "Yes" ? "Commission Agent" : null,
-                            x.indentor === "Yes" ? "Indentor" : null,
-                            x.transporter === "Yes" ? "Transporter" : null,
-                            x.cha_chb === "Yes" ? "CHA/CHB" : null,
-                            x.shipping_line === "Yes" ? "Shipping Line" : null,
-                            x.delivery_agent === "Yes" ? "Delivery Agent" : null,
-                            x.warehouse_party === "Yes" ? "Warehouse Party" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.trucking === "Yes" ? "Trucking" : null,
-                            x.drayman === "Yes" ? "Drayman" : null,
-                            x.cartage === "Yes" ? "Cartage" : null,
-                            x.stevedore === "Yes" ? "Stevedore" : null,
-                            x.principal === "Yes" ? "Principal" : null,
-                            x.depoparty === "Yes" ? "Depoparty" : null,
-                            x.terminal_party === "Yes" ? "Terminal Party" : null,
-                            x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", "),
-                        bankAuthorizeDate: null,  
-                        bank: null,  
-                        branchName: null,  
-                        branchCode: null,  
-                        accountNo: x.account_code,
-                        iban: null,  
-                        swiftCode: null,  
-                        routingNo: null,  
-                        ifscCode: null,  
-                        micrCode: null,  
-                        currency: x.currency_code,
-                        createdBy: null, 
-                        nongl: null, 
-                        active: true,
-                        accountRepresentatorId: null,
-                        salesRepresentatorId: null,
-                        docRepresentatorId: null,
-                        authorizedById: null 
-                    } 
-                )
-            }
-            if(fileInfo.name == 'nongl.csv'){
-                setNonGl(true)
-                partiesAccounts.Clients.push(
-                    {
-                        code: x.party_code,
-                        name: x.party_name,
-                        city: x.city_name,
-                        zip: null,  
-                        person1: null,  
-                        mobile1: null,  
-                        person2: null,  
-                        mobile2: null,  
-                        telephone1: x.telephone_1,
-                        telephone2: x.telephone_2,
-                        address1: x.address_1,
-                        address2: x.address_2,
-                        website: x.website,
-                        accountsMail: x.email,
-                        infoMail: null,  
-                        strn: x.strn,
-                        ntn: x.vatno, 
-                        registerDate: x.registration_date,
-                        operations: [
-                            x.sea_export === "Yes" ? "Sea Export" : null,
-                            x.sea_import === "Yes" ? "Sea Import" : null,
-                            x.air_export === "Yes" ? "Air Export" : null,
-                            x.air_import === "Yes" ? "Air Import" : null
-                        ].filter(Boolean).join(", "),
-                        types: [
-                            x.air_line === "Yes" ? "Air Line" : null,
-                            x.billing_party === "Yes" ? "Billing Party" : null,
-                            x.buyer === "Yes" ? "Buyer" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.ware_house === "Yes" ? "Warehouse" : null,
-                            x.depo === "Yes" ? "Depo" : null,
-                            x.shipper === "Yes" ? "Shipper" : null,
-                            x.consignee === "Yes" ? "Consignee" : null,
-                            x.notify === "Yes" ? "Notify" : null,
-                            x.potential_customer === "Yes" ? "Potential Customer" : null,
-                            x.forwarder_coloader === "Yes" ? "Forwarder/Coloader" : null,
-                            x.local_vendor === "Yes" ? "Local Vendor" : null,
-                            x.overseas_agent === "Yes" ? "Overseas Agent" : null,
-                            x.commission_agent === "Yes" ? "Commission Agent" : null,
-                            x.indentor === "Yes" ? "Indentor" : null,
-                            x.transporter === "Yes" ? "Transporter" : null,
-                            x.cha_chb === "Yes" ? "CHA/CHB" : null,
-                            x.shipping_line === "Yes" ? "Shipping Line" : null,
-                            x.delivery_agent === "Yes" ? "Delivery Agent" : null,
-                            x.warehouse_party === "Yes" ? "Warehouse Party" : null,
-                            x.buying_house === "Yes" ? "Buying House" : null,
-                            x.trucking === "Yes" ? "Trucking" : null,
-                            x.drayman === "Yes" ? "Drayman" : null,
-                            x.cartage === "Yes" ? "Cartage" : null,
-                            x.stevedore === "Yes" ? "Stevedore" : null,
-                            x.principal === "Yes" ? "Principal" : null,
-                            x.depoparty === "Yes" ? "Depoparty" : null,
-                            x.terminal_party === "Yes" ? "Terminal Party" : null,
-                            x.slotoperator === "Yes" ? "Slot Operator" : null
-                        ].filter(Boolean).join(", "),
-                        bankAuthorizeDate: null,  
-                        bank: null,  
-                        branchName: null,  
-                        branchCode: null,  
-                        accountNo: x.account_code,
-                        iban: null,  
-                        swiftCode: null,  
-                        routingNo: null,  
-                        ifscCode: null,  
-                        micrCode: null,  
-                        currency: x.currency_code,
-                        createdBy: null, 
-                        nongl: '1', 
-                        active: true,
-                        accountRepresentatorId: null,
-                        salesRepresentatorId: null,
-                        docRepresentatorId: null,
-                        authorizedById: null 
-                    }
-                    
-                )
-            }
             //console.log(x.party_name)
             //console.log(accountsData[0].Parent_Accounts[0].Child_Accounts[0].name)
         })
         //console.log(Acc,PAcc,CAcc)
 
-        //console.log(partiesAccounts.Clients)
+        console.log(partiesAccounts)
         //console.log(partiesAccounts.Vendors)
         setPartiesAccounts(partiesAccounts)
         //console.log(withAccounts)
@@ -806,7 +566,7 @@ const Upload_CoA = () => {
             return new Date(year, monthName, day);
         }else if(dateStr && dateStr.includes("/")){
             const [monthName, day, year] = dateStr.split('/');
-            return new Date(year, monthName-1, day);
+            return new Date(year, monthName, day);
         }
       }
 
@@ -814,17 +574,22 @@ const Upload_CoA = () => {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
             const [day, monthName, year] = dateStr.split('-');
-            //console.log(monthName, day, year)
-            // const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            // const month = monthNames.indexOf(monthName-1);
             return new Date(year, monthName, day);
         }else if(dateStr && dateStr.includes("/")){
+            const [monthName, day, year] = dateStr.split('/');
+            return new Date(year, monthName, day);
+        }
+      }
+      function parseDateString2(dateStr) {
+        //console.log(dateStr)
+        if(dateStr && dateStr.includes("-")){
+            const [day, monthName, year] = dateStr.split('-');
+            // console.log(year, parseInt(monthName)-1, parseInt(day))
+            return new Date(year, parseInt(monthName)-1, parseInt(day)+1);
+        }else if(dateStr && dateStr.includes("/")){
             const [day, monthName, year] = dateStr.split('/');
-            // console.log(dateStr)
-            // console.log(monthName, day, year)
-            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            // const month = monthNames[monthName];
-            return new Date(year, monthName-1, day);
+            // console.log(year, parseInt(monthName)-1, parseInt(day))
+            return new Date(year, parseInt(monthName)-1, parseInt(day)+1);
         }
       }
 
@@ -851,12 +616,12 @@ const Upload_CoA = () => {
         let counter  = 0
         const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
         const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
-        const clientAssociations = await axios.get("http://localhost:8081/clientRoutes/getClientAssociations", {
+        const clientAssociations = await axios.get("http://localhost:8088/clientRoutes/getClientAssociations", {
             headers: {
                 company: companyID
             }
         })
-        const vendorAssociations = await axios.get("http://localhost:8081/vendor/getVendorAssociations", {
+        const vendorAssociations = await axios.get("http://localhost:8088/vendor/getVendorAssociations", {
             headers: {
                 company: companyID
             }
@@ -1094,7 +859,7 @@ const Upload_CoA = () => {
         setStatusInvoices("Uploading...")
         for(let x of invoicesData){
             if(x.companyId != "1" || x.companyId != "3"){
-                const result = await axios.post("http://localhost:8081/invoice/uploadbulkInvoices", x)
+                const result = await axios.post("http://localhost:8088/invoice/uploadbulkInvoices", x)
                 count++
                 console.log(result)
             }
@@ -1191,7 +956,7 @@ const Upload_CoA = () => {
         let debitNote = []
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
-                id: 1
+                id: Cookies.get("companyId")
             }
         })
         let accountsData = accounts.data.result
@@ -1387,17 +1152,18 @@ const Upload_CoA = () => {
                 voucherNarration: x.narration,
                 exRate: x.exchangerate?x.exchangerate:null,
                 chequeNo: x.cheque_number?x.cheque_number:null,
-                chequeDate: cheque_date,
+                // chequeDate: cheque_date?cheque_date:null,
                 payTo:"",
                 partyId: x.partyId,
                 partyName: x.partyName,
                 partyType: x.accountType,
                 createdBy: "Backup",
                 Voucher_Heads:Voucher_Heads,
-                createdAt: parseDateString(x.voucher_date)
+                createdAt: parseDateString2(x.voucher_date)
               }
             for(let y of toBeUploaded){
                 if(x.voucher_no && y.voucher_no && (x.voucher_no == y.voucher_no)){
+                    // console.log(y.voucher_no)
                     a = {
                         voucher_Id: y.voucher_no,
                         defaultAmount: y.debit!=0?y.debit:y.credit,
@@ -1408,8 +1174,9 @@ const Upload_CoA = () => {
                         ChildAccountId: y.partyId,
                         partyName: y.partyName,
                         accountType: y.accountType,
-                        createdAt: parseDateString(y.voucher_date)
+                        createdAt: parseDateString2(y.voucher_date)
                     };
+                    // console.log(parseDateString2(y.voucher_date))
                     Voucher_Heads.push(a)
                 }
             }
@@ -1432,7 +1199,7 @@ const Upload_CoA = () => {
         let results = []
         for(let voucher of vouchers){
             let result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
-            // let result = await axios.post("http://localhost:8081/voucher/pushVoucehrHeads", voucher)
+            // let result = await axios.post("http://localhost:8088/voucher/pushVoucehrHeads", voucher)
             results.push(result.data)
         }
         console.log(results)
@@ -1440,7 +1207,7 @@ const Upload_CoA = () => {
     }
 
     const verifyVouchers = async() => {
-        const voucher_heads = await axios.get("http://localhost:8081/voucher/getAllVoucehrHeads")
+        const voucher_heads = await axios.get("http://localhost:8088/voucher/getAllVoucehrHeads")
         console.log(voucher_heads.data.result)
         console.log(voucherData)
         let notPresent = []

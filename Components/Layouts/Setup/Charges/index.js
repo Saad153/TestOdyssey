@@ -98,12 +98,13 @@ const Charges = ({chargeData}) => {
           </tr>
         </thead>
         <tbody>
-        {records.filter((x)=>{
+          {console.log(records)}
+        {records?.filter((x)=>{
             if(
-              x.code.toLowerCase()==state.search.toLowerCase() ||
-              x.name.toLowerCase()==state.search.toLowerCase() ||
-              x.short.toLowerCase()==state.search.toLowerCase()||
-              x.currency.toLowerCase()==state.search.toLowerCase()){
+              x.code==state.search.toLowerCase() ||
+              x.name?.toLowerCase()==state.search.toLowerCase() ||
+              x.short?.toLowerCase()==state.search.toLowerCase()||
+              x.currency?.toLowerCase()==state.search.toLowerCase()){
               return x
             } else if(state.search==""){
               return x

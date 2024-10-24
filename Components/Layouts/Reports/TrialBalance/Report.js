@@ -7,10 +7,8 @@ import Pagination from "/Components/Shared/Pagination";
 
 const Report = ({query, result}) => {
   console.log("query",query)
-  // console.log(result.result)
   const reportView = query.reportType;
   const option = query.options;
-  // console.log(option)
     const [ records, setRecords ] = useState([]);
     const [ total, setTotal ] = useState({
       opDebit:0,
@@ -23,7 +21,6 @@ const Report = ({query, result}) => {
     const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
     const makeTransaction = (data) => {
-      // console.log(data)
       let transactions  = {
         opDebit:0,
         opCredit:0,
@@ -33,7 +30,6 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
-        console.log(x)
 
         if(x.Voucher.currency != "PKR"){
           x.amount = x.amount*x.Voucher.exRate
@@ -59,10 +55,9 @@ const Report = ({query, result}) => {
     }
 
     useEffect(() => {
-      console.log(result?.result)
       let temp = [];
+      console.log(result.result)
       result?.result?.forEach((x)=>{
-        // console.log(x)
         if(x?.Child_Accounts?.length>0){
           temp.push({
             title:x.title, type:'parent',
@@ -74,8 +69,6 @@ const Report = ({query, result}) => {
               type:'child',
               ...makeTransaction(y.Voucher_Heads)
             });
-            // console.log(makeTransaction(y.Voucher_Heads))
-            // console.log(y.Voucher_Heads)
           })
         }
       })
@@ -84,7 +77,6 @@ const Report = ({query, result}) => {
     }, []);
 
     const makeParentTransactions = (data) => {
-      // console.log(data)
       let transactions  = {
         opDebit:0,
         opCredit:0,

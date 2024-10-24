@@ -364,7 +364,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             disabled={state.partytype == "agent"}
           >
             <Radio value={"Payble"}>Payable</Radio>
-            <Radio value={"Receivable"}>Receivable</Radio>
+            <Radio value={"Recievable"}>Receivable</Radio>
           </Radio.Group>
         </Col>
 
