@@ -19,7 +19,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
   const [checked, setChecked] = useState(false);
-  
+  console.log(payType)
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
     // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
@@ -199,10 +199,12 @@ const BillComp = ({companyId, state, dispatch}) => {
             }
           })
         }
-        let partyAmount = state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)
+        console.log(state.totalrecieving)
+        console.log(state.debitReceiving)
+        let partyAmount = (state.totalrecieving<0?(-1*state.totalrecieving):state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
         let payAmount = state.debitReceiving > state.creditReceiving? 
-          (state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)) - removing:
-          (state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)) + removing; 
+          ((state.totalrecieving<0?(-1*state.totalrecieving):state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) - removing:
+          ((state.totalrecieving<0?(-1*state.totalrecieving):state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) + removing; 
   
         if(state.partytype=='agent'){
           // Gain & Loss Account
@@ -273,7 +275,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           })
           transTwo.push({
             particular:state.payAccountRecord,  
-            tran:{ 
+            tran:{
               type:payType=="Receivable"?'debit':'credit',// <-Checks the account type to make Debit or Credit
               amount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount)).toFixed(2), 
               defaultAmount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate).toFixed(2),//-removing
