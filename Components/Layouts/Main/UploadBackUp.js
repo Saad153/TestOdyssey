@@ -562,11 +562,11 @@ const Upload_CoA = () => {
     function parseDateString(dateStr) {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
-            const [day, monthName, year] = dateStr.split('-');
-            return new Date(year, monthName, day);
+            const [monthName, day, year] = dateStr.split('-');
+            return new Date(year, parseInt(monthName)-1, day);
         }else if(dateStr && dateStr.includes("/")){
             const [monthName, day, year] = dateStr.split('/');
-            return new Date(year, monthName, day);
+            return new Date(year, parseInt(monthName)-1, day);
         }
       }
 
@@ -574,10 +574,10 @@ const Upload_CoA = () => {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
             const [day, monthName, year] = dateStr.split('-');
-            return new Date(year, monthName, day);
+            return new Date(year, parseInt(monthName)-1, day);
         }else if(dateStr && dateStr.includes("/")){
-            const [monthName, day, year] = dateStr.split('/');
-            return new Date(year, monthName, day);
+            const [day, monthName, year] = dateStr.split('/');
+            return new Date(year, parseInt(monthName)-1, day);
         }
       }
       function parseDateString2(dateStr) {
@@ -676,8 +676,8 @@ const Upload_CoA = () => {
                 
                 if(x.invoice___bill_date){
                     let temp =  parseDateString1(x.invoice___bill_date)
-                    const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                    x.invoice___bill_date = isoString
+                    // const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                    x.invoice___bill_date = temp
                 }
                 let invoice = {}
                 invoice = {
@@ -783,8 +783,8 @@ const Upload_CoA = () => {
                 }
                 if(x.invoice_date){
                     let temp =  parseDateString(x.invoice_date.toString())
-                    const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                    x.invoice_date = isoString
+                    // const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                    x.invoice_date = temp
                 }
                 let invoice = {}
                 companyID!="0"?invoice = {
@@ -920,14 +920,14 @@ const Upload_CoA = () => {
                 }
             }
         }
-        //console.log(SNS_AE)
-        //console.log(SNS_AI)
-        //console.log(SNS_SEJ)
-        //console.log(SNS_SIJ)
-        //console.log(ACS_AE)
-        //console.log(ACS_AI)
-        //console.log(ACS_SEJ)
-        //console.log(ACS_SIJ)
+        console.log(SNS_AE)
+        console.log(SNS_AI)
+        console.log(SNS_SEJ)
+        console.log(SNS_SIJ)
+        console.log(ACS_AE)
+        console.log(ACS_AI)
+        console.log(ACS_SEJ)
+        console.log(ACS_SIJ)
         
     }
 
