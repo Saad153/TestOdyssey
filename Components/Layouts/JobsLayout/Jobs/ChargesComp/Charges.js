@@ -165,6 +165,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       </thead>
       {chargeList && <tbody>
       {fields.map((x, index) => {
+        // console.log(x)
       return(
         <>
           {x.type==type && 

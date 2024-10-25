@@ -183,17 +183,17 @@ const getInvoices = async(state, companyId, dispatch) => {
         }
       });
     }
-    if(temp.length>1){
-      let temp1 = temp.filter((x) => {
+    let temp1 = []
+    if(temp.length>0){
+      temp1 = temp.filter((x) => {
         return x.remBalance != 0;
       });
-      temp = temp1
     }
     dispatch({
     type:"setAll", 
     
     payload:{
-      invoices:temp,
+      invoices:temp1,
       partyAccountRecord:accountData.Child_Account,
       load:false,
       glVisible:false,

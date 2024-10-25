@@ -49,7 +49,7 @@ import { Tabs } from 'antd';
     <div style={{minHeight:525, maxHeight:525}}>
       <Tabs defaultActiveKey="1" onChange={(e)=> dispatch({type:'toggle', fieldName:'chargesTab',payload:e})}>
       <Tabs.TabPane tab="Receivable" key="1">
-        <Charges state={state} dispatch={dispatch} type={"Recievable"} register={register} setValue={setValue}
+        <Charges state={state} dispatch={dispatch} type={"Receivable"} register={register} setValue={setValue}
           chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />

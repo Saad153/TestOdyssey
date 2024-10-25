@@ -40,6 +40,7 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   const noOfPages = Math.ceil(records?.length / recordsPerPage);
 
   useEffect(() => {
+    // console.log('jobsData', jobsData);
     if (jobsData.status == "success") {
       setRecords(jobsData.result);
     }

@@ -60,23 +60,43 @@ const SelectSearchComp = (props) => {
     }));
 
     return (
-      <Select
-        showSearch
-        disabled={disabled}
-        style={{ minWidth: width || 200, maxWidth: width || 200, fontSize: 12 }}
-        name={fieldName}
-        onChange={onChange}
-        value={handleValue}
-        onBlur={onBlur}
-        optionFilterProp="children"
-        filterOption={(input, option) =>
-          ((option?.label) ?? '').toLowerCase().includes(input.toLowerCase()) ||
-          ((option?.code) ?? '').toLowerCase().includes(input.toLowerCase()) // ||
-        }
-        options={tempVal}
-        allowClear={clear}
-        {...rest}
-      />
+      // <Select
+      //   showSearch
+      //   disabled={disabled}
+      //   style={{ minWidth: width || 200, maxWidth: width || 200, fontSize: 12 }}
+      //   name={fieldName}
+      //   onChange={onChange}
+      //   value={handleValue}
+      //   onBlur={onBlur}
+      //   optionFilterProp="children"
+      //   filterOption={(input, option) =>
+      //     ((option?.label) ?? '').toLowerCase().includes(input.toLowerCase()) ||
+      //     ((option?.code) ?? '').includes(input) // ||
+      //   }
+      //   options={tempVal}
+      //   allowClear={clear}
+      //   {...rest}
+      // />
+    <Select
+      showSearch
+      disabled={disabled}
+      style={{ minWidth: width || 200, maxWidth: width || 200, fontSize: 12 }}
+      name={fieldName}
+      onChange={onChange}
+      value={handleValue}
+      onBlur={onBlur}
+      optionFilterProp="children"
+      filterOption={(input, option) => {
+        const label = (option?.label ?? '').toLowerCase();
+        const code = String(option?.code ?? ''); // Convert numeric code to string
+        const searchInput = input.toLowerCase();
+        return label.includes(searchInput) || code.includes(searchInput);
+      }}
+      options={tempVal}
+      allowClear={clear}
+      {...rest}
+    />
+
     );
   };
 

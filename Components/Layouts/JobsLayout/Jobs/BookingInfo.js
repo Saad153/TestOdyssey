@@ -127,7 +127,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
     Router.push(route);
   };
 
-  console.log(state)
+  // console.log(state)
 
 
   const ShipperComp = () => {
