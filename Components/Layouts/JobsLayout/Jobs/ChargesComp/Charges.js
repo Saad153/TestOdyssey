@@ -49,7 +49,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
         tempCharge.new = true
         // tempCharge.amount = tempCharge.amount * -1
         tempCharge.amount = '0'
-        tempCharge.type = tempCharge.type === "Recievable" ? "Payble" : "Recievable";
+        tempCharge.type = tempCharge.type === "Receivable" ? "Payble" : "Receivable";
         updatedChargeList.push(tempCharge);
       }
     }
@@ -77,6 +77,8 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       }
     }
     let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+    // console.log(tempChargeList)
+    // console.log(tempChargeHeadsArray)
     dispatch({type:'set', payload:{...tempChargeHeadsArray}})
     reset({ chargeList: tempChargeList });
   };

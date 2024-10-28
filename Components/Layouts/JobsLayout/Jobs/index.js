@@ -24,18 +24,11 @@ const SeJob = ({id, type}) => {
   const getData = async() => {
 
 
-    // let tempPerms = await JSON.parse(Cookies.get('permissions'));
     if(dataSuccess && newdata) {
-      // console.log("index: ",data.result.party.sLine)
-      // console.log("index: ",data.result.res)
-      // console.log("index: ",data.result)
-      data.result.res.forEach((x)=>{
+      console.log("index: ",data.result)
+      data?.result?.res?.forEach((x)=>{
         data.result.vendor.sLine.push(x)
       })
-      // delete data.result.res
-      // state.fetched && console.log("state",state)
-      // console.log("dataSuccess && newdata",dataSuccess , newdata)
-      // console.log("After Processing: ",data.result)
       dispatch({type:'set',
         payload:{
           fields:data.result,

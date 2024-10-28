@@ -245,7 +245,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           transTwo.push({
             particular:state.partyAccountRecord,
             tran:{
-              type:state.payType=="Payble"?'debit':'credit',
+              type:state.payType!="Payble"?'debit':'credit',
               amount:newPartyAmount,
               defaultAmount:parseFloat(newPartyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate), //- removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
@@ -255,7 +255,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           transTwo.push({
             particular:state.payAccountRecord,  
             tran:{ 
-              type:state.payType=="Payble"?'credit':'debit',
+              type:state.payType!="Payble"?'credit':'debit',
               amount: state.payType=="Payble"?(parseFloat(newPayAmount)-parseFloat(state.gainLossAmount)).toFixed(2):(parseFloat(newPayAmount)+parseFloat(state.gainLossAmount)).toFixed(2),
               defaultAmount: state.payType=="Payble"?((parseFloat(newPayAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate))-(parseFloat(state.gainLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)):(parseFloat(newPayAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate))+(parseFloat(state.gainLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)),//-removing
               narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,

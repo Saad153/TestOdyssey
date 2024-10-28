@@ -263,7 +263,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
           <InputComp register={register} name='fileNo' control={control} label='File #' width={"100%"} disabled={getStatus(approved)} />
         </Col>
         <Col className='py-0 my-0'>
-          <BLInfo blValues={state.selectedRecord.Bl} />
+          <BLInfo blValues={state.selectedRecord?.Bl} />
         </Col>
       </Row>
       <hr className='mb-0' />
@@ -357,9 +357,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
           {(type == "SE" || type == "SI") && <>
             <div className='custom-link mt-2' onClick={() => pageLinking("vendor", shippingLineId)} >Sline/Carrier</div>
             <SelectSearchComp register={register}
-              clear={true}
-
-              name='shippingLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.sLine} width={"100%"} />
+              clear={true} name='shippingLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.sLine} width={"100%"} />
           </>}
           {(type == "AE" || type == "AI") && <>
             <div className='custom-link mt-2' onClick={() => pageLinking("vendor", airLineId)} >Air line *</div>

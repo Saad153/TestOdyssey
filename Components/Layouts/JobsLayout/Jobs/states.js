@@ -306,22 +306,22 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
   if(chageHeads.length!=0){
     type!="Payble"?chageHeads.forEach((x)=>{
       if(x.pp_cc=="CC"){
-        x.type=="Recievable"?rec_ccCharges = rec_ccCharges + parseFloat(x.local_amount):null;
+        x.type=="Receivable"?rec_ccCharges = rec_ccCharges + parseFloat(x.local_amount):null;
       }else if(x.pp_cc=="PP"){
-        x.type=="Recievable"?rec_ppCharges = rec_ppCharges + parseFloat(x.local_amount):null;
+        x.type=="Receivable"?rec_ppCharges = rec_ppCharges + parseFloat(x.local_amount):null;
       }
       if(x.tax_apply){
-        x.type=="Recievable"?rec_tax = rec_tax + parseFloat(x.tax_amount*x.ex_rate):null;
+        x.type=="Receivable"?rec_tax = rec_tax + parseFloat(x.tax_amount*x.ex_rate):null;
       }
     }):null
-    type!="Recievable"?chageHeads.forEach((x)=>{
+    type!="Receivable"?chageHeads.forEach((x)=>{
       if(x.pp_cc=="CC"){
-        x.type!="Recievable"?pay_ccCharges = pay_ccCharges + parseFloat(x.local_amount):null;
+        x.type!="Receivable"?pay_ccCharges = pay_ccCharges + parseFloat(x.local_amount):null;
       }else if(x.pp_cc=="PP"){
-        x.type!="Recievable"?pay_ppCharges = pay_ppCharges + parseFloat(x.local_amount):null;
+        x.type!="Receivable"?pay_ppCharges = pay_ppCharges + parseFloat(x.local_amount):null;
       }
       if(x.tax_apply){
-        x.type!="Recievable"?pay_tax = pay_tax + parseFloat(x.tax_amount*x.ex_rate):null;
+        x.type!="Receivable"?pay_tax = pay_tax + parseFloat(x.tax_amount*x.ex_rate):null;
       }
     }):null
   }
@@ -339,7 +339,7 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
       tax:(rec_tax).toFixed(2)
     },
   }
-  type=="Recievable"?delete obj.payble:null
+  type=="Receivable"?delete obj.payble:null
   type=="Payble"?delete obj.reciveable:null
   return obj
 }

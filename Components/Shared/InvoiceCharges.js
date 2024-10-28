@@ -97,9 +97,10 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
   }, [data])
 
   const calculateTotal = (data) => {
+    console.log(data)
     let result = 0;
     data?.forEach((x) => {
-      result = result + parseFloat(x.local_amount)
+      result = result + parseFloat(x.amount)
     });
     return result.toFixed(2);
   };
@@ -161,6 +162,8 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
     }
     return tempInv
   };
+console.log(invoice)
+
   const approve = async () => {
     let exp = {}, income = {}, party = {}; //exp is the Expense Account, income is Income Account, party is Party's account to create vouhcer with Ledger
     setLoad(true);
@@ -185,7 +188,7 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
     });
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNTS_FOR_APPROVAL, {
       headers: {
-        title: tempInv.payType == "Recievable" ? "ACCOUNT RECEIVABLE" : "ACCOUNT PAYABLE",
+        title: tempInv.payType == "Receivable" ? "ACCOUNT RECEIVABLE" : "ACCOUNT PAYABLE",
         companyid: companyId,
         clientid: tempInv.party_Id,
         partytype: tempInv.partyType
@@ -193,13 +196,14 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
     }).then((x) => {
       party = x.data.result
     });
+    console.log(tempInv)
     if (tempInv.approved == "0") { tempInv.approved = "1" } else { tempInv.approved = "0" }
     let vouchers = {};
     let amount = calculateTotal(tempInv.Charge_Heads);
     tempInv.total = amount;
     vouchers = {
-      type: tempInv.payType == "Recievable" ? "Job Recievable" : "Job Payble",
-      vType: tempInv.payType == "Recievable" ? "SI" : "PI",
+      type: tempInv.payType == "Receivable" ? "Job Receivable" : "Job Payble",
+      vType: tempInv.payType == "Receivable" ? "SI" : "PI",
       CompanyId: companyId,
       amount: "",
       currency: tempInv.type == "Job Bill" ? "PKR" : tempInv.type == "Job Invoice" ? "PKR" : tempInv.currency,
@@ -216,22 +220,22 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
     if (tempRoundOff == 0) {
       vouchers.Voucher_Heads.push({
         amount: parseFloat(amount),
-        type: tempInv.payType == "Recievable" ? "debit" : "credit",
+        type: tempInv.payType == "Receivable" ? "debit" : "credit",
         narration: narration,
         VoucherId: null,
         ChildAccountId: party.id
       })
       vouchers.Voucher_Heads.push({
         amount: parseFloat(amount), //+ parseFloat(tempInv.roundOff),
-        type: tempInv.payType == "Recievable" ? "credit" : "debit",
+        type: tempInv.payType == "Receivable" ? "credit" : "debit",
         narration: narration,
         VoucherId: null,
-        ChildAccountId: tempInv.payType == "Recievable" ? income.id : exp.id //income.id
+        ChildAccountId: tempInv.payType == "Receivable" ? income.id : exp.id //income.id
       })
-    } else if (tempRoundOff > 0 && tempInv.payType == "Recievable") {
+    } else if (tempRoundOff > 0 && tempInv.payType == "Receivable") {
       vouchers.Voucher_Heads.push({
         amount: parseFloat(amount) + parseFloat(tempRoundOff),
-        type: tempInv.payType == "Recievable" ? "debit" : "credit",
+        type: tempInv.payType == "Receivable" ? "debit" : "credit",
         narration: narration,
         VoucherId: null,
         ChildAccountId: party.id
@@ -243,10 +247,10 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
         VoucherId: null,
         ChildAccountId: income.id
       })
-    } else if (tempRoundOff < 0 && tempInv.payType == "Recievable") {
+    } else if (tempRoundOff < 0 && tempInv.payType == "Receivable") {
       vouchers.Voucher_Heads.push({
         amount: parseFloat(amount) - parseFloat(tempRoundOff) * -1,
-        type: tempInv.payType == "Recievable" ? "debit" : "credit",
+        type: tempInv.payType == "Receivable" ? "debit" : "credit",
         narration: narration,
         VoucherId: null,
         ChildAccountId: party.id
@@ -260,12 +264,12 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
       })
       vouchers.Voucher_Heads.push({
         amount: parseFloat(tempRoundOff) * -1,
-        type: tempInv.payType == "Recievable" ? "debit" : "credit",
+        type: tempInv.payType == "Receivable" ? "debit" : "credit",
         narration: narration,
         VoucherId: null,
         ChildAccountId: exp.id
       })
-    } else if (tempRoundOff > 0 && tempInv.payType != "Recievable") {
+    } else if (tempRoundOff > 0 && tempInv.payType != "Receivable") {
       vouchers.Voucher_Heads.push({
         amount: parseFloat(amount) + parseFloat(tempRoundOff),
         type: "credit",
@@ -280,7 +284,7 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
         VoucherId: null,
         ChildAccountId: exp.id
       })
-    } else if (tempRoundOff < 0 && tempInv.payType != "Recievable") {
+    } else if (tempRoundOff < 0 && tempInv.payType != "Receivable") {
       vouchers.Voucher_Heads.push({
         amount: (parseFloat(amount) - parseFloat(tempRoundOff) * -1).toFixed(2),
         type: "credit",
@@ -315,6 +319,7 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
         dispatch((setApproved(tempInv.approved)))
         openNotification("Success", "Invoice Successfully Approved!", "green")
         if (tempInv.approved == "1") {
+          console.log(vouchers)
           await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER, vouchers);
         } else {
           await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_VOUCHER, { id: tempInv.id })
@@ -329,13 +334,13 @@ const InvoiceCharges = ({ data, companyId, reload }) => {
   };
   const checkApprovability = (x) => {
     let result = false;
-    if (x?.payType == "Recievable" && x?.recieved == "0") {
+    if (x?.payType == "Receivable" && x?.recieved == "0") {
       result = false;
-    } else if (x?.payType == "Recievable" && x?.recieved != "0") {
+    } else if (x?.payType == "Receivable" && x?.recieved != "0") {
       result = true;
-    } else if (x?.payType != "Recievable" && x?.paid == "0") {
+    } else if (x?.payType != "Receivable" && x?.paid == "0") {
       result = false;
-    } else if (x?.payType != "Recievable" && x?.paid != "0") {
+    } else if (x?.payType != "Receivable" && x?.paid != "0") {
       result = true;
     }
     return result

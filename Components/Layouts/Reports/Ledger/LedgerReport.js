@@ -15,9 +15,9 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
     if (voucherData.status == "success") {
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
       voucherData.result.forEach((y) => {
-        console.log(y["Voucher.exRate"])
+        // console.log(y["Voucher.exRate"])
         let exRate = parseFloat(y["Voucher.exRate"])>0?parseFloat(y["Voucher.exRate"]):1;
-        console.log(exRate)
+        // console.log(exRate)
         const createdAtDate = moment(y.createdAt);
         if (
           createdAtDate.isBetween(moment(from),moment(to),"day","[]") ||
@@ -25,13 +25,13 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
         ) {
           closingBalance =
             y.type === "debit" ? 
-              closingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
-              closingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
+              closingBalance + (currency!="ALL"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
+              closingBalance - (currency!="ALL"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
           if (y["Voucher.vType"] === "OP") {
             openingBalance =
               y.type === "debit" ? 
-                openingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
-                openingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
+                openingBalance + (currency!="ALL"? parseFloat(y.amount):parseFloat(y.amount) * exRate): 
+                openingBalance - (currency!="ALL"? parseFloat(y.amount):parseFloat(y.amount) * exRate)
             finalClosing = closingBalance
           } else {
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
@@ -39,7 +39,7 @@ const LedgerReport = ({ voucherData, account, from, to, name, company, currency 
               date: y.createdAt,
               voucherType: y["Voucher.type"],
               voucherId: y["Voucher.id"],
-              amount: currency=="PKR"? parseFloat(y.amount) :parseFloat(y.amount) * exRate,
+              amount: currency!="ALL"? parseFloat(y.amount) :parseFloat(y.amount) * exRate,
               balance: tempBalance,
               voucher: y["Voucher.voucher_Id"],
               type: y.type,
