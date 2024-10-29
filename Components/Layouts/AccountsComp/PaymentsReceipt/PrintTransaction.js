@@ -237,7 +237,7 @@ const PrintTransaction = ({companyId, state, dispatch}) => {
       </Table>
       </div>
       <div style={{position:'relative', top:20}}>
-        Total {state.debitReceiving > state.creditReceiving?"Receivable":"Payble"} Amount:{" "}
+        Total {state.debitReceiving > state.creditReceiving?"Recievable":"Payble"} Amount:{" "}
         <div style={{padding:3, border:'1px solid silver', minWidth:100, display:'inline-block', textAlign:'right'}}>
           {Math.abs(state.debitReceiving - state.creditReceiving).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")}
         </div>

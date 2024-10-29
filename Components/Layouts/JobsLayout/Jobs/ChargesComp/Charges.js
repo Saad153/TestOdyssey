@@ -11,16 +11,14 @@ import React, { useEffect } from 'react';
 import PartySearch from './PartySearch';
 import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew } from "../states";
 import { v4 as uuidv4 } from 'uuid';
-import { useDispatch, useSelector } from 'react-redux';
 
-const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, setValue, companyId, operationType, allValues, chargesData}) => {
+const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, companyId, operationType, allValues, chargesData}) => {
+
   const { permissions } = state;
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
-  const {approved} = useSelector((state) => state.invoice);
 
   useEffect(() => {
     if(chargeList){
-
       let list = chargeList.filter((x)=>x.check);
       dispatch({
         type:'set', payload:{
@@ -31,32 +29,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       })
     }
   }, [chargeList]);
-
-  const duplicate = () => {
-    let tempChargeList = [...chargeList]
-    let updatedChargeList = [];
-
-    for (let element of tempChargeList) {
-      console.log(element.pp_cc)
-      if (element.check) {
-        element.check = false
-        element.pp_cc = "CC"
-        // element.new = true
-        let tempCharge = { ...element }; 
-        delete tempCharge.id
-        element.description = element.id
-        tempCharge.description = element.id
-        tempCharge.new = true
-        // tempCharge.amount = tempCharge.amount * -1
-        tempCharge.amount = '0'
-        tempCharge.type = tempCharge.type === "Receivable" ? "Payble" : "Receivable";
-        updatedChargeList.push(tempCharge);
-      }
-    }
-
-    tempChargeList = [...tempChargeList, ...updatedChargeList];
-    reset({ chargeList: tempChargeList });
-  }
 
   const calculate  = () => {
     let tempChargeList = [...chargeList];
@@ -77,8 +49,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       }
     }
     let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
-    // console.log(tempChargeList)
-    // console.log(tempChargeHeadsArray)
     dispatch({type:'set', payload:{...tempChargeHeadsArray}})
     reset({ chargeList: tempChargeList });
   };
@@ -111,12 +81,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       await makeInvoice(chargeList, companyId, reset, operationType, dispatch, state);
     }
   };
-
-  const checkBox = async (index) => {
-
-  }
-
-  // console.log(register(`chargeList.${0}.check`))
 
   return(
   <>
@@ -167,7 +131,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       </thead>
       {chargeList && <tbody>
       {fields.map((x, index) => {
-        // console.log(x)
       return(
         <>
           {x.type==type && 
@@ -180,14 +143,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     () => {
                         let tempState = [...chargeList];
                         let tempDeleteList = [...state.deleteList];
-                        if(x.description){
-                          tempState.forEach((y, i)=>{
-                            if(y.description == x.description){
-                              tempDeleteList.push(tempState[i].id)
-                              tempState.splice(i, 1);
-                            }
-                          })
-                        }
                         tempDeleteList.push(tempState[index].id);
                         tempState.splice(index, 1);
                         reset({ chargeList: tempState });
@@ -206,16 +161,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     false:
                     true
               }
-              onChange={(e)=>{
-                setValue(`chargeList.${index}.check`, e.target.checked)
-                if(x.description){
-                  fields.forEach((y, i)=>{
-                    if(y.description == x.description){
-                      setValue(`chargeList.${i}.check`, e.target.checked)
-                    }
-                  })
-                }
-              }}
             />}
           </td>
           <td className='text-center'>{/* Invoice Number */}
@@ -274,9 +219,9 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     }
                     let partyData = partyType == "Client" ? await getClients(searchPartyId) : await getVendors(searchPartyId);
                     if (state.chargesTab == '1') {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Agent") ? "Agent Bill" : "Job Invoice";
+                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Bill" : "Job Invoice";
                     } else {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Agent") ? "Agent Invoice" : "Job Bill";
+                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Bill";
                     }
                     tempChargeList[index].name = partyData[0].name;
                     tempChargeList[index].partyId = partyData[0].id;
@@ -384,7 +329,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </td>
           <td>{x.local_amount}</td>
           <td>{x.particular}</td>
-          <td>{chargeList[index]?.Invoice?.approved === '1' ? 'Approved' : 'Unapproved'}</td><td></td><td></td></tr>
+          <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td><td></td><td></td></tr>
           }
         </>
       )})}
@@ -405,7 +350,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    <div className='div-btn-custom mt-3 mx-2 py-1 px-3 fl-right' onClick={()=>{duplicate(chargeList)}}>Duplicate</div>
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

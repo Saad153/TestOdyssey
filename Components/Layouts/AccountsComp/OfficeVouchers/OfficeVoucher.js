@@ -206,7 +206,7 @@ const OfficeVoucher = ({voucherData, id, employeeData}) => {
       }).then(async(x)=>{
         let tempVoucher = {...x.data.result};
         if(x.data.status=="success"){
-          tempVoucher.type="Receivable";
+          tempVoucher.type="Recievable";
           tempVoucher.payTo="Company";
           tempVoucher.vType="CRV";
           delete tempVoucher.id;

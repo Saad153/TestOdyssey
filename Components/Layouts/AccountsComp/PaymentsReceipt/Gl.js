@@ -66,7 +66,7 @@ const Gl = ({state, dispatch, companyId}) => {
         tempPayStatus?console.log(tempPayStatus):null
 
         if(state.partytype=='agent'){
-          if((x.receiving || state.edit) && x.payType=="Receivable"){
+          if((x.receiving || state.edit) && x.payType=="Recievable"){
             console.log("recieving")
             invoicesIds.push(x.id)
             tempInvoices.unshift({
@@ -74,7 +74,7 @@ const Gl = ({state, dispatch, companyId}) => {
               recieved:tempReceiving,
               status:tempRecStatus,
             })
-          } else if((x.receiving>0 || state.edit) && x.payType!="Receivable"){
+          } else if((x.receiving>0 || state.edit) && x.payType!="Recievable"){
             console.log("paying")
             invoicesIds.push(x.id)
             tempInvoices.unshift({
@@ -84,14 +84,14 @@ const Gl = ({state, dispatch, companyId}) => {
             })
           }
         } else {
-          if((x.receiving>0 || state.edit) && x.payType=="Receivable"){
+          if((x.receiving>0 || state.edit) && x.payType=="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
               recieved:tempReceiving,
               status:tempRecStatus,
             })
-          } else if((x.receiving>0 || state.edit) && x.payType!="Receivable"){
+          } else if((x.receiving>0 || state.edit) && x.payType!="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
@@ -102,11 +102,11 @@ const Gl = ({state, dispatch, companyId}) => {
         }
       });
       let voucher = {
-        type:payType=="Receivable"?"Job Reciept":"Job Payment",
+        type:payType=="Recievable"?"Job Reciept":"Job Payment",
         vType:state.transaction=="Bank"? 
-            payType=="Receivable"?
+            payType=="Recievable"?
             "BRV":"BPV":
-            payType=="Receivable"?
+            payType=="Recievable"?
             "CRV":"CPV",
         CompanyId:companyId,
         amount:"",
@@ -193,17 +193,18 @@ const Gl = ({state, dispatch, companyId}) => {
       </thead>
       <tbody>
       {state.transactionCreation.map((x, index) => {
+        console.log(x)
       return (
         <tr key={index}>
           <td>
             {x.particular?.title}
             <div className='fs-10 grey-txt'>{"("}{x.tran.narration.slice(0,60)}{")"} .....</div>
           </td>
-          {state.invoiceCurrency!="PKR" &&<td className='text-end' style={{minWidth:90}}>{x.tran.type!="credit"?<><span className='gl-curr-rep'>{state.invoiceCurrency+". "}</span>{commas(x.tran.defaultAmount)}</>:''}</td>}
-          {state.invoiceCurrency!="PKR" &&<td className='text-end' style={{minWidth:90}}>{x.tran.type=="credit"?<><span className='gl-curr-rep'>{state.invoiceCurrency+". "}</span>{commas(x.tran.defaultAmount)}</>:''}</td>}
+          {state.invoiceCurrency!="PKR" &&<td className='text-end' style={{minWidth:90}}>{x.tran.type!="credit"?<><span className='gl-curr-rep'>{state.invoiceCurrency+". "}</span>{commas(x.tran.amount)}</>:''}</td>}
+          {state.invoiceCurrency!="PKR" &&<td className='text-end' style={{minWidth:90}}>{x.tran.type=="credit"?<><span className='gl-curr-rep'>{state.invoiceCurrency+". "}</span>{commas(x.tran.amount)}</>:''}</td>}
           <td className='px-0' style={{width:"1px"}}></td>
-          <td className='text-end' style={{minWidth:90}}>{x.tran.type!="credit"?<><span className='gl-curr-rep'>PKR.{" "}</span>{commas(x.tran.amount)}</>:''}</td>
-          <td className='text-end' style={{minWidth:90}}>{x.tran.type=="credit"?<><span className='gl-curr-rep'>PKR.{" "}</span>{commas(x.tran.amount)}</>:''}</td>
+          <td className='text-end' style={{minWidth:90}}>{x.tran.type!="credit"?<><span className='gl-curr-rep'>PKR.{" "}</span>{commas(x.tran.defaultAmount)}</>:''}</td>
+          <td className='text-end' style={{minWidth:90}}>{x.tran.type=="credit"?<><span className='gl-curr-rep'>PKR.{" "}</span>{commas(x.tran.defaultAmount)}</>:''}</td>
         </tr>
         )})}
         <tr>

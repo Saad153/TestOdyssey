@@ -57,8 +57,8 @@ const initialState = {
   tranVisible:false,
   search:"",
   selectedParty:{id:'', name:''},
-  payType:'Receivable',
-  payTypeByDifference:'Receivable',
+  payType:'Recievable',
+  payTypeByDifference:'Recievable',
   partyType:'client',
   invoiceCurrency:'PKR',
   partyOptions:[],
@@ -130,7 +130,7 @@ const totalRecieveCalc = (vals) => {
         console.log("Payble", x.receiving)
         total = total - parseFloat(x.receiving)
       }else{
-        console.log("Receivable", x.receiving)
+        console.log("Recievable", x.receiving)
         total = total + parseFloat(x.receiving)
       }
     }
@@ -162,8 +162,14 @@ const getInvoices = async(state, companyId, dispatch) => {
       })
       
       temp = temp.map((y, index)=>{
+        // console.log(y)
+        if(y.ex_rate!="1"){
+          y.total = parseFloat(y.total) / parseFloat(y.ex_rate)
+          y.recieved = parseFloat(y.recieved) / parseFloat(y.ex_rate)
+          y.paid = parseFloat(y.paid) / parseFloat(y.ex_rate)
+        }
         let tempRemBalance = 0
-        if(y.payType == "Receivable"){
+        if(y.payType == "Recievable"){
           tempRemBalance = parseFloat(y.total) - parseFloat(y.recieved)
         }else{
           tempRemBalance = parseFloat(y.total) - parseFloat(y.paid)

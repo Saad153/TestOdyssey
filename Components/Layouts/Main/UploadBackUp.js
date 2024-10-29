@@ -683,7 +683,7 @@ const Upload_CoA = () => {
                 invoice = {
                     invoice_No: x.invoice___bill_+"-O",
                     type: "Old Job Invoice",
-                    payType: x.payable!=0?"Payble":"Receivable",
+                    payType: x.payable!=0?"Payble":"Recievable",
                     status: "2",
                     operation: x.op_code?x.op_code:null,
                     currency: x.curr,
@@ -790,7 +790,7 @@ const Upload_CoA = () => {
                 companyID!="0"?invoice = {
                     invoice_No: x.invoice_no+"-O",
                     type: "Old Job Invoice",
-                    payType: x.type_dn_cn=="Credit"?"Payble":"Receivable",
+                    payType: x.type_dn_cn=="Credit"?"Payble":"Recievable",
                     status: "2",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
                     currency: x.currency,

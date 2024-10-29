@@ -78,7 +78,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
       })
     }else{
       list.forEach((x) => {
-        if(x.payType=="Receivable"){
+        if(x.payType=="Recievable"){
           balance = balance + x.balance
         }else{
           balance = balance - x.balance
@@ -119,16 +119,16 @@ const InvoiceBalancingReport = ({ result, query }) => {
         x.currency = query.currency
         x.total = invAmount;
         x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
-        x.debit = x.payType == "Receivable" ? invAmount : 0
-        x.credit = x.payType != "Receivable" ? invAmount : 0
+        x.debit = x.payType == "Recievable" ? invAmount : 0
+        x.credit = x.payType != "Recievable" ? invAmount : 0
         if(query.currency == "PKR"){
-          if(x.payType == "Receivable"){
+          if(x.payType == "Recievable"){
             x.paidRec = parseFloat(x.recieved)*parseFloat(x.ex_rate);
           }else{
             x.paidRec = parseFloat(x.paid)*parseFloat(x.ex_rate);
           }
         }else{
-          x.paidRec = x.payType=="Receivable"?parseFloat(x.recieved):parseFloat(x.paid);
+          x.paidRec = x.payType=="Recievable"?parseFloat(x.recieved):parseFloat(x.paid);
         }
         console.log(parseFloat(x.recieved), parseFloat(x.ex_rate), x.paidRec, parseFloat(x.recieved))
         x.balance = invAmount - x.paidRec
@@ -226,7 +226,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                     )})}
                     <tr>
                       <td colSpan={9} style={{ textAlign: 'right' }}><b>Total</b></td>
-                      <td style={{ textAlign: 'right' }}>{getTotal("Receivable", records)}</td>
+                      <td style={{ textAlign: 'right' }}>{getTotal("Recievable", records)}</td>
                       <td style={{ textAlign: 'right' }}>{getTotal("Payble", records)}</td>
                       <td style={{ textAlign: 'right' }}>{paidReceivedTotal(records)}</td>
                       <td style={{ textAlign: 'right' }}>{balanceTotal(records)}</td>

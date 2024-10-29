@@ -1,9 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import LedgerReport from '/Components/Layouts/Reports/Ledger/LedgerReport';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Form } from "react-bootstrap";
 import moment from "moment";
-import { Radio, Select, notification } from "antd";
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Radio, Select } from "antd";
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
@@ -21,13 +19,15 @@ const Ledger = () => {
   const filters = filterValues.find(page => page.pageName === "ledgerReport");
   const values = filters ? filters.values : null;
 
+
   const getAccounts = async () => {
+   
     try{  
       const gotAccounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHILD_ACCOUNTS, {
       headers: {
         companyid: company
-      } 
-    });
+      } });
+
         const {data}= gotAccounts;
         const {result} = data
         let temprecords=[];
@@ -37,58 +37,51 @@ const Ledger = () => {
             });
             dispatch(setRecords(temprecords));
             getAccountName(temprecords);
+  
+     
     }catch(e){
       console.log("e",e)
 
     }
+  
+
+
+
   };
 
   const getAccountName = (temprecords) =>{
 
     const data = temprecords || records
-    data.forEach(element => {
-      if(element.label.slice(element.label.indexOf(') ') + 2) == name.slice(name.indexOf(') ') + 2)){
-        dispatch(setAccount(element.value));
-        dispatch(setName(element.label))
-      }
-      
-    })
-  }
-
-  async function getLedger(old){
-    try{
-      console.log(currency)
-      const result = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER, {
-        headers: {
-          companyid: company,
-          id: account,
-          currency: currency,
-          from: from,
-          to: to,
-          old, old
-        }
-      });
-      return result.data.result
-    }catch(e){
-      console.error(e)
+    const foundAccount = data?.find(x => x.value == account);
+    // console.log("found", foundAccount)
+    if (foundAccount) {
+      let acName = foundAccount?.label;
+      dispatch(setName(acName))
+          }else{
+      dispatch(setName(""))
     }
   }
 
   useEffect(() => { if (company != "") 
     getAccounts();
+ 
+
    }, [company,account]);
+
+
+  // useEffect(()=>{
+  //   if(filters){
+  //     setFrom(values.from),
+  //     setTo(values.to),
+  //     setCompany(values.company),
+  //     setAccount(values.account),
+  //     setCurrency(values.currency)
+
+  //   }
+  // },[filters])
 
   const handleAccountChange = (value) => {
     dispatch(setAccount(value));
-    if(value == undefined){
-      dispatch(setName(""))
-    }else{
-      records.forEach(element => {
-        if(element.value == value){
-          dispatch(setName(element.label))
-        }
-      })
-    }
   };
 
   return (
@@ -107,17 +100,9 @@ const Ledger = () => {
       <Col md={6}></Col>
       <Col md={3} className="my-3">
         <b>Company</b>
-        <Radio.Group
-          className="mt-1"
-          value={company}
-          onChange={(e) => {
-            const selectedCompany = e.target.value;
-            
-            // Dispatch setCompany and then dispatch setAccount(null)
-            dispatch(setCompany(selectedCompany));
-
-          }}
-        >
+        <Radio.Group className="mt-1" 
+        value={company} 
+        onChange={(e) => dispatch(setCompany(e.target.value))}>
           <Radio value={1}>SEA NET SHIPPING & LOGISTICS</Radio>
           <Radio value={2}>CARGO LINKERS</Radio>
           <Radio value={3}>AIR CARGO SERVICES</Radio>
@@ -136,7 +121,6 @@ const Ledger = () => {
             <Radio value={"AED"}>AED</Radio>
             <Radio value={"OMR"}>OMR</Radio>
             <Radio value={"BDT"}>BDT</Radio>
-            <Radio value={"ALL"}>ALL</Radio>
         </Radio.Group>
       </Col>
       <Col md={6}>
@@ -152,85 +136,20 @@ const Ledger = () => {
           filterSort={(optionA, optionB) => (optionA?.label ?? "").toLowerCase().localeCompare((optionB?.label ?? "").toLowerCase())}
         />
       </Col>
-      <Col md={12} className='d-flex'>
-        <button className='btn-custom mt-3' onClick={async () => {
-          let count = await getLedger(false);
-          if(count>0){
-            if (account != "" && account != null) {
-              Router.push({ pathname: `/reports/ledgerReport/${account}/`,
-                query: {from: from, to: to, name: name, company: company, currency: currency }
-              });
-              dispatch(incrementTab({
-                "label": "Ledger Report",
-                "key": "5-7",
-                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
-              }))
-            }
-            else{
-              Router.push({
-                pathname: `/reports/ledgerReport/undefined/`,  
-                query: { from: from, to: to, name: name, company: company, currency: currency }
-              });
-              dispatch(incrementTab({
-                "label": "Ledger Report",
-                "key": "5-7",
-                "id": `from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
-              }));
-              
-            }
-          }
-          else{
-            let message = "No records found in "+ name;
-            notification.open({
-              message: "No Records Found",
-              description: message,
-              icon: <ExclamationCircleOutlined style={{ color: 'orange' }} />,
-              onClick: () => {
-                console.log('Notification Clicked!');
-              },
-            });
+      <Col md={12}>
+        <button className='btn-custom mt-3' onClick={() => {
+          // dispatch(setFilterValues({ pageName: "ledgerReport", values: stateValues }));
+          if (account != "" && account != null) {
+         
+            Router.push({ pathname: `/reports/ledgerReport/${account}/`, query: { from: from, to: to, name: name, company: company, currency: currency } });
+            dispatch(incrementTab({
+              "label": "Ledger Report",
+              "key": "5-7",
+              "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
+            }))
           }
         }
         }> Go </button>
-        {/* <button className='btn-custom mt-3 mx-2' onClick={async () => {
-          let count = await getLedger(true);
-          if(count>0){
-            if (account != "" && account != null) {
-              Router.push({ pathname: `/reports/ledgerReport/${account}/`,
-                query: {from: from, to: to, name: name, company: company, currency: currency, old: true }
-              });
-              dispatch(incrementTab({
-                "label": "Ledger Report",
-                "key": "5-7",
-                "id": `${account}?from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}&old=${true}`
-              }))
-            }
-            else{
-              Router.push({
-                pathname: `/reports/ledgerReport/undefined/`,  
-                query: { from: from, to: to, name: name, company: company, currency: currency }
-              });
-              dispatch(incrementTab({
-                "label": "Ledger Report",
-                "key": "5-7",
-                "id": `from=${from}&to=${to}&name=${name}&company=${company}&currency=${currency}`
-              }));
-              
-            }
-          }
-          else{
-            let message = "No records found in "+ name;
-            notification.open({
-              message: "No Records Found",
-              description: message,
-              icon: <ExclamationCircleOutlined style={{ color: 'orange' }} />,
-              onClick: () => {
-                console.log('Notification Clicked!');
-              },
-            });
-          }
-        }
-        }>Show Old</button> */}
       </Col>
     </Row>
   </div>

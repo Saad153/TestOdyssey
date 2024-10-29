@@ -31,9 +31,9 @@ const Report = ({query, result}) => {
       }
       data.forEach((x)=>{
 
-        if(x.Voucher.currency != "PKR"){
-          x.amount = x.amount*x.Voucher.exRate
-        }
+        // if(x.Voucher.currency != "PKR"){
+        //   x.amount = x.amount*x.Voucher.exRate
+        // }
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           x.type=="debit"?
@@ -56,7 +56,7 @@ const Report = ({query, result}) => {
 
     useEffect(() => {
       let temp = [];
-      console.log(result.result)
+      // console.log(result.result)
       result?.result?.forEach((x)=>{
         if(x?.Child_Accounts?.length>0){
           temp.push({

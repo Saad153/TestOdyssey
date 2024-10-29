@@ -124,8 +124,8 @@ const Voucher = ({ id }) => {
     const voucherTypeMapping = {
       BPV: "Payable",
       CPV: "Payable",
-      BRV: "Receivable",
-      CRV: "Receivable",
+      BRV: "Recievable",
+      CRV: "Recievable",
       TV: "Transfer Voucher",
     };
     voucher.type = voucherTypeMapping[voucher.vType] || "General Voucher";
