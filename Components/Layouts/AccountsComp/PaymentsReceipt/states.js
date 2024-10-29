@@ -213,12 +213,12 @@ const getTotal = (type, list, curr) => {
   curr=="PKR"?
   list.forEach((x)=>{
     if(type==x.tran.type){
-      result = result + parseFloat(x.tran.amount)
+      result = result + parseFloat(x.tran.defaultAmount)
     }
   }):
   list.forEach((x)=>{
     if(type==x.tran.type){
-      result = result + parseFloat(x.tran.defaultAmount)
+      result = result + parseFloat(x.tran.amount)
     }
   });
   return parseFloat(result.toFixed(2));

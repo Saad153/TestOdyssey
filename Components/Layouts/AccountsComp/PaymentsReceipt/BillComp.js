@@ -178,8 +178,8 @@ const BillComp = ({companyId, state, dispatch}) => {
             particular:state.taxAccountRecord,
             tran:{
               type:'debit',
-              amount:state.finalTax,
-              defaultAmount:parseFloat(state.finalTax)/parseFloat(state.autoOn?state.exRate:state.manualExRate),//0
+              amount:parseFloat(state.finalTax)/parseFloat(state.autoOn?state.exRate:state.manualExRate),
+              defaultAmount:parseFloat(state.finalTax),//0
               narration:`Tax Paid Against ${invNarration}`,
               accountType:'Tax'
             }
@@ -192,8 +192,8 @@ const BillComp = ({companyId, state, dispatch}) => {
             particular:state.bankChargesAccountRecord,
             tran:{
               type:'debit',
-              amount:(parseFloat(state.bankCharges)*parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),
-              defaultAmount:parseFloat(state.bankCharges).toFixed(2),//0
+              amount:(parseFloat(state.bankCharges)).toFixed(2),
+              defaultAmount:(parseFloat(state.bankCharges)*parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),//0
               narration:`Bank Charges Paid Against ${invNarration}`,
               accountType:'BankCharges'
             }
