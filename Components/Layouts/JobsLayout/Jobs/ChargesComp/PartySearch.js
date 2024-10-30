@@ -37,7 +37,7 @@ const PartySearch = ({state, dispatch, reset, useWatch, control}) => {
     return(
     <>
       {props.data.filter((x)=>{
-        console.log("x",x)
+        // console.log("x",x)
         if(
           x?.name?.toLowerCase().includes(searchTerm.toLowerCase())||
           x?.code?.toLowerCase().includes(searchTerm.toLowerCase())||

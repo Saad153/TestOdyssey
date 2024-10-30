@@ -740,6 +740,7 @@ const Upload_CoA = () => {
         }
         if(agentInvoices){
             for(let x of data){
+                x.rcvd_paid = x.rcvd_paid * x.exchange_rate
                 let party_id = ""
                 let party_name = ""
                 let matched = false
@@ -800,7 +801,7 @@ const Upload_CoA = () => {
                     paid: x.type_dn_cn=="Credit"?removeCommas(x.rcvd_paid):"0",
                     recieved: x.type_dn_cn=="Credit"?"0":removeCommas(x.rcvd_paid),
                     roundOff: "0",
-                    total: x.type_dn_cn=="Credit"?removeCommas(x.invoice_amount.toString().slice(1)):removeCommas(x.invoice_amount.toString()),
+                    total: x.type_dn_cn=="Credit"?removeCommas(x.local_amount.toString().slice(1)):removeCommas(x.local_amount.toString()),
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
@@ -959,6 +960,7 @@ const Upload_CoA = () => {
                 id: Cookies.get("companyId")
             }
         })
+        console.log(accounts.data.result)
         let accountsData = accounts.data.result
         let partyid = ""
         let partyname = ""
@@ -1135,10 +1137,16 @@ const Upload_CoA = () => {
         let index = 0
         let vouchers = []
         let temp = toBeUploaded
-
+        let bank = 0
         for(let x of toBeUploaded){
             if(!x.partyName){
                 console.log("No Party>>>>>",x)
+            }
+            if(x.partyId == '21267'){
+                console.log("Party>>>>>",x.partyName)
+                bank += x.debit
+                bank -= x.credit
+
             }
             let Voucher_Heads = []
             let a ={}
@@ -1152,7 +1160,6 @@ const Upload_CoA = () => {
                 voucherNarration: x.narration,
                 exRate: x.exchangerate?x.exchangerate:null,
                 chequeNo: x.cheque_number?x.cheque_number:null,
-                // chequeDate: cheque_date?cheque_date:null,
                 payTo:"",
                 partyId: x.partyId,
                 partyName: x.partyName,
@@ -1166,8 +1173,8 @@ const Upload_CoA = () => {
                     // console.log(y.voucher_no)
                     a = {
                         voucher_Id: y.voucher_no,
-                        defaultAmount: y.debit!=0?y.debit:y.credit,
-                        amount: y.currency!="PKR"?y.debit!=0?y.debit/y.exchangerate:y.credit/y.exchangerate:y.debit!=0?y.debit:y.credit,
+                        amount: y.debit!=0?y.debit:y.credit,
+                        defaultAmount: y.currency!="PKR"?y.debit!=0?y.debit/y.exchangerate:y.credit/y.exchangerate:y.debit!=0?y.debit:y.credit,
                         type: y.debit!=0?"debit":"credit",
                         narration: y.narration,
                         settlement: "",
@@ -1183,6 +1190,8 @@ const Upload_CoA = () => {
             voucher.Voucher_Heads = Voucher_Heads
             vouchers.push(voucher)
         }
+
+        console.log("bank",bank)
 
         const uniqueVouchers = vouchers.filter((voucher, index, self) =>
             index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)
