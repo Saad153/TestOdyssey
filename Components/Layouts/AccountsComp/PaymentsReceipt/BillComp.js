@@ -19,7 +19,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
   const [checked, setChecked] = useState(false);
-  console.log(payType)
+  // console.log(payType)
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
     // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
@@ -199,10 +199,10 @@ const BillComp = ({companyId, state, dispatch}) => {
             }
           })
         }
-        let partyAmount = state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)
+        let partyAmount = Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
         let payAmount = state.debitReceiving > state.creditReceiving? 
-          (state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)) - removing:
-          (state.totalrecieving * parseFloat(state.autoOn?state.exRate:state.manualExRate)) + removing; 
+          (Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) - removing:
+          (Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) + removing; 
   
         if(state.partytype=='agent'){
           // Gain & Loss Account

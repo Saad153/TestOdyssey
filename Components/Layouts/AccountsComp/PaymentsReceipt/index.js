@@ -408,7 +408,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           {!state.selectedParty.name && <>
             <Input placeholder="Search type" size='small'
               suffix={state.search.length > 2 ? <CloseCircleOutlined onClick={() => setAll({ search: "" })} /> : <SearchOutlined />}
-              value={state.search} onChange={(e) => {setAll({ search: e.target.value });}}
+              value={state.search} onChange={(e) => {setAll({ search: e.target.value })}}
             />
             {state.search.length > 2 &&
               <div style={{ position: "absolute", zIndex: 10 }}>
