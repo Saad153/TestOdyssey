@@ -13,7 +13,6 @@ import { CSVLink } from "react-csv";
 import Pagination from "/Components/Shared/Pagination";
 
 const InvoiceBalancingReport = ({ result, query }) => {
-    
   let inputRef = useRef(null);
   const dispatch = useDispatch();
 
@@ -77,7 +76,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
     if (value.status == "success") {
       let newArray = [...value.result];
       newArray.forEach((x) => {
-        console.log(x)
+        // console.log(x)
         let invAmount = 0;
         invAmount = parseFloat(x.total) / parseFloat(x.ex_rate);
         x.total = invAmount;

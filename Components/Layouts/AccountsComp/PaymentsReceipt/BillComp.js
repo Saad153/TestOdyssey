@@ -12,7 +12,6 @@ import { useRouter } from 'next/router';
 import Gl from './Gl';
 
 const BillComp = ({companyId, state, dispatch}) => {
-
   const router = useRouter();
   const dispatchNew = useDispatch();
   const { payType } = state;
@@ -573,7 +572,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               }}
             />
           </td>
-          <td className='px-1' style={{width:300}}> {commas(x.remBalance - x.receiving)} </td>
+          <td className='px-1' style={{width:300}}> {commas(x.remBalance)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
               checked={x.check} 

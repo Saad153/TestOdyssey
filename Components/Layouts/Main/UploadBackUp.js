@@ -740,7 +740,7 @@ const Upload_CoA = () => {
         }
         if(agentInvoices){
             for(let x of data){
-                x.rcvd_paid = x.rcvd_paid * x.exchange_rate
+                x.rcvd_paid = parseFloat(removeCommas(x.rcvd_paid)) * x.exchange_rate
                 let party_id = ""
                 let party_name = ""
                 let matched = false
@@ -1138,6 +1138,7 @@ const Upload_CoA = () => {
         let vouchers = []
         let temp = toBeUploaded
         let bank = 0
+        let count = 0
         for(let x of toBeUploaded){
             if(!x.partyName){
                 console.log("No Party>>>>>",x)
@@ -1171,6 +1172,7 @@ const Upload_CoA = () => {
             for(let y of toBeUploaded){
                 if(x.voucher_no && y.voucher_no && (x.voucher_no == y.voucher_no)){
                     // console.log(y.voucher_no)
+                    count++
                     a = {
                         voucher_Id: y.voucher_no,
                         amount: y.debit!=0?y.debit:y.credit,
@@ -1199,7 +1201,7 @@ const Upload_CoA = () => {
 
         console.log(uniqueVouchers)
         setVouchers(uniqueVouchers)
-        console.log("Done")
+        console.log("Done", count)
         setStatus("Vouchers created, waiting to upload...")
     }
 

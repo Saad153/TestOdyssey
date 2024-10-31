@@ -138,7 +138,6 @@ const totalRecieveCalc = (vals) => {
   return total.toFixed(2);
 }
 
-//const getInvoices = async(id, dispatch, partytype, selectedParty, payType, companyId, invoiceCurrency) => {
 const getInvoices = async(state, companyId, dispatch) => {
   dispatch({type:"setAll", payload:{ load:true }});
   await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, 
@@ -162,12 +161,6 @@ const getInvoices = async(state, companyId, dispatch) => {
       })
       
       temp = temp.map((y, index)=>{
-        // console.log(y)
-        if(y.ex_rate!="1"){
-          y.total = parseFloat(y.total) / parseFloat(y.ex_rate)
-          y.recieved = parseFloat(y.recieved) / parseFloat(y.ex_rate)
-          y.paid = parseFloat(y.paid) / parseFloat(y.ex_rate)
-        }
         let tempRemBalance = 0
         if(y.payType == "Recievable"){
           tempRemBalance = parseFloat(y.total) - parseFloat(y.recieved)
@@ -181,25 +174,20 @@ const getInvoices = async(state, companyId, dispatch) => {
           jobSubType:y.SE_Job==null?'Old':y.SE_Job.subType,
           ex_rate:state.partytype=="agent"?y.ex_rate:1.00,
           receiving:state.edit? y.Invoice_Transactions[0].amount:0.00,
-          inVbalance:
+          inVbalance:state.partytype=="agent"?
+            ((parseFloat(y.total) / parseFloat(y.ex_rate)) + parseFloat(y.roundOff)).toFixed(2):
             (parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
-          remBalance:tempRemBalance=='0'?
+          remBalance:tempRemBalance==0?
             0:
             (parseFloat(tempRemBalance)+parseFloat(state.edit?y.Invoice_Transactions[0].amount:0.00)).toFixed(2),
         }
-      });
-    }
-    let temp1 = []
-    if(temp.length>0){
-      temp1 = temp.filter((x) => {
-        return x.remBalance != 0;
       });
     }
     dispatch({
     type:"setAll", 
     
     payload:{
-      invoices:temp1,
+      invoices:temp,
       partyAccountRecord:accountData.Child_Account,
       load:false,
       glVisible:false,

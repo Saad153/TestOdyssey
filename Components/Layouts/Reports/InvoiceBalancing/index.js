@@ -201,7 +201,7 @@ const InvoiceBalaincing = () => {
             <Col md={4}>
               Currency
               <Select defaultValue={currency} style={{ width: '100%', marginBottom: 5 }} size='small'
-                onChange={(e) => { setCurrency(e) }}
+                onChange={(e) => { console.log(e); setCurrency(e) }}
                 options={[
                   { value:"PKR", label:"PKR"},
                   { value:"USD", label:"USD"},

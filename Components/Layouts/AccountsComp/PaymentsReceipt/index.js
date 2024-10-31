@@ -25,7 +25,6 @@ const PaymentsReceipt = ({ id, voucherData }) => {
 
   let inputRef = useRef(null);
   const gridRef = useRef();
-
   const dispatchNew = useDispatch();
   const [state, dispatch] = useReducer(recordsReducer, initialState);
   const setAll = (x) => dispatch({ type: 'setAll', payload: x })
@@ -314,19 +313,9 @@ const PaymentsReceipt = ({ id, voucherData }) => {
     Router.push(`/accounts/paymentReceipt/${e.data.id}`)
   }, []);
 
-  const cellClickListener = useCallback((e) => {
-    let containsCR = false;
-      for (const [key, value] of Object.entries(e)) {
-      if (key === 'voucher_Id' && value.includes('-CR-')) {
-        containsCR = true;
-        break; 
-      }
-    }
-  
-    if (!containsCR) {
-      dispatchNew(incrementTab({ "label": "Payment / Receipt", "key": "3-4", "id": e.id }));
-      Router.push(`/accounts/paymentReceipt/${e.id}`);
-    }
+  const cellClickListener = useCallback((e)=> {
+    dispatchNew(incrementTab({"label": "Payment / Receipt","key": "3-4","id":e.id}))
+    Router.push(`/accounts/paymentReceipt/${e.id}`)
   }, []);
 
   return (

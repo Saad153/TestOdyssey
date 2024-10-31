@@ -354,7 +354,7 @@ const Report = ({query, result}) => {
                 </>
                      
                 }
-                 { reportView =="Creditors List" && <> 
+                 {/* { reportView =="Creditors List" && <>  */}
                   <tr>
                       <td className='text-end'><b>Grand Total:</b></td>
                       {reportView =="6- Columns Simplified View"?     <td className='fs-12'>{commas(total.opDebit)}</td>:null}
@@ -364,9 +364,9 @@ const Report = ({query, result}) => {
                       <td className='fs-12'>{commas(total.clDebit)}</td>
                       <td className='fs-12'>{commas(total.clCredit)}</td>
                     </tr>
-                </>
+                {/* </> */}
                      
-                }
+                {/* } */}
               
               {/* { reportView == "6- Columns Simplified View" || reportView == "2- Columns Simplified View" &&
               <>
