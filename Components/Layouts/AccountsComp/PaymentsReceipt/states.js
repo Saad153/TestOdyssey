@@ -163,9 +163,9 @@ const getInvoices = async(state, companyId, dispatch) => {
       temp = temp.map((y, index)=>{
         let tempRemBalance = 0
         if(y.payType == "Recievable"){
-          tempRemBalance = parseFloat(y.total) - parseFloat(y.recieved)
+          tempRemBalance = (parseFloat(y.total)/parseFloat(y.ex_rate)) - (parseFloat(y.recieved)/parseFloat(y.ex_rate))
         }else{
-          tempRemBalance = parseFloat(y.total) - parseFloat(y.paid)
+          tempRemBalance = (parseFloat(y.total)/parseFloat(y.ex_rate)) - (parseFloat(y.paid)/parseFloat(y.ex_rate))
         }
         return{
           ...y,

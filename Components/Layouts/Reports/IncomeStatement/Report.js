@@ -43,7 +43,7 @@ const accountlevel = query.accountLevel;
   const[AdminExpArray,setAdminExpArray] = useState([]);
   const[cogsArray,setCogsArray]= useState([]);
 
-  const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
+  const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
   const makeTransaction = (data) => {
     let transactions  = {
@@ -52,14 +52,15 @@ const accountlevel = query.accountLevel;
     }
     data.forEach((x)=>{
       x.type=="debit"?
-        transactions.debit = parseFloat(x.amount):
-        transactions.credit = parseFloat(x.amount)
+        transactions.debit += parseFloat(x.amount):
+        transactions.credit += parseFloat(x.amount)
     });
     
-    let amount = transactions.debit - transactions.credit
-    amount>0?
-      transactions.debit = parseFloat(amount):
-      transactions.credit = parseFloat(amount)*-1;
+    // let amount = transactions.debit - transactions.credit
+    // amount>0?
+    //   transactions.debit += parseFloat(amount):
+    //   transactions.credit += parseFloat(amount)*-1;
+    console.log(transactions)
     return transactions
 
   }
@@ -72,17 +73,18 @@ const accountlevel = query.accountLevel;
     let tempArray = [result.result[0], result.result[1]]
     tempArray.forEach((x)=>{
       let i = 0
-      console.log("x",x.title)
-      console.log(query.expense)
-      console.log(query.revenue)
+      // console.log("x",x.title)
+      // console.log(query.expense)
+      // console.log(query.revenue)
       if(query.expense != null && x.title == query.expense){
         temp.push({
           title:x.title, type:'parent'
         });
         x.Parent_Accounts.forEach((y)=>{
-          console.log("y",y)
+          // console.log("y",y)
           if(y.Child_Accounts?.length>0){
             y.Child_Accounts.forEach((z)=>{
+              // console.log("Expense",z)
               i = i + 1
               if(query.expense != null){
                 temp.push({
@@ -104,7 +106,7 @@ const accountlevel = query.accountLevel;
           console.log("y",y)
           if(y.Child_Accounts?.length>0){
             y.Child_Accounts.forEach((z)=>{
-              console.log("z",z)
+              // console.log("Revenue",z)
               i = i + 1
               if(query.revenue != null){
                 temp.push({
@@ -123,17 +125,17 @@ const accountlevel = query.accountLevel;
         });
         // console.log("temp", temp)
         const idsToFilter = [
-          "964741516944474113",
-          "964741516946374657",
-          "964741517343784961",
-          "964741517425213441"
+          "FCL FREIGHT EXPENSE",
+          "LCL FREIGHT EXP",
+          "IMPORT EXPENSES",
+          "AIR FREIGHT EXPENSE"
         ];
         x.Parent_Accounts.forEach((y) => {
           if (y.Child_Accounts?.length > 0) {
 
             // for "COGS/ Selling Exp"
-            const filteredCogsAccounts = y.Child_Accounts.filter(c => idsToFilter.includes(c.id));
-            // console.log("filteredChildAccounts",filteredCogsAccounts)
+            const filteredCogsAccounts = y.Child_Accounts.filter(c => idsToFilter.includes(c.title));
+            console.log("filteredChildAccounts",filteredCogsAccounts)
             filteredCogsAccounts.forEach(cogs => {
               i = i + 1;
               cogsArray.push({
@@ -143,7 +145,8 @@ const accountlevel = query.accountLevel;
               });
             });
             //For Admin Expense
-            const filteredAdminExpAccounts = y.Child_Accounts.filter(c => !idsToFilter.includes(c.id));
+            const filteredAdminExpAccounts = y.Child_Accounts.filter(c => !idsToFilter.includes(c.title));
+            console.log("filteredAdminExpAccounts",filteredAdminExpAccounts)
             filteredAdminExpAccounts.forEach(exp => {
               i = i + 1;
               AdminExpArray.push({
@@ -253,12 +256,10 @@ const accountlevel = query.accountLevel;
     // console.log(incomeTotal)
     
     // monthWise(result)
-    console.log(temp)
     makeTotal(temp)
     makeCogsTotal(cogsArray)
     makeAdminExpTotal(AdminExpArray)
     setRecords(listWithTotals)
-    console.log("list with totals",listWithTotals)
     let accLevelOne = [
       listWithTotals.find(item => item.title === 'Expense' && item.type === 'parent'),
       listWithTotals.find(item => item.type === 'total'),
@@ -270,12 +271,10 @@ const accountlevel = query.accountLevel;
   
   // const profitLoss = (revenue - (totalCogs?.debit || 0) - (totalAdminExp?.debit || 0)).toFixed(2);
   // const formattedProfitLoss = profitLoss < 0 ? `(${Math.abs(profitLoss)})` : profitLoss;
-  console.log(profitLoss)
 
   }, []);
 
 const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
-console.log(accLevelOneArray)
   const checkMonth = (date) => {
     return moment(date).format("MMM, YYYY")
   }
@@ -310,19 +309,14 @@ console.log(accLevelOneArray)
           Exp = false
         }
       }
-      // console.log(Exp)
       if(x.type=="child" && Exp){
-        // console.log("Expense")
         temp.debit += x.debit
         temp.credit = temp.credit - x.credit
       }else if(x.type=="child" && !Exp){
-        // console.log("Income")
         temp.debit = temp.debit - x.debit
         temp.credit += x.credit
       }
-      // console.log(temp)
     });
-    // console.log(temp)
     setTotal(temp)
     setTotalCogs(temp)
   }
@@ -367,13 +361,8 @@ console.log(accLevelOneArray)
       ]
     )
   }
-  console.log(revenue)
-  console.log(total)
-  console.log(totalCogs)
-  console.log(totalAdminExp)
   const profitLoss = (revenue - (totalCogs?.debit || 0) - (totalAdminExp?.debit || 0)).toFixed(2);
   const formattedProfitLoss = profitLoss < 0 ? `(${Math.abs(profitLoss)})` : profitLoss;
-  console.log(profitLoss) 
   const ProfitLossReport = ({ accountLevel, report, overFlow }) => {
     if ((accountLevel === "6" || accountLevel === "1") && report === "pnl") {
       return (
@@ -381,26 +370,27 @@ console.log(accLevelOneArray)
         <div className="d-flex justify-content-end">
         <button 
           className="btn-custom mx-2 px-3 fs-11 text-center" 
+          onClick={exportData}
         >
           To Excel
         </button>
       </div>
       <PrintTopHeader company={query.company} from={query.from} to={query.to} />
-        <div className="printDiv mt-2" style={{ maxHeight: overFlow ? "60vh" : "100%", overflowY: "auto", overflowX: "hidden", height: "auto" }}>
+        {/* <div className="printDiv mt-2" style={{ maxHeight: overFlow ? "60vh" : "100%", overflowY: "auto", overflowX: "hidden", height: "auto" }}>
           <div className="table-sm-1 mt-2">
           <hr/>
             <div className='text-center'> <b>Profit and Loss Income Statement </b> </div>
             <div className="table-sm-1 mt-2">
-            <Row md={12}>
+            <Row md={12} style={{borderBottom:"1px solid black"}}>
              <b>Revenue</b>
              </Row>
-             <Row>
+             <Row style={{borderBottom:"1px solid black"}}>
               {accountLevel === "1" && <>             
-              <Col style={{lineHeight:1.75}} md={6} >
+              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
               Total for Revenue
               </Col>
        
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
+              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
                {revenue}
               </Col>
               </>
@@ -410,10 +400,10 @@ console.log(accLevelOneArray)
 
               
 
-              <Col style={{lineHeight:1.75}} md={6} >
+              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
                <div>
                {filteredTempData.map((item) => (
-                    <div key={item.index}>
+                    <div key={item.index} style={{borderBottom:"1px solid black"}}>
                         {item.title}
                     </div>
                 ))}
@@ -422,12 +412,12 @@ console.log(accLevelOneArray)
               Total for Revenue
               </Col>
        
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
+              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
               <div className='text-end'>
              
                 {filteredTempData.map((item) => (
-                    <div key={item.index}>
-                        {item.credit}                      
+                    <div key={item.index} style={{borderBottom:"1px solid black"}}>
+                        {commas(item.credit)}                   
                     </div>
                 ))}
            
@@ -437,31 +427,31 @@ console.log(accLevelOneArray)
               </Col>
               </>
                }
-              <Row md={12}>
+              <Row md={12} style={{borderBottom:"1px solid black"}}>
                <b>COGS / Selling Expense </b>
               </Row>
-              <Col style={{lineHeight:1.75}} md={6}>
+              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
               Total for COGS / Selling Expense
               </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
-           {totalCogs?.debit?.toFixed(2)} 
+              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
+           {commas(totalCogs?.debit?.toFixed(2))} 
               </Col>
 
-              <Col md={6}>
+              <Col md={6} style={{borderBottom:"1px solid black"}}>
               <b>Gross Profit</b> 
               </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
-          {(total.credit - totalCogs?.debit ).toFixed(2)} 
+              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
+          {commas((total.credit - totalCogs?.debit ).toFixed(2))} 
               </Col>
 
-              <Row md={12}>
+              <Row md={12} style={{borderBottom:"1px solid black"}}>
                <b>Admin Expense</b>
               </Row>
               {accountLevel === "1" && <> 
-              <Col md={6}>
+              <Col md={6} style={{borderBottom:"1px solid black"}}>
                Total for Admin Expense
               </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
+              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
                {totalAdminExp?.debit?.toFixed(2)} 
               </Col>
               </> }
@@ -484,13 +474,13 @@ console.log(accLevelOneArray)
               <div>
                {AdminExpArray.map((ele) => (
                     <div key={ele.index}>
-                        {ele.debit}
+                        {commas(ele.debit)}
                     </div>
                 ))}
                   </div>
 
 
-              <div> {totalAdminExp?.debit?.toFixed(2)} 
+              <div> {commas(totalAdminExp?.debit?.toFixed(2))} 
               </div>
               </Col>
               </> }
@@ -500,7 +490,7 @@ console.log(accLevelOneArray)
               </b> 
               </Col>
              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
-               {formattedProfitLoss}
+               {commas(formattedProfitLoss)}
               </Col>
              </Row>
           
@@ -511,8 +501,91 @@ console.log(accLevelOneArray)
        
          
           </div>
+        </div> */}
+        <div className='printDiv mt-2' style={{ maxHeight: overFlow ? "60vh" : "100%", overflowY: "auto", overflowX: "hidden", height: "auto"}}>
+          <div style={{borderBottom:"1px solid black"}}>
+            <b>Revenue</b>
+          </div>
+          {accountLevel == "6" &&
+            <div>
+              {filteredTempData.map((item)=>{
+                return(
+                  <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+                    <div>
+                      {item.title}
+                    </div>
+                    <div>
+                      {commas(item.debit || item.credit)}
+                    </div>
+                  </div>
+                  
+                )
+              })}
+            </div>
+          }
+          <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+            <div>Total for Revenue</div>
+            <div>{commas(total?.credit - total?.debit)}</div>
+          </div>
         </div>
-
+        <div style={{borderBottom:"1px solid black"}}>
+          <b>COGS / Selling Expense</b>
+        </div>
+        {accountLevel == "6" &&
+          <div>
+            {cogsArray.map((item)=>{
+              console.log("Admin Expenses",item)
+              return(
+                <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+                  <div>
+                    {item.title}
+                  </div>
+                  <div>
+                    {commas(item.debit)}
+                  </div>
+                </div>
+                
+              )
+            })}
+          </div>
+        }
+        <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+            <div>Total for COGS / Selling Expense</div>
+            <div>{commas(totalCogs?.debit?.toFixed(2))}</div>
+        </div>
+        <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+          <b>Gross Profit</b>
+          <b>{commas((total?.credit - total?.debit)-totalCogs?.debit)}</b>
+        </div>
+        <div style={{borderBottom:"1px solid black"}}>
+          <b>Admin Expenses</b>
+        </div>
+        {accountLevel == "6" &&
+          <div>
+            {AdminExpArray.map((item)=>{
+              console.log("Admin Expenses",item)
+              return(
+                <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+                  <div>
+                    {item.title}
+                  </div>
+                  <div>
+                    {commas(item.debit || item.credit)}
+                  </div>
+                </div>
+                
+              )
+            })}
+          </div>
+        }
+        <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+          <div>Total for Admin Expenses</div>
+          <div>{commas(totalAdminExp?.debit?.toFixed(2))}</div>
+        </div>
+        <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+          <b>Profit/(Loss)</b>
+          <b>{commas(((total?.credit - total?.debit)-totalCogs?.debit)-totalAdminExp?.debit)}</b>
+        </div>
       </div>
       );
     } else {
