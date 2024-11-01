@@ -127,10 +127,10 @@ const totalRecieveCalc = (vals) => {
   vals.forEach((x)=>{
     if(x.receiving>0){
       if(x.payType=="Payble"){
-        console.log("Payble", x.receiving)
+        // console.log("Payble", x.receiving)
         total = total - parseFloat(x.receiving)
       }else{
-        console.log("Recievable", x.receiving)
+        // console.log("Recievable", x.receiving)
         total = total + parseFloat(x.receiving)
       }
     }

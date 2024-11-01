@@ -8,7 +8,7 @@ const PrintVoucehr = ({ state, companyId }) => {
   let inputRef = useRef(null);
 
   const lineHeight = (x) => {
-    console.log(Math.ceil(x.length / 69))
+    // console.log(Math.ceil(x.length / 69))
     return Math.ceil(x.length / 69) * 22
   }
 

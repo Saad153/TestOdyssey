@@ -25,7 +25,7 @@ const AgentInvoiceAdv = () => {
 
   const handleOpeningInvoicesReceivable = async(data) => {
     let list = [];
-    console.log(data)
+    // console.log(data)
     await data.forEach(async(x, i) => {
       let title = x.agent_name;
       if(x.local_amount!=null){
@@ -46,7 +46,7 @@ const AgentInvoiceAdv = () => {
         } else {
             newInvNo = invNo;
         }
-        console.log(newInvNo);
+        // console.log(newInvNo);
 
         await list.push({
           companyId:3,
@@ -71,7 +71,7 @@ const AgentInvoiceAdv = () => {
       }
     });
 
-    console.log(list)
+    // console.log(list)
     let tempreceivable = 0;
     let tempreceived = 0;
     let tempbalance = 0;
@@ -80,22 +80,22 @@ const AgentInvoiceAdv = () => {
       tempreceived = tempreceived + x.received
       tempbalance = tempbalance + x.balance
     })
-    console.log("receivable", tempreceivable);
-    console.log("received",tempreceived);
-    console.log("balance",tempbalance);
+    // console.log("receivable", tempreceivable);
+    // console.log("received",tempreceived);
+    // console.log("balance",tempbalance);
   }
   const uploadRecivableInvoices = async() => {
     let finalInvoiceList = [];
     let failedList = [];
     let index = 0;
-    console.log(recivableInvoices.length)
+    // console.log(recivableInvoices.length)
     recivableInvoices.forEach(async(x, i)=>{
       await delay(3000)
       axios.post("http://localhost:8081/invoice/uploadbulkInvoicesTest",x)
       .then((y)=>{
         setInvoiceIndex(i)
         if(y.data.status=="success"){
-          console.log(y.data.result)
+        //   console.log(y.data.result)
           if(y.data.result){
             finalInvoiceList.push(y.data.result)
             setFinalList((z)=>[...z, {...x, party_Id:y.data.result}])
@@ -155,7 +155,7 @@ const AgentInvoiceAdv = () => {
         })
       }
     });
-    console.log(list)
+    // console.log(list)
     let tempreceivable = 0;
     let tempreceived = 0;
     let tempbalance = 0;
@@ -164,9 +164,9 @@ const AgentInvoiceAdv = () => {
       tempreceived = tempreceived + x.paid
       tempbalance = tempbalance + x.balance
     })
-    console.log("payble", tempreceivable);
-    console.log("paid",tempreceived);
-    console.log("balance",tempbalance);
+    // console.log("payble", tempreceivable);
+    // console.log("paid",tempreceived);
+    // console.log("balance",tempbalance);
   }
 
   const uploadPaybleInvoices = async() => {
@@ -179,7 +179,7 @@ const AgentInvoiceAdv = () => {
       .then((y)=>{
         setInvoiceIndex(i)
         if(y.data.status=="success"){
-          console.log(y.data.result)
+        //   console.log(y.data.result)
           if(y.data.result){
             finalInvoiceList.push(y.data.result)
             setFinalList((z)=>[...z, {...x, party_Id:y.data.result}])
@@ -193,11 +193,11 @@ const AgentInvoiceAdv = () => {
   }
 
   useEffect(() => {
-    console.log(finalList)
+    // console.log(finalList)
   }, [finalList])
 
   useEffect(() => {
-    console.log("Error Here", failedList)
+    // console.log("Error Here", failedList)
   }, [failedList])
 
   return (

@@ -58,12 +58,12 @@ const initialState = {
 
   const fetchData = async(set, state) => {
     set({load:true});
-    console.log(state)
+    // console.log(state)
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_JOB_PROFIT_LOSS,{
       headers:{ ...state }
     }).then(async(x) => {
       let result = x.data.result, totalRevenue=0.00, totalCost=0.00, totalPnl=0.00, totalActual=0.0, totalgainLoss=0.0, totalAfter=0.0;
-      console.log(result)
+      // console.log(result)
       if(x.data.status!="success" || x.data.result.length<1){
         openNotification("Error", "No record found with current criteria", "orange");
       } else {
@@ -156,7 +156,7 @@ const initialState = {
   ];
 
   const excelDataFormatter = (records, set) => {
-    console.log("records", records)
+    // console.log("records", records)
     let tempData = [
       ["Sr","Job No","OperationType","VesselName", "Date", "HBL / HAWB", "MBL / MAWB", "Client",
         "SubType", "Shipper","Shipper/Consignee","Sales Rep","OverSeas Agent","Shipping Line", 

@@ -4,7 +4,7 @@ import { Row, Col, Table } from 'react-bootstrap';
 import inWords from '/functions/numToWords';
 
 const CLPrint = ({ records, invoice }) => {
-    console.log("invoice",invoice)
+    // console.log("invoice",invoice)
     const [values, setValues] = useState({
         tax: 0,
         taxPercent:0,

@@ -14,7 +14,7 @@ import { checkEditAccess } from '../../../../../functions/checkEditAccess';
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")
 
 const ListData = ({ voucherData }) => {
-  console.log(voucherData)
+  // console.log(voucherData)
   const [rowData, setRowData] = useState();
   const [originalData, setOriginalData] = useState();
   const [query, setQuery] = useState("");

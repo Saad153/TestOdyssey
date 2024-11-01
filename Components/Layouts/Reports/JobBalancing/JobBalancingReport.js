@@ -47,9 +47,9 @@ const JobBalancingReport = ({ result, query }) => {
 
   const balanceTotal = (list) => {
     let balance = 0.00;
-    console.log(list)
+    // console.log(list)
     list.forEach((x) => {
-      console.log(balance, x.balance)
+      // console.log(balance, x.balance)
       if (x.payType == "Payble") {
         balance = balance - parseFloat(x.balance)
       } else {
@@ -95,7 +95,7 @@ const JobBalancingReport = ({ result, query }) => {
       y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
       y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
       y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;
-      console.log(y.balanced, y.recieved, commas(y.recieved))
+      // console.log(y.balanced, y.recieved, commas(y.recieved))
       y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
       // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
@@ -104,11 +104,11 @@ const JobBalancingReport = ({ result, query }) => {
       // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
     })
     if(query.options!="showall"){
-      console.log(newArray)
+      // console.log(newArray)
       newArray = await newArray.filter((x)=>{
         return x.balance!=0
       })
-      console.log(newArray)
+      // console.log(newArray)
 
     }
     setRecords(newArray);

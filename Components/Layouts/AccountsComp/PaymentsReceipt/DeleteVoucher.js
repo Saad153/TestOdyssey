@@ -10,9 +10,9 @@ const DeleteVoucher = ({companyId, setAll, state, id, setShowTable}) => {
     axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_PAY_REC,{
       id:id
     }).then((x) => {
-      console.log(x.data.status)
+      // console.log(x.data.status)
       if(x.data.status=="success"){
-        console.log("Router.push")
+        // console.log("Router.push")
         setShowTable(true)
         Router.push(`/accounts/paymentReceipt/new`)
       }

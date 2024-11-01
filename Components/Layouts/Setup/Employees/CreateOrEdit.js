@@ -29,7 +29,7 @@ const MyField = () => {
   const [managers, setManagers] = useState([]);
   const { values: { selectDesignation }, touched, setFieldValue } = useFormikContext();
 
-  console.log("selectDesignation",selectDesignation)
+  // console.log("selectDesignation",selectDesignation)
   useEffect(() => { getManagers() 
   },[])
   const getManagers = async() => {
@@ -129,7 +129,7 @@ const CreateOrEdit = ({appendClient, edit, setVisible, setEdit, selectedEmployee
   }
   useEffect(() => {
 
-    console.log(selectedEmployee.Access_Levels)
+    // console.log(selectedEmployee.Access_Levels)
     if(edit){
       const accessLevels = selectedEmployee.Access_Levels[0].access_name;
       if (accessLevels == "admin") {
@@ -148,10 +148,10 @@ const CreateOrEdit = ({appendClient, edit, setVisible, setEdit, selectedEmployee
     const admin = value.includes("admin")
     if(admin){
       setSelectedAccessLevels([]);
-      console.log("admin",admin)
-      console.log("selected level",selectedAccessLevels)
+      // console.log("admin",admin)
+      // console.log("selected level",selectedAccessLevels)
       setSelectedAccessLevels(admin)
-      console.log("selected level21",selectedAccessLevels)
+      // console.log("selected level21",selectedAccessLevels)
     }
 
      if(value == "admin"){

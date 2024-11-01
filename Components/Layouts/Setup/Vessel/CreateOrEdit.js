@@ -34,11 +34,11 @@ const CreateOrEdit = ({state, dispatch, baseValues}) => {
 
     useEffect(() => {
         if(state.edit){
-            console.log(state.selectedRecord)
+            // console.log(state.selectedRecord)
             let tempRecord = {...state.selectedRecord};
             delete tempRecord.destinations;
             state.destinations = state.selectedRecord.destinations?state.selectedRecord.destinations.split(", "):[];
-            console.log(tempRecord);
+            // console.log(tempRecord);
             reset(tempRecord);
         }else{
             reset(baseValues)

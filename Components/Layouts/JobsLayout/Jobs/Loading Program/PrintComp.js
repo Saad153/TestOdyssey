@@ -10,7 +10,7 @@ const PrintComp = ({allValues, state}) => {
     const line = "1px solid";
 
     useEffect(() => {
-      console.log(state)
+      // console.log(state)
     }, [])
 
     const getVales = (value) => {

@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 const CreateOrEdit = ({state, dispatch, getAccounts}) => {
-    console.log(state)
+    // console.log(state)
     const companyId = useSelector((state) => state.company.value);
 
     const handleSubmit = async() => {
@@ -49,7 +49,7 @@ const CreateOrEdit = ({state, dispatch, getAccounts}) => {
                 AccountId: state.selectedRecord.AccountId,
                 CompanyId: companyId
             }).then((x)=>{
-                console.log(x.data)
+                // console.log(x.data)
                 if(x.data.status=='success'){
                     getAccounts(x.data);
                     openNotification('Success', `Account ${state.selectedRecord.title} Updated!`, 'green')
@@ -64,7 +64,7 @@ const CreateOrEdit = ({state, dispatch, getAccounts}) => {
                 ParentAccountId: state.selectedRecord.ParentAccountId,
                 CompanyId: companyId
             }).then((x)=>{
-                console.log(x.data)
+                // console.log(x.data)
                 if(x.data.status=='success'){
                     getAccounts(x.data);
                     openNotification('Success', `Account ${state.selectedRecord.title} Updated!`, 'green')
@@ -81,7 +81,7 @@ const CreateOrEdit = ({state, dispatch, getAccounts}) => {
           description: message,
           icon: <ExclamationCircleOutlined style={{ color: color }} />,
           onClick: () => {
-            console.log('Notification Clicked!');
+            // console.log('Notification Clicked!');
           },
         });
       };

@@ -94,7 +94,6 @@ const InvoiceCharges = ({data, companyId, reload}) => {
       let amount = x.partyType=="client"? parseFloat(x.local_amount) : parseFloat(x.amount);
       result = result + parseFloat(x.local_amount);
     });
-    console.log("Calculate Total",result.toFixed(2))
     return result.toFixed(2);
   };
   const getCurrencyInfoAdvanced = (id, heads) => {
@@ -208,7 +207,6 @@ const InvoiceCharges = ({data, companyId, reload}) => {
     let tempRoundOff = parseFloat(tempInv.roundOff);
     let narration = `${tempInv.payType} Against Invoice ${invoice?.invoice_No} For Job# ${invoice?.SE_Job.jobNo} From ${invoice?.party_Name}`
     if(tempRoundOff==0){  
-      console.log("Amount>>>",amount)
       vouchers.Voucher_Heads.push({
         amount:parseFloat(amount),
         type:tempInv.payType=="Recievable"?"debit":"credit",

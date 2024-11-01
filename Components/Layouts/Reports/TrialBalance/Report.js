@@ -22,7 +22,7 @@ const Report = ({query, result}) => {
     const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
 
     const makeTransaction = (data, type) => {
-      console.log("Make Transaction", data, type)
+      // console.log("Make Transaction", data, type)
       let transactions  = {
         opDebit:0,
         opCredit:0,
@@ -62,7 +62,7 @@ const Report = ({query, result}) => {
           });
           let type = "Non-EX"
           x.Child_Accounts.forEach((y)=>{
-            console.log("Accounts", y)
+            // console.log("Accounts", y)
             y.title.includes("EX-CHANGE RATE GAIN / LOSS")?type = "EX":null
             temp.push({
               title:y.title,
@@ -240,7 +240,7 @@ const Report = ({query, result}) => {
                 {                 
                 currentRecords.filter(x => x.clDebit !== 0 && x.clCredit !== 0)
                 .map((x, i) => {
-                  console.log("executed")
+                  // console.log("executed")
                   if(x.type=="parent"){
                     return(
                     <tr key={i}>
@@ -290,7 +290,7 @@ const Report = ({query, result}) => {
                 {
                   reportView =="Debitors List" && <>
                    {currentRecords.filter(x => x.clDebit !== 0).map((x, i) => {
-                    console.log("x",x)
+                    // console.log("x",x)
     if (x.type === "parent") {
         return (
             <tr key={i}>

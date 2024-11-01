@@ -89,7 +89,7 @@ const IncomeStatement = () => {
         pathname: `/reports/incomeStatement/report`, 
         query: { from: from, to: to, company: company, currency: currency, accountLevel:accountLevel, revenue:revenue} 
       });
-      console.log(revenue)
+      // console.log(revenue)
       dispatch(incrementTab({
         "label": "Income Statement",
         "key": "5-12",
@@ -101,7 +101,7 @@ const IncomeStatement = () => {
         pathname: `/reports/incomeStatement/report`, 
         query: { from: from, to: to, company: company, currency: currency, accountLevel:accountLevel, expense:expense } 
       });
-      console.log(expense)
+      // console.log(expense)
       dispatch(incrementTab({
         "label": "Income Statement",
         "key": "5-12",
@@ -156,7 +156,7 @@ const IncomeStatement = () => {
         <Select disabled={isRevenue} name="selectRevenue" style={{ width: "100%" }} placeholder="Select Revenue" showSearch onChange={handleRevenueChange}>
           {records.map((x, index) => {
             if(x.AccountId == '2'){
-              console.log(x)
+              // console.log(x)
               return <Select.OptGroup key={index} label={x.title}>
                 {x.Child_Accounts.map((y, index) => {
                   return <Select.Option key={index} value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>
@@ -170,7 +170,7 @@ const IncomeStatement = () => {
         <Select disabled={isExpense} name="selectExpense" style={{ width: "100%" }} placeholder="Select Expense" showSearch onChange={handleExpenseChange}>
         {records.map((x, index) => {
             if(x.AccountId == '1'){
-              console.log(x)
+              // console.log(x)
               return <Select.OptGroup key={index} label={x.title}>
                 {x.Child_Accounts.map((y, index) => {
                   return <Select.Option key={index} value={y.title}>{"("+y.code+")" + ' - ' +y.title}</Select.Option>

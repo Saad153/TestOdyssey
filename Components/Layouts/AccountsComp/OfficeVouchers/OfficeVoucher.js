@@ -221,7 +221,7 @@ const OfficeVoucher = ({voucherData, id, employeeData}) => {
           delete tempVoucher.Voucher_Heads[1].id
           await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,tempVoucher)
           .then((z)=>{
-            console.log(z.data)
+            // console.log(z.data)
             if(z.data.status=="success"){
               openNotification("Success", `Voucher updated Successfully!`, "green")
               Router.push(`/accounts/officeVouchers/${id}`);

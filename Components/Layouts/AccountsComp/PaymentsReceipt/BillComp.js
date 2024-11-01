@@ -65,7 +65,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     let creditReceiving = 0.00
     state.invoices.forEach((x)=>{
       if(x.receiving && (x.receiving!=0|| state.edit)){
-        console.log("Calculating profit/loss", x.receiving, x.ex_rate, state.manualExRate, x.payType)
+        // console.log("Calculating profit/loss", x.receiving, x.ex_rate, state.manualExRate, x.payType)
         let tempExAmount = parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))
         if(x.payType=="Payble"){
           tempExAmount = -1*tempExAmount
@@ -133,7 +133,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         pendingFund = 0.00;
       })
       val.forEach((x)=>{
-        console.log(x.payType, x.receiving, state.exRate)
+        // console.log(x.payType, x.receiving, state.exRate)
         newExAmount = parseFloat(newExAmount) + (parseFloat(x.receiving)*parseFloat(state.exRate));
         oldExAmount = parseFloat(oldExAmount) + (parseFloat(x.receiving)*parseFloat(x.ex_rate));
       })
@@ -207,7 +207,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           // Gain & Loss Account
           if((Object.keys(state.gainLossAccountRecord).length!=0) && (state.gainLossAmount!=0) && (state.gainLossAmount!=null) && (state.totalrecieving!=0)){
             gainAndLossAmount = state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount))
-            console.log(gainAndLossAmount)
+            // console.log(gainAndLossAmount)
             transTwo.push({
               particular:state.gainLossAccountRecord,
               tran:{

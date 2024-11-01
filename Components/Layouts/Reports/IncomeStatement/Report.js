@@ -7,7 +7,7 @@ import Pagination from "/Components/Shared/Pagination";
 import { Row, Col } from 'react-bootstrap';
 
 const Report = ({query, result}) => {
-  console.log(result)
+  // console.log(result)
 const report = query.reportType;  
 const accountlevel = query.accountLevel;
   const [ records, setRecords ] = useState([]);
@@ -60,7 +60,7 @@ const accountlevel = query.accountLevel;
     // amount>0?
     //   transactions.debit += parseFloat(amount):
     //   transactions.credit += parseFloat(amount)*-1;
-    console.log(transactions)
+    // console.log(transactions)
     return transactions
 
   }
@@ -103,7 +103,7 @@ const accountlevel = query.accountLevel;
           title:x.title, type:'parent'
         });
         x.Parent_Accounts.forEach((y)=>{
-          console.log("y",y)
+          // console.log("y",y)
           if(y.Child_Accounts?.length>0){
             y.Child_Accounts.forEach((z)=>{
               // console.log("Revenue",z)
@@ -135,7 +135,7 @@ const accountlevel = query.accountLevel;
 
             // for "COGS/ Selling Exp"
             const filteredCogsAccounts = y.Child_Accounts.filter(c => idsToFilter.includes(c.title));
-            console.log("filteredChildAccounts",filteredCogsAccounts)
+            // console.log("filteredChildAccounts",filteredCogsAccounts)
             filteredCogsAccounts.forEach(cogs => {
               i = i + 1;
               cogsArray.push({
@@ -146,7 +146,7 @@ const accountlevel = query.accountLevel;
             });
             //For Admin Expense
             const filteredAdminExpAccounts = y.Child_Accounts.filter(c => !idsToFilter.includes(c.title));
-            console.log("filteredAdminExpAccounts",filteredAdminExpAccounts)
+            // console.log("filteredAdminExpAccounts",filteredAdminExpAccounts)
             filteredAdminExpAccounts.forEach(exp => {
               i = i + 1;
               AdminExpArray.push({
@@ -172,7 +172,7 @@ const accountlevel = query.accountLevel;
         x.Parent_Accounts.forEach((y)=>{
           if(y.Child_Accounts?.length>0){
             y.Child_Accounts.forEach((z)=>{
-              console.log("z",z)
+              // console.log("z",z)
               i = i + 1
               if(query.revenue != null){
                 // console.log(query.revenue, z.title)
@@ -534,7 +534,7 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
         {accountLevel == "6" &&
           <div>
             {cogsArray.map((item)=>{
-              console.log("Admin Expenses",item)
+              // console.log("Admin Expenses",item)
               return(
                 <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
                   <div>
@@ -563,7 +563,7 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
         {accountLevel == "6" &&
           <div>
             {AdminExpArray.map((item)=>{
-              console.log("Admin Expenses",item)
+              // console.log("Admin Expenses",item)
               return(
                 <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
                   <div>

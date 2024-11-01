@@ -3,9 +3,9 @@ import { Modal } from 'antd';
 
 const MediumModal = ({visible, setVisible, setEdit, centered, width, children}) => {
 
-  useEffect(() => {
-    console.log(centered)
-  }, [centered])
+  // useEffect(() => {
+  //   // console.log(centered)
+  // }, [centered])
 
   return (
     <div>

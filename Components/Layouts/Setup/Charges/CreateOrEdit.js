@@ -46,11 +46,11 @@ const CreateOrEdit = ({state, dispatch, baseValues}) => {
   const onSubmit = async(data) => {
     dispatch({type:'toggle', fieldName:'load', payload:true});
     setTimeout(async() => {
-        console.log(data)
+        // console.log(data)
         await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_CHARGE,{
             data
         }).then((x)=>{
-            console.log(x)
+            // console.log(x)
             if(x.data.status=='success'){
                 let tempRecords = [...state.records];
                 tempRecords.unshift(x.data.result);

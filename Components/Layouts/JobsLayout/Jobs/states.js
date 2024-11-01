@@ -345,10 +345,10 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
 }
 
 const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
-  console.log("make invoice")
+  // console.log("make invoice")
   let tempList = list.filter((x)=>x.check);
   tempList.forEach((x)=>{
-    console.log(x.invoiceType)
+    // console.log(x.invoiceType)
     if(x.description && x.invoiceType.includes("Invoice")){
       if(x.type == "Payble"){
         x.amount = x.amount * -1
@@ -364,7 +364,7 @@ const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
     }
 
   })
-  console.log(tempList)
+  // console.log(tempList)
   tempList.length>0?
     await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
       chargeList:tempList, companyId, type:type

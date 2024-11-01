@@ -61,7 +61,7 @@ const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
       queryFn:getJobValues
     });
 
-        console.log("state date", state)
+        // console.log("state date", state)
 
 
     useEffect(() => {

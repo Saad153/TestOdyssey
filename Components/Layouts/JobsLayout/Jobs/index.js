@@ -25,7 +25,7 @@ const SeJob = ({id, type}) => {
 
 
     if(dataSuccess && newdata) {
-      console.log("index: ",data.result)
+      // console.log("index: ",data.result)
       data?.result?.res?.forEach((x)=>{
         data.result.vendor.sLine.push(x)
       })

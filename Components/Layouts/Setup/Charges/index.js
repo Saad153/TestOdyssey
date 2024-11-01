@@ -98,7 +98,7 @@ const Charges = ({chargeData}) => {
           </tr>
         </thead>
         <tbody>
-          {console.log(records)}
+          {/* {console.log(records)} */}
         {records?.filter((x)=>{
             if(
               x.code==state.search.toLowerCase() ||

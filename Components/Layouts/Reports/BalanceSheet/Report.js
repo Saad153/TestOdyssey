@@ -24,7 +24,7 @@ const Report = () => {
       }
     })
     .then((x)=>{
-      console.log(x.data)
+      // console.log(x.data)
       let tempassets = x.data.result.assets;
       let templiabilities = x.data.result.liabilities;
       let tempcapital = x.data.result.capital;
@@ -149,7 +149,7 @@ const Report = () => {
       tempcosting = tempcosting.length>0?tempcosting[0].total:0;
       setAssets(tempassets)
       setLiabilities(templiabilities)
-      console.log(tempcapital, "<----here")
+      // console.log(tempcapital, "<----here")
       setCapital(tempcapital)
       setDrawings(tempdrawings)
       setEarnings(tempselling+tempcosting);

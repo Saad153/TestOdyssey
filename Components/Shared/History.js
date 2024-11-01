@@ -4,7 +4,7 @@ import { Row, Col, Spinner} from 'react-bootstrap'
 
 const History = ({history, load}) => {
 
-    useEffect(() => { console.log(history) }, []);
+    // useEffect(() => { console.log(history) }, []);
     
   return (
     <div className='client-styles' style={{maxHeight:720, overflowY:'hidden', overflowX:'hidden'}}>

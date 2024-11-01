@@ -77,7 +77,7 @@ const InvoiceBalaincing = () => {
   ];
 
   const handleSearch = async () => {
-    console.log(currency)
+    // console.log(currency)
     Router.push({
         pathname: `/reports/invoiceBalancing/report`,
         query: {

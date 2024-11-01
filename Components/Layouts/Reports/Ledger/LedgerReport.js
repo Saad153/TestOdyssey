@@ -10,7 +10,7 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
   useEffect(() => {
     if (name && voucherData.status == "success") {
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
-      console.log(voucherData.result)
+      // console.log(voucherData.result)
       voucherData.result.forEach((y) => {
         
         let exRate = parseFloat(y["Voucher.exRate"])>0?parseFloat(y["Voucher.exRate"]):1;

@@ -18,12 +18,12 @@ const VoucherHistory = ({ id, isOpen, onClose }) => {
                 }
             })
             setData(result.data.result)
-            console.log(result)
+            // console.log(result)
             setIsLoading(false)
             return result
         } catch (error) {
             setIsLoading(false);
-            console.log(error)
+            // console.log(error)
         }
     }
 

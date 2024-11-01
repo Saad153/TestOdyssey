@@ -19,7 +19,7 @@ const LoadingProgram = ({ state, jobData }) => {
     setLoad(true);
     const SEJobId = jobData.id;
     data.id == "" ? delete data.id : data.id;
-    console.log(data)
+    // console.log(data)
     await axios.post(process.env.NEXT_PUBLIC_CLIMAX_UPSERT_LOADING_PROGRAM, {
         ...data,
         SEJobId,

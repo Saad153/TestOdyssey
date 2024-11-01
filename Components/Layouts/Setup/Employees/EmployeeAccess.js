@@ -9,12 +9,12 @@ const EmployeeAccess = () => {
 
   useEffect(() => {
     fetchData();
-    console.log('Acess Page') ;
+    // console.log('Acess Page') ;
   }, [])
 
   const fetchData = async() => {
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_EMPLOYEES)
-    .then((x)=>console.log(x.data));
+    // .then((x)=>console.log(x.data));
   }
 
   return (

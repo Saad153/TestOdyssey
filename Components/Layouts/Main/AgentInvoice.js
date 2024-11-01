@@ -25,7 +25,7 @@ const AgentInvoice = () => {
 
   const handleOpeningInvoicesReceivable = async(data) => {
     let list = [];
-    console.log(data)
+    // console.log(data)
     await data.forEach(async(x, i) => {
         let title = x.agent_name;
         if(x.local_amount!=null){
@@ -57,7 +57,7 @@ const AgentInvoice = () => {
         }
 
     });
-    console.log(list)
+    // console.log(list)
     let tempreceivable = 0;
     let tempreceived = 0;
     let tempbalance = 0;
@@ -66,9 +66,9 @@ const AgentInvoice = () => {
         tempreceived = tempreceived + x.received
         tempbalance = tempbalance + x.balance
     })
-    console.log("receivable", tempreceivable);
-    console.log("received",tempreceived);
-    console.log("balance",tempbalance);
+    // console.log("receivable", tempreceivable);
+    // console.log("received",tempreceived);
+    // console.log("balance",tempbalance);
   }
   const uploadRecivableInvoices = async() => {
     let finalInvoiceList = [];
@@ -80,7 +80,7 @@ const AgentInvoice = () => {
         .then((y)=>{
             setInvoiceIndex(i)
             if(y.data.status=="success"){
-                console.log(y.data.result)
+                // console.log(y.data.result)
                 if(y.data.result){
                     finalInvoiceList.push(y.data.result)
                     setFinalList((z)=>[...z, {...x, party_Id:y.data.result}])
@@ -116,7 +116,7 @@ const AgentInvoice = () => {
             } else {
                 newInvNo = invNo;
             }
-            console.log(newInvNo);
+            // console.log(newInvNo);
 
             await list.push({
                 party_Name:title, 
@@ -140,7 +140,7 @@ const AgentInvoice = () => {
         }
 
     });
-    console.log(list)
+    // console.log(list)
     let tempreceivable = 0;
     let tempreceived = 0;
     let tempbalance = 0;
@@ -149,9 +149,9 @@ const AgentInvoice = () => {
         tempreceived = tempreceived + x.paid
         tempbalance = tempbalance + x.balance
     })
-    console.log("payble", tempreceivable);
-    console.log("paid",tempreceived);
-    console.log("balance",tempbalance);
+    // console.log("payble", tempreceivable);
+    // console.log("paid",tempreceived);
+    // console.log("balance",tempbalance);
   }
   const uploadPaybleInvoices = async() => {
     let finalInvoiceList = [];
@@ -163,7 +163,7 @@ const AgentInvoice = () => {
         .then((y)=>{
             setInvoiceIndexPay(i);
             if(y.data.status=="success"){
-                console.log(y.data.result);
+                // console.log(y.data.result);
                 if(y.data.result){
                     finalInvoiceList.push(y.data.result)
                     setFinalListPay((z)=>[...z, {...x, party_Id:y.data.result}])
@@ -182,15 +182,15 @@ const AgentInvoice = () => {
 
   useEffect(() => {
     if(invoiceIndex+1==recivableInvoices.length){
-        console.log(finalList)
-        console.log(failedList)
+        // console.log(finalList)
+        // console.log(failedList)
     }
   }, [finalList, failedList])
 
   useEffect(() => {
     if(invoiceIndexPay+1==paybleList.length){
-        console.log(finalListPay)
-        console.log(failedListPay)
+        // console.log(finalListPay)
+        // console.log(failedListPay)
     }
   }, [finalListPay, failedListPay])
 

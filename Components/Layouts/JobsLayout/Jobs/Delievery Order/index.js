@@ -41,7 +41,7 @@ const DeliveryOrder = ({ state, jobData, clearingAgents, companyId }) => {
     }).then((x) => {
       if (x.data.status == "success") {
         if (!data.id) {
-          console.log(x.data.result[0]);
+          // console.log(x.data.result[0]);
           reset({ ...data, doNo: x.data.result[0].doNo });
         }
         openNotification("Success", "Loading Program Saved!", "Green")

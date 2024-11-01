@@ -87,7 +87,7 @@ const EquipmentInfo = ({state, dispatch}) => {
               min={1}
               onChange={(e)=>{
                 let tempState = [...state.equipments];
-                console.log(tempState[i].gross)
+                // console.log(tempState[i].gross)
                 tempState[i].qty = e;
                 let value = 0;
                 tempState[i].size=="40HC"?

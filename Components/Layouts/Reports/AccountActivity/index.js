@@ -99,7 +99,7 @@ const AccountActivity = () => {
   // console.log("currentPage:", currentPage);
   // console.log("indexOfLast:", indexOfLast);
   // console.log("indexOfFirst:", indexOfFirst);
-  console.log("Records:", records);
+  // console.log("Records:", records);
 
   return (
     <div className='base-page-layout'>
