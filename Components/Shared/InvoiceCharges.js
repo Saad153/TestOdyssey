@@ -580,22 +580,33 @@ return (
         </Row>
         <hr className='mb-1' />
         <Row>
-          <Col md={6}>
-            {invoice?.currency!="PKR" && 
-            <>
+          {invoice?.currency!="PKR" &&
+          <Col md={3}>
+            
               <span className='inv-label mx-2'>Total Amount {`(${invoice?.currency})`}: </span>
               <span className='inv-value charges-box'> 
                 {" "}
                 {commas((parseFloat(invoice?.total)).toFixed(2))}
               </span>
               <span className='mx-4'></span>
-            </>
-            }
+            
+          </Col>
+          }
+          <Col md={3}>
+          
             <span className='inv-label mx-2'>Total Amount {"(Local)"}:</span>
             <span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
               {commas((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2))}
+            </span>
+          </Col>
+          <Col md={3}>
+            <span className='inv-label mx-2'>Settlement Amount:</span>
+            <span className='inv-value charges-box'> 
+              {" "}
+              {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
+              {commas((parseFloat(invoice?.recieved)*parseFloat(invoice?.ex_rate)).toFixed(2))}
             </span>
           </Col>
         </Row>
