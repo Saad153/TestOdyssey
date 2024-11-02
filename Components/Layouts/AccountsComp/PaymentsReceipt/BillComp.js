@@ -171,7 +171,7 @@ const BillComp = ({companyId, state, dispatch}) => {
       tempInvoices.filter(x=>x.receiving!=0).forEach((x)=>{
         console.log(x)
         console.log(state)
-        state.checkNo?invNarration = invNarration + `Check# ${state.checkNo}, `:null
+        state.checkNo?invNarration = invNarration + `${state.subType} ${state.checkNo}, `:null
         state.checkDate?invNarration = invNarration + `Date ${state.checkDate.format('YYYY-MM-DD')}, `:null
         invNarration = invNarration + `Against `
         x.SE_Job?.Bl?.hbl?invNarration = invNarration + `HBL# ${x.SE_Job.Bl.hbl}, `:null
