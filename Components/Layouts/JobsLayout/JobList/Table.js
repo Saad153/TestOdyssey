@@ -22,7 +22,7 @@ if(groupBy) {
       setGroup('shipping_line')
 
       result.map((x) =>  x.map((y) => title.push(y.shipping_line?.name)))
-      console.log({title})
+      // console.log({title})
     
     }
     else if (groupBy == 'vesselId') {

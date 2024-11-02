@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Row, Col, Table } from 'react-bootstrap';
 import ReactToPrint from 'react-to-print';
 import moment from "moment";
@@ -6,20 +6,22 @@ import axios from 'axios';
 import openNotification from '../Shared/Notification';
 import FullScreenLoader from './FullScreenLoader';
 import InvoicePrint from './InvoicePrint';
-import { Checkbox, Popover, Input, Radio, Select } from 'antd';
+import { Checkbox, Popover, Input, Radio, Select, Modal } from 'antd';
 import { useQueryClient } from '@tanstack/react-query';
 import CLPrint from './CLPrint';
 import { useDispatch } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import Router from 'next/router';
 import InvoiceEditor from './InvoiceEditor';
+import PartySearch from '../Layouts/JobsLayout/Jobs/ChargesComp/PartySearch';
+import { set } from 'js-cookie';
 
 const { TextArea } = Input;
 
 const InvoiceCharges = ({data, companyId, reload}) => {
 
 
-  const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ");
+  const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
   let inputRef = useRef(null);
   const dispatchNew = useDispatch();
@@ -27,6 +29,7 @@ const InvoiceCharges = ({data, companyId, reload}) => {
   const [bank, setBank] = useState(1);
   const [invoiceData, setInvoiceData] = useState(false);
   const [records, setRecords] = useState([]);
+  const [show, setShow] = useState(false);
   const [invoice, setInvoice] = useState({
     Charge_Heads:[],
     SE_Job:{
@@ -86,6 +89,56 @@ const InvoiceCharges = ({data, companyId, reload}) => {
       setInvoiceData(!invoiceData)
     }
   }, [data])
+
+  useEffect(()=>{
+    console.log(show)
+  }, [show])
+
+  const cellClickListener = useCallback((e)=> {
+    dispatchNew(incrementTab({"label": "Payment / Receipt","key": "3-4","id":e}))
+    Router.push(`/accounts/paymentReceipt/${e}`)
+  }, []);
+
+  const [settlements, setSettlements] = useState([]);
+
+  const showSettlement = async (showing) => {
+    console.log(showing)
+    if(showing){
+      const result = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/getAllInvoiceData`,{
+        headers: {id:invoice.id, party_Id: invoice.party_Id, party_Type: invoice.partyType}
+    })
+    console.log(result.data.result)
+    let heads = result.data.result.heads
+    let vouchers = result.data.result.vouchers
+    let InvTran = result.data.result.InvTran
+    console.log(heads)
+    let temp = []
+    let temp1 = []
+    let t = heads
+
+    // heads = temp1
+
+    vouchers.forEach((x, i)=>{
+
+      let settlement = {
+        voucher_id: result.data.result.vouchers[i].id,
+        voucher_No: result.data.result.vouchers[i].voucher_Id,
+        voucher_Date: result.data.result.vouchers[i].tranDate,
+        amount: parseFloat(result.data.result.heads[i].defaultAmount),
+        localAmount: parseFloat(result.data.result.heads[i].defaultAmount)*parseFloat(result.data.result.vouchers[i].exRate),
+        remarks: result.data.result.heads[i].narration
+      }
+      temp.push(settlement)
+    })
+    setSettlements(temp)
+
+
+    }
+
+
+
+    setShow(showing);
+  }
 
   const calculateTotal = (data) => {
     let result = 0;
@@ -579,33 +632,37 @@ return (
         <hr className='mb-1' />
         <Row>
           {invoice?.currency!="PKR" &&
-          <Col md={3}>
+          <Col md={2}>
             
               <span className='inv-label mx-2'>Total Amount {`(${invoice?.currency})`}: </span>
               <span className='inv-value charges-box'> 
                 {" "}
-                {commas((parseFloat(invoice?.total)).toFixed(2))}
+                {commas((parseFloat(invoice?.total)/parseFloat(invoice?.ex_rate)).toFixed(2))}
               </span>
               <span className='mx-4'></span>
             
           </Col>
           }
-          <Col md={3}>
-          
+          <Col md={2}>
             <span className='inv-label mx-2'>Total Amount {"(Local)"}:</span>
             <span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
-              {commas((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2))}
+              {commas((parseFloat(invoice?.total)).toFixed(2))}
             </span>
           </Col>
-          <Col md={3}>
-            <span className='inv-label mx-2'>Settlement Amount:</span>
-            <span className='inv-value charges-box'> 
+          <Col md={2}>
+            <span className='inv-label mx-2' style={{cursor:'pointer'}} onClick={()=>showSettlement(!show)}><u>Settlement Amount: {!show?"Hide":"Show"}</u></span>
+            {invoice.payType=="Recievable" &&<span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
-              {commas((parseFloat(invoice?.recieved)*parseFloat(invoice?.ex_rate)).toFixed(2))}
-            </span>
+              {commas((parseFloat(invoice?.recieved)/parseFloat(invoice?.ex_rate)).toFixed(2))}
+            </span>}
+            {invoice.payType=="Payble" &&<span className='inv-value charges-box'> 
+              {" "}
+              {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
+              {commas((parseFloat(invoice?.paid)/parseFloat(invoice?.ex_rate)).toFixed(2))}
+            </span>}
           </Col>
         </Row>
       </div>
@@ -633,6 +690,61 @@ return (
         </div>
       </div>
     </div>
+    {console.log(invoice)}
+    {show && (
+        <Modal
+        title="Settlements"
+        centered
+        open={show}
+        onOk={() => setShow(false)}
+        onCancel={() => setShow(false)}
+        width={1200}
+        footer={null}
+      >
+        <div style={{display:"flex", justifyContent:"space-between"}}>
+
+        <p>Party: <b>{invoice.party_Name}</b> Currency: <b>{invoice.currency}</b></p>
+        {invoice.payType=="Recievable"&&<div style={{display:"flex"}}>
+        <p>Recieved (PKR): <b>{commas(invoice.recieved/invoice.ex_rate)}</b></p>
+        {(invoice.currency!="PKR") &&<p style={{marginLeft:20}}>Recieved (USD): <b>{commas(invoice.recieved)}</b></p>}
+
+        </div>}
+        {invoice.payType=="Payble"&&<div style={{display:"flex"}}>
+        <p>Paid (PKR): <b>{commas(invoice.paid/invoice.ex_rate)}</b></p>
+        {(invoice.currency!="PKR") &&<p style={{marginLeft:20}}>Paid (USD): <b>{commas(invoice.paid)}</b></p>}
+
+        </div>}
+        </div>
+        <div>
+          <table className="table">
+            <thead className='table'>
+              <tr>
+                <th>Voucher No</th>
+                <th>Voucher Date</th>
+                <th>Amount ({invoice.currency})</th>
+                {invoice.currency!="PKR" &&<th>Amount (PKR)</th>}
+                {invoice.currency!="PKR" &&<th>Difference</th>}
+                <th>Remarks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {settlements.map((x, i) => {
+                return (
+                  <tr key={i} style={{ cursor: "pointer" }}  onClick={() => cellClickListener(x.voucher_id)}>
+                    <td style={{ color:"#0696ac"}}>{x.voucher_No}</td>
+                    <td>{moment(x.voucherDate).format("DD/MMM/YYYY")}</td>
+                    <td>{commas(x.amount)}</td>
+                    {invoice.currency!="PKR" &&<td>{commas(x.localAmount)}</td>}
+                    {invoice.currency!="PKR" &&<td style={{color: x.localAmount-(x.amount*invoice.ex_rate) < 0 ? "red" : "green"}}>{commas(x.localAmount-(x.amount*invoice.ex_rate))}</td>}
+                    <td>{x.remarks}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </Modal>
+      )}
   </>
 )}
 

@@ -474,6 +474,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                       x?.amount?.toString().includes(query)
                   })
                     .map((x, index) => {
+                      console.log(x)
                       return (
                         <tr onClick={() => cellClickListener(x)} key={index} style={{ cursor: 'pointer' }}>
                           <td className='blue-txt fw-6 fs-12' >{x.voucher_Id}</td>

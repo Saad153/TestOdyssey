@@ -162,9 +162,7 @@ const BillComp = ({companyId, state, dispatch}) => {
       let invNarration = "";
       let gainAndLossAmount = 0
       tempInvoices.forEach((x)=>{
-        if(x.check){
-          invNarration = invNarration + `Inv# ${x.invoice_No} for Job# ${x.jobId},`
-        }
+        invNarration = invNarration + `Inv# ${x.invoice_No} for Job# ${x.jobId},`
       });
   
       invNarration = invNarration + ` For ${state.selectedParty.name}`;

@@ -101,7 +101,7 @@ const Gl = ({state, dispatch, companyId}) => {
         subType:state.subType
       };
       state.transactionCreation.forEach((x)=>{
-        // console.log(x)
+        console.log(x)
         let tempVoucheObj = {
           defaultAmount:`${x.tran.defaultAmount==0?'':x.tran.defaultAmount}`,
           amount:parseFloat(x.tran.amount),
