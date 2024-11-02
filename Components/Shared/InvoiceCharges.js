@@ -705,8 +705,8 @@ return (
 
         <p>Party: <b>{invoice.party_Name}</b> Currency: <b>{invoice.currency}</b></p>
         {invoice.payType=="Recievable"&&<div style={{display:"flex"}}>
-        <p>Recieved (PKR): <b>{commas(invoice.recieved/invoice.ex_rate)}</b></p>
-        {(invoice.currency!="PKR") &&<p style={{marginLeft:20}}>Recieved (USD): <b>{commas(invoice.recieved)}</b></p>}
+        <p>Recieved (USD): <b>{commas(invoice.recieved/invoice.ex_rate)}</b></p>
+        {(invoice.currency!="PKR") &&<p style={{marginLeft:20}}>Recieved (PKR): <b>{commas(invoice.recieved)}</b></p>}
 
         </div>}
         {invoice.payType=="Payble"&&<div style={{display:"flex"}}>

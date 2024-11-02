@@ -42,12 +42,17 @@ const AgentTransactionInfo = ({state, dispatch}) => {
                 ]}
             />
         </Col>
-        <Col md={3} className="mt-3">
-            <div className='grey-txt fs-14'>Cheque / Tran #</div>
+        <Col md={2} className="mt-3">
+            <div className='grey-txt fs-14'>Cheque/Tran#</div>
             <Input size='small' value={state.checkNo} 
             disabled={state.transaction=="Cash"?true:false} onChange={(e)=>set('checkNo',e.target.value)} />
         </Col>
-        <Col className="mt-3" md={6}>
+        <Col md={2} className="mt-3">
+            <div className='grey-txt fs-14'>Date</div>
+            <DatePicker size='small' disabled={state.transaction=="Cash"?true:false} onChange={(e)=>set('checkDate', e)} value={state.checkDate} 
+            />
+        </Col>
+        <Col className="mt-3" md={4}>
             <span className="grey-txt fs-14">{state.payType=="Recievable"?"Recieving":"Paying"} Account #</span>
             <span style={{marginLeft:6, position:'relative', bottom:2}} className='close-btn'>
                 <CloseCircleOutlined onClick={()=>{

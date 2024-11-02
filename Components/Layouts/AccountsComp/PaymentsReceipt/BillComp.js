@@ -158,12 +158,27 @@ const BillComp = ({companyId, state, dispatch}) => {
     } else {
       let transTwo = [];
       let removing = 0;
-      let tempInvoices = [...state.invoices];
+      let tempInvoices = [];
+      state.invoices.forEach((x)=>{
+        if(x.receiving!=0){
+          console.log(x)
+          tempInvoices.push(x)
+        }
+      })
+      // let tempInvoices = [...state.invoices];
       let invNarration = "";
       let gainAndLossAmount = 0
-      tempInvoices.forEach((x)=>{
+      tempInvoices.filter(x=>x.receiving!=0).forEach((x)=>{
+        console.log(x)
+        console.log(state)
+        state.checkNo?invNarration = invNarration + `Check# ${state.checkNo}, `:null
+        state.checkDate?invNarration = invNarration + `Date ${state.checkDate.format('YYYY-MM-DD')}, `:null
+        invNarration = invNarration + `Against `
+        x.SE_Job?.Bl?.hbl?invNarration = invNarration + `HBL# ${x.SE_Job.Bl.hbl}, `:null
+        x.SE_Job?.Bl?.mbl?invNarration = invNarration + `MBL# ${x.SE_Job.Bl.mbl}, `:null
         invNarration = invNarration + `Inv# ${x.invoice_No} for Job# ${x.jobId},`
       });
+      console.log(invNarration)
   
       invNarration = invNarration + ` For ${state.selectedParty.name}`;
       //Create Account Transactions
@@ -177,7 +192,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:'debit',
               amount:state.finalTax,
               defaultAmount:parseFloat(state.finalTax)/parseFloat(state.autoOn?state.exRate:state.manualExRate),//0
-              narration:`Tax Paid Against ${invNarration}`,
+              narration:`Tax Paid ${invNarration}`,
               accountType:'Tax'
             }
           })
@@ -191,7 +206,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:'debit',
               amount:(parseFloat(state.bankCharges)*parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),
               defaultAmount:parseFloat(state.bankCharges).toFixed(2),//0
-              narration:`Bank Charges Paid Against ${invNarration}`,
+              narration:`Bank Charges Paid ${invNarration}`,
               accountType:'BankCharges'
             }
           })
@@ -212,7 +227,7 @@ const BillComp = ({companyId, state, dispatch}) => {
                 type:parseFloat(state.gainLossAmount)>0?'credit':'debit',
                 amount:parseFloat(gainAndLossAmount).toFixed(2),//state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount)),
                 defaultAmount:(parseFloat(gainAndLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-                narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} Against ${invNarration}`,
+                narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} ${invNarration}`,
                 accountType:'gainLoss'
               }
             })
@@ -223,7 +238,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:parseFloat(state.gainLossAmount)<0?'credit':'debit',
               amount:Math.abs(parseFloat(state.gainLossAmount)).toFixed(2),
               defaultAmount:(Math.abs(parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-              narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} Against ${invNarration}`,
+              narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} ${invNarration}`,
               accountType:'partyAccount'
             }
           })
@@ -244,7 +259,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:state.debitReceiving < state.creditReceiving?'debit':'credit',
               amount:newPartyAmount,
               defaultAmount:parseFloat(newPartyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate), //- removing
-              narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
+              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
               accountType:'partyAccount'
             }
           })
@@ -255,7 +270,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:state.debitReceiving < state.creditReceiving?'credit':'debit',
               amount:parseFloat(newPayAmount).toFixed(2), 
               defaultAmount:((parseFloat(newPayAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),//-removing
-              narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
+              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
               accountType:'payAccount'
             }
           })
@@ -266,7 +281,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:payType=="Recievable"?'credit':'debit',
               amount:parseFloat(partyAmount).toFixed(2),
               defaultAmount:(parseFloat(partyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-              narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
+              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
               accountType:'partyAccount'
             }
           })
@@ -276,7 +291,7 @@ const BillComp = ({companyId, state, dispatch}) => {
               type:payType=="Recievable"?'debit':'credit',// <-Checks the account type to make Debit or Credit
               amount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount)).toFixed(2), 
               defaultAmount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate).toFixed(2),//-removing
-              narration:`${payType=="Payble"?"Paid":"Received"} Against ${invNarration}`,
+              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
               accountType:'payAccount'
             }
           })

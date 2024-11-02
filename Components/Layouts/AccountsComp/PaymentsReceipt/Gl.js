@@ -94,6 +94,7 @@ const Gl = ({state, dispatch, companyId}) => {
         currency:invoiceCurrency,
         exRate:state.autoOn?state.exRate:state.manualExRate,
         chequeNo:state.checkNo,
+        chequeDate:state.checkDate,
         drawnAt:state.drawnAt,
         onAccount:state.onAccount,
         costCenter:"KHI",

@@ -83,6 +83,7 @@ const initialState = {
       }
   ],
   checkNo:'',
+  checkDate:moment(),
   search:'',
   date:moment(),
   bankCharges:0.0,
