@@ -510,7 +510,7 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
             <div>
               {filteredTempData.map((item)=>{
                 return(
-                  <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
+                  <div key={item.id} style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
                     <div>
                       {item.title}
                     </div>
