@@ -168,9 +168,8 @@ const BillComp = ({companyId, state, dispatch}) => {
       // let tempInvoices = [...state.invoices];
       let invNarration = "";
       let gainAndLossAmount = 0
-      tempInvoices.filter(x=>x.receiving!=0).forEach((x)=>{
-        console.log(x)
-        console.log(state)
+      console.log(tempInvoices.filter(x=>x.receiving))
+      tempInvoices.filter(x=>x.receiving).forEach((x)=>{
         state.checkNo?invNarration = invNarration + `${state.subType} ${state.checkNo}, `:null
         state.checkDate?invNarration = invNarration + `Date ${state.checkDate.format('YYYY-MM-DD')}, `:null
         invNarration = invNarration + `Against `
