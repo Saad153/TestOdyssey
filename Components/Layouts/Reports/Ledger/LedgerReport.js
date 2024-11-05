@@ -19,11 +19,11 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
           createdAtDate.isBetween(moment(from),moment(to),"day","[]") ||
           createdAtDate.isSame(moment(to),"day")
         ) {
-          closingBalance =
-            y.type === "debit" ? 
-              closingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
-              closingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
           if(!(currency!="PKR" && y.narration && y.narration.includes("Ex-Rate"))){
+            closingBalance =
+              y.type === "debit" ? 
+                closingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
+                closingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
             
           }
           if (y["Voucher.vType"] === "OP") {
@@ -32,20 +32,21 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
                 openingBalance + (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate): 
                 openingBalance - (currency=="PKR"? parseFloat(y.amount):parseFloat(y.amount) / exRate)
           } else if(!(currency!="PKR" && y.narration.includes("Ex-Rate"))){
+
+            let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
+            tempArray.push({
+              date: y.createdAt,
+              voucherType: y["Voucher.type"],
+              voucherId: y["Voucher.id"],
+              amount: currency=="PKR"? parseFloat(y.amount) :parseFloat(y.amount) / exRate,
+              balance: tempBalance,
+              voucher: y["Voucher.voucher_Id"],
+              type: y.type,
+              narration: y.narration,
+            });
+            finalClosing = tempBalance
+            isDone = true;
           }
-          let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
-          tempArray.push({
-            date: y.createdAt,
-            voucherType: y["Voucher.type"],
-            voucherId: y["Voucher.id"],
-            amount: currency=="PKR"? parseFloat(y.amount) :parseFloat(y.amount) / exRate,
-            balance: tempBalance,
-            voucher: y["Voucher.voucher_Id"],
-            type: y.type,
-            narration: y.narration,
-          });
-          finalClosing = tempBalance
-          isDone = true;
           
         } else {
           openingBalance = y.type === "debit" ? openingBalance + parseFloat(y.amount) / exRate : openingBalance - parseFloat(y.amount) / exRate;
