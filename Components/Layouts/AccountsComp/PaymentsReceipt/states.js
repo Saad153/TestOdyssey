@@ -139,6 +139,89 @@ const totalRecieveCalc = (vals) => {
   return total.toFixed(2);
 }
 
+const getNewInvoices = async(id, state, companyId, dispatch) => {
+  // dispatch({type:"setAll", payload:{ load:true }});
+  console.log(state)
+  await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/getAllInvoices`,{
+    headers: {
+      id: state.partyAccountRecord.id,
+      payType: state.payType,
+      type: state.partyType,
+      companyid: companyId,
+      invoiceid: state.invoices[0].id
+    }
+}).then((x)=> {
+  console.log(x.data.result)
+  console.log(x.data.status)
+  let temp = x.data.result;
+    let accountData = {};
+    if(x.data.status=="success"){
+      // x.data.account.forEach((z)=>{
+      //   if(z.Child_Account!=null){
+      //     accountData = z;
+      //   }
+      // })
+      console.log(temp)
+      
+      temp = temp.map((y, index)=>{
+        console.log(y)
+        let tempRemBalance = 0
+        if(y.payType == "Recievable"){
+          tempRemBalance = (parseFloat(y.total)/parseFloat(y.ex_rate)) - (parseFloat(y.recieved)/parseFloat(y.ex_rate))
+        }else{
+          tempRemBalance = (parseFloat(y.total)/parseFloat(y.ex_rate)) - (parseFloat(y.paid)/parseFloat(y.ex_rate))
+        }
+        return{
+          ...y,
+          check:false,
+          jobId:y.SE_Job==null?'Old Job':y.SE_Job.jobNo,
+          jobSubType:y.SE_Job==null?'Old':y.SE_Job.subType,
+          ex_rate:state.partytype=="agent"?y.ex_rate:1.00,
+          // receiving:state.edit? y.Invoice_Transactions[0].amount:0.00,
+          inVbalance:state.partytype=="agent"?
+            ((parseFloat(y.total) / parseFloat(y.ex_rate)) + parseFloat(y.roundOff)).toFixed(2):
+            (parseFloat(y.total) + parseFloat(y.roundOff)).toFixed(2),
+          remBalance:tempRemBalance==0?
+            0:
+            (parseFloat(tempRemBalance)).toFixed(2),
+        }
+      });
+    }
+    // let trigger = false
+    let temp1 = state.invoices
+    console.log(temp1)
+    console.log(temp)
+    temp.forEach((x, index)=>{
+      console.log(x.id)
+      let trigger = false
+      temp1.forEach((y, i)=>{
+        console.log(y.id)
+        if(x.id!=y.id){
+          trigger = true
+        }
+      })
+      !trigger?temp1.push(temp[index]):null
+    })
+    const combinedArray = [
+      ...temp1,
+      ...temp.filter(y => !temp1.some(x => x.id === y.id)),
+    ];
+    
+    console.log(combinedArray);
+    dispatch({
+      type: "setAll",
+      payload: {
+        invoices: [...combinedArray],
+        // partyAccountRecord: accountData.Child_Account,
+        load: false,
+        glVisible: false,
+        transLoad: false
+      }
+    });
+    
+})
+}
+
 const getInvoices = async(state, companyId, dispatch) => {
   dispatch({type:"setAll", payload:{ load:true }});
   await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, 
@@ -213,4 +296,4 @@ const getTotal = (type, list, curr) => {
   return parseFloat(result.toFixed(2));
 }
 
-export { recordsReducer, initialState, getCompanyName, getAccounts, totalRecieveCalc, getInvoices, getTotal };
+export { recordsReducer, initialState, getCompanyName, getAccounts, totalRecieveCalc, getInvoices, getTotal, getNewInvoices };

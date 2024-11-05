@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useCallback, useReducer } 
 import { SearchOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import { MdHistory } from "react-icons/md";
 import { Input, List, Radio, Modal, Select } from 'antd';
-import { recordsReducer, initialState } from './states';
+import { recordsReducer, initialState, getNewInvoices } from './states';
 import { useSelector, useDispatch } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import { Row, Col, Table } from 'react-bootstrap';
@@ -199,6 +199,11 @@ const PaymentsReceipt = ({ id, voucherData }) => {
     }
   };
 
+  const refetch = async () => {
+    console.log(state)
+    getNewInvoices(id, state, companyId, dispatch)
+  }
+
   const ListComp = ({ data }) => {
     return (
       // <List
@@ -388,6 +393,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           Cheque Return
         </button>
       )}
+      {id!='new'&&<button className='btn-custom-green px-3 mx-1' onClick={() => refetch()}>Refresh</button>}
 
 
 
@@ -458,7 +464,6 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                   <th style={{ width: 70 }}>Date </th>
                   <th style={{ width: 80 }}>Currency </th>
                   <th style={{ width: 80 }}>amount</th>
-
                 </tr>
               </thead>
               <tbody>

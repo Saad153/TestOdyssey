@@ -85,7 +85,7 @@ const BillComp = ({companyId, state, dispatch}) => {
             :
             tempAmount, 
         }
-        if(x.Invoice_Transactions){
+        if(x.Invoice_Transactions.length>0){
           invoieLossValue.id = x.Invoice_Transactions[0].id
         }
         tempInvoiceLosses.push(invoieLossValue)
@@ -538,7 +538,7 @@ const BillComp = ({companyId, state, dispatch}) => {
 
         {state.invoices.map((x, index) => {
         return (
-        <tr key={index} className={`f fs-12 ${state.edit?'grey-row':''}`}>
+        <tr key={index} className={`f fs-12 ${x.recieved!=0?'grey-row':''}`}>
           <td style={{width:30}}>{index + 1}</td>
           <td style={{width:100, paddingLeft:4, paddingTop:8}} className='row-hov blue-txt' 
             onClick={()=>{
@@ -577,19 +577,27 @@ const BillComp = ({companyId, state, dispatch}) => {
           </td>
           <td style={{minWidth:140}} className='px-1'>{commas(x.inVbalance)}</td>
           <td style={{padding:3, width:150}}>
-            <InputNumber style={{height:30, width:140, fontSize:12}} value={x.receiving} min="0.00" stringMode  disabled={state.autoOn}
-              onChange={(e)=>{
-                let tempState = [...state.invoices];
-                tempState[index].receiving = e;
-                set('invoices', tempState);
-              }}
-            />
+          <InputNumber
+            style={{ height: 30, width: 140, fontSize: 12 }}
+            value={x.receiving}
+            min="0.00"
+            stringMode
+            disabled={(state.autoOn||x.recieved!=0)&&!state.edit}
+            formatter={value => value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+            parser={value => value.replace(/(,*)/g, '')}
+            onChange={(e) => {
+              let tempState = [...state.invoices];
+              tempState[index].receiving = e;
+              set('invoices', tempState);
+            }}
+          />
+
           </td>
-          <td className='px-1' style={{width:300}}> {commas(x.remBalance)} </td>
+          <td className='px-1' style={{width:300}}> {!state.edit?x.receiving!=0&&x.receiving!=null?commas((x.total-x.recieved)-x.receiving):commas(x.total-x.recieved):x.receiving!=0&&x.receiving!=null?commas((x.total)-x.receiving):commas(x.total)} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
               checked={x.check} 
-              disabled={state.autoOn}
+              disabled={(state.autoOn||x.recieved!=0)&&!state.edit}
               onChange={() => {
                 let tempState = [...state.invoices];
                 tempState[index].check = !tempState[index].check;

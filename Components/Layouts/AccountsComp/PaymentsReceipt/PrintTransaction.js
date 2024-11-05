@@ -79,7 +79,7 @@ const PrintTransaction = ({companyId, state, dispatch}) => {
             :
             tempAmount, 
         }
-        if(x.Invoice_Transactions){
+        if(x.Invoice_Transactions.length>0){
           invoieLossValue.id = x.Invoice_Transactions[0].id
         }
         tempInvoiceLosses.push(invoieLossValue)

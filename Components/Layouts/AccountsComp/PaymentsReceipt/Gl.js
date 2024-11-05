@@ -28,35 +28,35 @@ const Gl = ({state, dispatch, companyId}) => {
         // make receving & payin logic
         let tempReceiving = invoiceCurrency!="PKR"? 
           //parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2)):
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2)):
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving));
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2)):
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving));
         let tempPaying = invoiceCurrency!="PKR"? 
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2)):
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2)):
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))
   
         let tempRecStatus = invoiceCurrency!="PKR"?
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))<(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))>(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))<(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))>(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
           "2":
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))<(parseFloat(x.inVbalance))?"3":
-          parseFloat(x.recieved) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))>(parseFloat(x.inVbalance))?"3":
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))<(parseFloat(x.inVbalance))?"3":
+          parseFloat(x.recieved) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))>(parseFloat(x.inVbalance))?"3":
           "2"
         let tempPayStatus = invoiceCurrency!="PKR"? 
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))<(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))>(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))<(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount*parseFloat(x.ex_rate).toFixed(2):0) + (parseFloat(x.receiving)*parseFloat(x.ex_rate).toFixed(2))>(parseFloat(x.inVbalance)*parseFloat(x.ex_rate).toFixed(2))?"3":
           "2":
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))<(parseFloat(x.inVbalance))?"3":
-          parseFloat(x.paid) - parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))>(parseFloat(x.inVbalance))?"3":
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))<(parseFloat(x.inVbalance))?"3":
+          parseFloat(x.paid) - parseFloat(x.Invoice_Transactions.length>0?x.Invoice_Transactions[0].amount:0) + (parseFloat(x.receiving))>(parseFloat(x.inVbalance))?"3":
           "2"
         if(state.partytype=='agent'){
-          if((x.receiving || state.edit) && x.payType=="Recievable"){
+          if((x.receiving || x.Invoice_Transactions.length>0) && x.payType=="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
               recieved:tempReceiving,
               status:tempRecStatus,
             })
-          } else if((x.receiving>0 || state.edit) && x.payType!="Recievable"){
+          } else if((x.receiving>0 || x.Invoice_Transactions.length>0) && x.payType!="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
@@ -65,14 +65,14 @@ const Gl = ({state, dispatch, companyId}) => {
             })
           }
         } else {
-          if((x.receiving>0 || state.edit) && payType=="Recievable"){
+          if((x.receiving>0 || x.Invoice_Transactions.length>0) && payType=="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
               recieved:tempReceiving,
               status:tempRecStatus,
             })
-          } else if((x.receiving>0 || state.edit) && payType!="Recievable"){
+          } else if((x.receiving>0 || x.Invoice_Transactions.length>0) && payType!="Recievable"){
             invoicesIds.push(x.id)
             tempInvoices.unshift({
               id:x.id,
