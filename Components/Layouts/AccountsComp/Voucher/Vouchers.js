@@ -69,11 +69,10 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
     let totalDebit = 0.00;
     let totalCredit = 0.00;
     allValues?.Voucher_Heads?.forEach((x) => {
-      if (x.type == "debit" && x.amount != 0) {
+      if (x.amount != 0) {
         totalDebit = totalDebit + parseFloat(x.amount);
-      } else if (x.type == "credit" && x.amount != 0) {
         totalCredit = totalCredit + parseFloat(x.amount);
-      }
+      } 
     })
     setTotalDebit(totalDebit);
     setTotalCredit(totalCredit);
@@ -184,13 +183,15 @@ const narration = (e) =>{
 
   // calculationg closing balance
   useEffect(() => {
-    if(allValues.ChildAccountId && id!="new"){
+    console.log(allValues.ChildAccountId, id, allValues.currency)
+    if(allValues.ChildAccountId){
       axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER_FOR_CLOSING,{
         headers:{
           currency:allValues.currency,
           id:allValues.ChildAccountId,
         }
       }).then((x)=>{
+        console.log(x.data.result)
         if(x?.data?.status=="success"){
           let closingBalance = 0;
           x?.data?.result?.forEach((x)=>{
@@ -309,8 +310,9 @@ const narration = (e) =>{
             <InputNumComp name="exRate" label="Ex.Rate" register={register} control={control} width={"100%"} />
           </Col>
           <Col md={12} className="mt-2">
-            <InputComp name="payTo" label="Pay/Recieve To" register={register} control={control} width={"100%"} />
+            <InputComp name="payTo" label="Settlement Account Narration" register={register} control={control} width={"100%"} />
             <p className="error-line">{errors?.payTo?.message}</p>
+            <p style={{color:'grey', padding:0, margin:0}}>Auto Generated if empty, if narrations are empty same will be placed in the narrations</p>
           </Col>
         </Row>
       </Col>
@@ -324,7 +326,7 @@ const narration = (e) =>{
         <div style={{ color: 'grey', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}>{commas(totalCredit)}</div>
         <hr/>
         <div className="mt-2"><b>Closing Balance</b></div>
-        <div style={{ color: closing>0?'green':'red', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}><b>{commas(closing)}</b></div>
+        <div style={{ color: closing>0?'green':'red', paddingTop: 3, paddingRight: 6, border: '1px solid grey', fontSize: 16, textAlign: 'right' }}><span style={{float:"left", paddingLeft:6, color:"grey"}}>PKR</span><b>{commas(closing)}</b></div>
       </Col>
       <Col md={1}  style={{ marginLeft: 'auto' }}>
       <div className="d-flex flex-column">
@@ -431,35 +433,35 @@ const narration = (e) =>{
               <tr className="f table-row-center-singleLine" key={index}>
                 <td style={{ padding: 3, minWidth: 500 }}>
                 <SelectSearchComp
-  className="form-select"
-  name={`Voucher_Heads.${index}.ChildAccountId`}
-  register={register}
-  control={control}
-  width={"100%"}
-  options={
-    child.length > 0
-      ? child
-          .filter((x) => {
-            if (allValues.vType === "BPV") {
-              return x.subCategory !== "Bank";
-            } else if (allValues.vType === "TV") {
-              return x.subCategory === "Bank";
-            }
-            return true; // Keep the original data if Type is not BPV or TV
-          })
-          .map((x) => {
-      
-            return {
-              id: x?.id,
-              name: `${x?.title} (${x?.Parent_Account?.title})`,
-            };
-          })
-      : []
-  }
-/>
+                  className="form-select"
+                  name={`Voucher_Heads.${index}.ChildAccountId`}
+                  register={register}
+                  control={control}
+                  width={"100%"}
+                  options={
+                    child.length > 0
+                      ? child
+                          .filter((x) => {
+                            if (allValues.vType === "BPV") {
+                              return x.subCategory !== "Bank";
+                            } else if (allValues.vType === "TV") {
+                              return x.subCategory === "Bank";
+                            }
+                            return true; // Keep the original data if Type is not BPV or TV
+                          })
+                          .map((x) => {
+                      
+                            return {
+                              id: x?.id,
+                              name: `${x?.title} (${x?.Parent_Account?.title})`,
+                            };
+                          })
+                      : []
+                  }
+                />
                 </td>
                 <td style={{ padding: 3, width: 90 }}>
-                  <SelectComp className="form-select" name={`Voucher_Heads.${index}.type`} register={register} control={control}
+                  <SelectComp className="form-select" name={`Voucher_Heads.${index}.type`} register={register} control={control} disabled={!(allValues.vType == "TV" || allValues.vType == "JV")}
                     width={"100%"} options={[{ id: "debit", name: "Debit" }, { id: "credit", name: "Credit" }]}
                   />
                 </td>

@@ -376,132 +376,7 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
         </button>
       </div>
       <PrintTopHeader company={query.company} from={query.from} to={query.to} />
-        {/* <div className="printDiv mt-2" style={{ maxHeight: overFlow ? "60vh" : "100%", overflowY: "auto", overflowX: "hidden", height: "auto" }}>
-          <div className="table-sm-1 mt-2">
-          <hr/>
-            <div className='text-center'> <b>Profit and Loss Income Statement </b> </div>
-            <div className="table-sm-1 mt-2">
-            <Row md={12} style={{borderBottom:"1px solid black"}}>
-             <b>Revenue</b>
-             </Row>
-             <Row style={{borderBottom:"1px solid black"}}>
-              {accountLevel === "1" && <>             
-              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
-              Total for Revenue
-              </Col>
-       
-              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
-               {revenue}
-              </Col>
-              </>
-               }
-            
-            {accountLevel === "6" && <>      
-
-              
-
-              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
-               <div>
-               {filteredTempData.map((item) => (
-                    <div key={item.index} style={{borderBottom:"1px solid black"}}>
-                        {item.title}
-                    </div>
-                ))}
-                  </div>
-                          
-              Total for Revenue
-              </Col>
-       
-              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
-              <div className='text-end'>
-             
-                {filteredTempData.map((item) => (
-                    <div key={item.index} style={{borderBottom:"1px solid black"}}>
-                        {commas(item.credit)}                   
-                    </div>
-                ))}
-           
-            
-               </div>
-              {revenue} 
-              </Col>
-              </>
-               }
-              <Row md={12} style={{borderBottom:"1px solid black"}}>
-               <b>COGS / Selling Expense </b>
-              </Row>
-              <Col style={{lineHeight:1.75}} md={6} style={{borderBottom:"1px solid black"}}>
-              Total for COGS / Selling Expense
-              </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
-           {commas(totalCogs?.debit?.toFixed(2))} 
-              </Col>
-
-              <Col md={6} style={{borderBottom:"1px solid black"}}>
-              <b>Gross Profit</b> 
-              </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
-          {commas((total.credit - totalCogs?.debit ).toFixed(2))} 
-              </Col>
-
-              <Row md={12} style={{borderBottom:"1px solid black"}}>
-               <b>Admin Expense</b>
-              </Row>
-              {accountLevel === "1" && <> 
-              <Col md={6} style={{borderBottom:"1px solid black"}}>
-               Total for Admin Expense
-              </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end' style={{borderBottom:"1px solid black"}}>
-               {totalAdminExp?.debit?.toFixed(2)} 
-              </Col>
-              </> }
-
-
-              {accountLevel === "6" && <> 
-              <Col md={6}>
-              <div>
-               {AdminExpArray.map((item) => (
-                    <div key={item.index}>
-                        {item.title}
-                    </div>
-                ))}
-                  </div>
-
-
-                <div> Total for Admin Expense </div> 
-              </Col>
-              <Col style={{lineHeight:1.75}} md={6} className='text-end'>
-              <div>
-               {AdminExpArray.map((ele) => (
-                    <div key={ele.index}>
-                        {commas(ele.debit)}
-                    </div>
-                ))}
-                  </div>
-
-
-              <div> {commas(totalAdminExp?.debit?.toFixed(2))} 
-              </div>
-              </Col>
-              </> }
-
-              <Col md={6}>
-              <b>Profit/(Loss)
-              </b> 
-              </Col>
-             <Col style={{lineHeight:1.75}} md={6} className='text-end'>
-               {commas(formattedProfitLoss)}
-              </Col>
-             </Row>
-          
-            </div>
-
-
-
-       
-         
-          </div>
-        </div> */}
+        
         <div className='printDiv mt-2' style={{ maxHeight: overFlow ? "60vh" : "100%", overflowY: "auto", overflowX: "hidden", height: "auto"}}>
           <div style={{borderBottom:"1px solid black"}}>
             <b>Revenue</b>
@@ -524,8 +399,8 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
             </div>
           }
           <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
-            <div>Total for Revenue</div>
-            <div>{commas(total?.credit - total?.debit)}</div>
+            <div><b>Total for Revenue</b></div>
+            <div><b>{commas(total?.credit - total?.debit)}</b></div>
           </div>
         </div>
         <div style={{borderBottom:"1px solid black"}}>
@@ -550,8 +425,8 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
           </div>
         }
         <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
-            <div>Total for COGS / Selling Expense</div>
-            <div>{commas(totalCogs?.debit?.toFixed(2))}</div>
+            <div><b>Total for COGS / Selling Expense</b></div>
+            <div><b>{commas(totalCogs?.debit?.toFixed(2))}</b></div>
         </div>
         <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
           <b>Gross Profit</b>
@@ -579,8 +454,8 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
           </div>
         }
         <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
-          <div>Total for Admin Expenses</div>
-          <div>{commas(totalAdminExp?.debit?.toFixed(2))}</div>
+          <div><b>Total for Admin Expenses</b></div>
+          <div><b>{commas(totalAdminExp?.debit?.toFixed(2))}</b></div>
         </div>
         <div style={{display:"flex", justifyContent:"space-between", borderBottom:"1px solid black"}}>
           <b>Profit/(Loss)</b>

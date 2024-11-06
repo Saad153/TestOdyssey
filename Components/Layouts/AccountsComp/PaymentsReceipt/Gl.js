@@ -101,6 +101,7 @@ const Gl = ({state, dispatch, companyId}) => {
         Voucher_Heads:[],
         subType:state.subType
       };
+      console.log(state.voucherHeads)
       state.transactionCreation.forEach((x)=>{
         console.log(x)
         let tempVoucheObj = {
@@ -112,10 +113,10 @@ const Gl = ({state, dispatch, companyId}) => {
           ChildAccountId:x.particular.id,
           accountType:x.tran.accountType
         }
-        let voucherHeadId = state.voucherHeads.find((y)=>y.accountType==x.tran.accountType)
-        if(voucherHeadId){
-          tempVoucheObj.id = voucherHeadId.id
-        }
+        // let voucherHeadId = state.voucherHeads.find((y)=>y.accountType==x.tran.accountType&&y.amount==x.tran.amount)
+        // if(voucherHeadId){
+        //   tempVoucheObj.id = voucherHeadId.id
+        // }
         voucher.Voucher_Heads.push(tempVoucheObj)
       });
       voucher.invoices = invoicesIds.join(", ");

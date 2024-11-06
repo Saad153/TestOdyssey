@@ -18,7 +18,6 @@ const BillComp = ({companyId, state, dispatch}) => {
   const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
   const [checked, setChecked] = useState(false);
-  // console.log(payType)
   useEffect(() => {
     getInvoices(state, companyId, dispatch);
     // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
@@ -65,7 +64,6 @@ const BillComp = ({companyId, state, dispatch}) => {
     let creditReceiving = 0.00
     state.invoices.forEach((x)=>{
       if(x.receiving && (x.receiving!=0|| state.edit)){
-        // console.log("Calculating profit/loss", x.receiving, x.ex_rate, state.manualExRate, x.payType)
         let tempExAmount = parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))
         if(x.payType=="Payble"){
           tempExAmount = -1*tempExAmount
@@ -133,7 +131,6 @@ const BillComp = ({companyId, state, dispatch}) => {
         pendingFund = 0.00;
       })
       val.forEach((x)=>{
-        // console.log(x.payType, x.receiving, state.exRate)
         newExAmount = parseFloat(newExAmount) + (parseFloat(x.receiving)*parseFloat(state.exRate));
         oldExAmount = parseFloat(oldExAmount) + (parseFloat(x.receiving)*parseFloat(x.ex_rate));
       })
@@ -161,14 +158,12 @@ const BillComp = ({companyId, state, dispatch}) => {
       let tempInvoices = [];
       state.invoices.forEach((x)=>{
         if(x.receiving!=0){
-          console.log(x)
           tempInvoices.push(x)
         }
       })
       // let tempInvoices = [...state.invoices];
       let invNarration = "";
       let gainAndLossAmount = 0
-      console.log(tempInvoices.filter(x=>x.receiving))
       tempInvoices.filter(x=>x.receiving).forEach((x)=>{
         state.checkNo?invNarration = invNarration + `${state.subType} ${state.checkNo}, `:null
         state.checkDate?invNarration = invNarration + `Date ${state.checkDate.format('YYYY-MM-DD')}, `:null
@@ -177,7 +172,6 @@ const BillComp = ({companyId, state, dispatch}) => {
         x.SE_Job?.Bl?.mbl?invNarration = invNarration + `MBL# ${x.SE_Job.Bl.mbl}, `:null
         invNarration = invNarration + `Inv# ${x.invoice_No} for Job# ${x.jobId},`
       });
-      console.log(invNarration)
   
       invNarration = invNarration + ` For ${state.selectedParty.name}`;
       //Create Account Transactions
@@ -219,7 +213,6 @@ const BillComp = ({companyId, state, dispatch}) => {
           // Gain & Loss Account
           if((Object.keys(state.gainLossAccountRecord).length!=0) && (state.gainLossAmount!=0) && (state.gainLossAmount!=null) && (state.totalrecieving!=0)){
             gainAndLossAmount = state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount))
-            // console.log(gainAndLossAmount)
             transTwo.push({
               particular:state.gainLossAccountRecord,
               tran:{
@@ -592,7 +585,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           />
 
           </td>
-          <td className='px-1' style={{width:300}}> {!state.edit?x.receiving!=0&&x.receiving!=null?commas((x.total-x.recieved)-x.receiving):commas(x.total-x.recieved):x.receiving!=0&&x.receiving!=null?commas((x.total)-x.receiving):commas(x.total)} </td>
+          <td className='px-1' style={{width:300}}> {x.currency!="PKR"?(!state.edit?x.receiving!=0&&x.receiving!=null?commas(((x.total/x.ex_rate)-(x.recieved/x.ex_rate))-(x.receiving)):commas((x.total/x.ex_rate)-(x.recieved/x.ex_rate)):x.receiving!=0&&x.receiving!=null?commas((x.total/x.ex_rate)-(x.receiving)):commas(x.total/x.ex_rate)):(!state.edit?x.receiving!=0&&x.receiving!=null?commas((x.total-x.recieved)-x.receiving):commas(x.total-x.recieved):x.receiving!=0&&x.receiving!=null?commas((x.total)-x.receiving):commas(x.total))} </td>
           <td style={{ width:50}} className='px-3 py-2'>
             <input type='checkbox' style={{cursor:'pointer'}} 
               checked={x.check} 

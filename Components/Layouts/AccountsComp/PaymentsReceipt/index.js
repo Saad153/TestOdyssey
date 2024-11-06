@@ -89,6 +89,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
     } else if (router?.query?.id != 'undefined' && router?.query?.id != 'new') {
       let payAcc = {}, partyAcc = {}, taxAc = { acc: {}, amount: 0 }, bankAc = { acc: {}, amount: 0 }, gainLoss = { acc: {}, amount: 0 }
       voucherData?.Voucher_Heads.forEach((x) => {
+        console.log(x)
         if (x.accountType == 'payAccount') {
           payAcc = x.Child_Account
         }
@@ -128,7 +129,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
         payAccountRecord: payAcc,
         partyAccountRecord: partyAcc,
         bankChargesAccountRecord: bankAc.acc,
-        bankCharges: bankAc.amount,
+        bankCharges: bankAc.amount/voucherData.exRate,
         taxAccountRecord: taxAc.acc,
         taxAmount: taxAc.amount,
         gainLossAccountRecord: gainLoss.acc,

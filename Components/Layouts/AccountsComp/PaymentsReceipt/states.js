@@ -146,7 +146,7 @@ const getNewInvoices = async(id, state, companyId, dispatch) => {
     headers: {
       id: state.partyAccountRecord.id,
       payType: state.payType,
-      type: state.partyType,
+      type: state.partytype,
       companyid: companyId,
       invoiceid: state.invoices[0].id
     }

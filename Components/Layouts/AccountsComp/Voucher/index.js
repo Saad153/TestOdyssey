@@ -71,6 +71,7 @@ const Voucher = ({ id }) => {
       const { title: settlementFinal } = getSettlementAccount.data.result;
   
       // Fetch Account details
+      console.log(Voucher_Heads);
       const acc = Voucher_Heads;
       const accountId = acc?.[0]?.ChildAccountId;
   
@@ -80,13 +81,16 @@ const Voucher = ({ id }) => {
         });
         const { title: accountTitle } = getAccount.data.result;
 
-  
-        // Set payTo field based on vType
-        if (data.vType === "CPV" || data.vType === "BRV" || data.vType === "TV" || data.vType === "JV") {
-          data.payTo = `Paid Amount from ${settlementFinal.toLowerCase()} to ${accountTitle.toLowerCase()}`;
+        if (data.vType === "CPV" || data.vType === "BPV" || data.vType === "TV" || data.vType === "JV") {
+          data.payTo = `Paid Amount from ${settlementFinal} to ${accountTitle}`;
         } else {
-          data.payTo = `Payment received from ${accountTitle.toLowerCase()} to ${settlementFinal.toLowerCase()}`;
+          data.payTo = `Payment received from ${accountTitle} to ${settlementFinal}`;
         }
+        Voucher_Heads.forEach((x) => {
+          if(x.narration == ""){
+            x.narration = data.payTo
+          }
+        })
       }
     }
   
