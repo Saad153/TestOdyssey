@@ -142,10 +142,11 @@ const totalRecieveCalc = (vals) => {
 const getNewInvoices = async(id, state, companyId, dispatch) => {
   // dispatch({type:"setAll", payload:{ load:true }});
   console.log(state)
+  console.log(state.invoices[0].payType)
   await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/getAllInvoices`,{
     headers: {
       id: state.partyAccountRecord.id,
-      payType: state.payType,
+      paytype: state.invoices[0].payType,
       type: state.partytype,
       companyid: companyId,
       invoiceid: state.invoices[0].id
@@ -235,6 +236,7 @@ const getInvoices = async(state, companyId, dispatch) => {
       companyId:companyId, 
       invoiceCurrency:state.invoiceCurrency} }
   ).then(async(x)=> {
+    console.log(x.data.result)
     let temp = x.data.result;
     let accountData = {};
     if(x.data.status=="success" && x.data.account!=null){

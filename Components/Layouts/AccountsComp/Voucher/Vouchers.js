@@ -69,10 +69,16 @@ const Vouchers = ({ register, control, errors, CompanyId, child, settlement, res
     let totalDebit = 0.00;
     let totalCredit = 0.00;
     allValues?.Voucher_Heads?.forEach((x) => {
-      if (x.amount != 0) {
+      if (x.amount != 0 && allValues.vType != "JV") {
         totalDebit = totalDebit + parseFloat(x.amount);
         totalCredit = totalCredit + parseFloat(x.amount);
-      } 
+      } else if (x.amount != 0 && allValues.vType == "JV") {
+        if(x.type == "credit"){
+          totalCredit = totalCredit + parseFloat(x.amount);
+        }else{
+          totalDebit = totalDebit + parseFloat(x.amount);
+        }
+      }
     })
     setTotalDebit(totalDebit);
     setTotalCredit(totalCredit);

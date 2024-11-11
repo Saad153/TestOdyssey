@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, useReducer } from 'react';
-import { SearchOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined, CloseCircleOutlined, SyncOutlined, PrinterOutlined, RollbackOutlined, PlusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { MdHistory } from "react-icons/md";
 import { Input, List, Radio, Modal, Select } from 'antd';
 import { recordsReducer, initialState, getNewInvoices } from './states';
@@ -20,7 +20,7 @@ import {checkEditAccess} from "../../../../functions/checkEditAccess";
 import {checkEmployeeAccess} from "../../../../functions/checkEmployeeAccess";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-const PaymentsReceipt = ({ id, voucherData }) => {
+const PaymentsReceipt = ({ id, voucherData, q }) => {
 
 
   let inputRef = useRef(null);
@@ -43,7 +43,9 @@ const PaymentsReceipt = ({ id, voucherData }) => {
   const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
 
   const [del, setDel] = useState(false);
-
+  console.log(voucherData, id)
+  console.log(q)
+  console.log(query)
 
   useEffect(() => {
     // Ensure companyId is available before making the request
@@ -179,7 +181,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
 
   const searchParties = async () => {
     if (state.search.length > 2) {
-      setShowTable(false); // Hide table and pagination
+      // setShowTable(false); // Hide table and pagination
       // console.log(state.partyType)
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
         { search: state.search, type: state.partytype }
@@ -207,35 +209,6 @@ const PaymentsReceipt = ({ id, voucherData }) => {
 
   const ListComp = ({ data }) => {
     return (
-      // <List
-      //   size="small"
-      //   bordered
-      //   dataSource={data}
-      //   renderItem={(item) =>
-
-      //     <List.Item key={item.id} className='searched-item'
-
-      //       onClick={() => {
-      //         Router.push({
-      //           pathname: "/accounts/paymentReceipt/new",
-      //           query: {
-      //             name: item.name, partyid: item.id, type: state.partytype,
-      //             paytype: state.payType, currency: state.invoiceCurrency
-      //           }
-      //         },
-      //           undefined,
-      //           { shallow: true }
-      //         );
-      //         dispatchNew(incrementTab({
-      //           "label": "Payment/ Reciept Details",
-      //           "key": "3-13",
-      //           "id": `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`
-      //         }))
-      //         setAll({ selectedParty: { id: item.id, name: item.name }, tranVisible: true, search: "" });
-      //       }}
-      //     >{`${item.code} ${item.name}`}</List.Item>
-      //   }
-      // />
       <List
   size="small"
   bordered
@@ -257,7 +230,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
         },
         undefined,
         { shallow: true });
-        dispatchNew(
+        dispatchNew(  
           incrementTab({
             label: "Payment/ Reciept Details",
             key: "3-13",
@@ -353,7 +326,7 @@ const PaymentsReceipt = ({ id, voucherData }) => {
             <Radio value={"agent"} >Agent </Radio>
           </Radio.Group>
         </Col>
-        <Col md={4}>
+        <Col md={3}>
           <b>Pay Type: </b>
           <Radio.Group className='mt-1' value={state.payType} onChange={(e) => setAll({ search: "", payType: e.target.value })}
             disabled={state.partytype == "agent"}
@@ -363,16 +336,16 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           </Radio.Group>
         </Col>
 
-        <Col md={4} style={{ display: 'flex', justifyContent: 'end' }}>
+        <Col md={5} style={{ display: 'flex', justifyContent: 'end' }}>
           {state.edit &&
             <ReactToPrint
               content={() => inputRef}
               trigger={() => (
-                <div className="div-btn-custom text-center p-1 px-2 mx-3" style={{ width: 80 }}>Print</div>
+                <div className="div-btn-custom text-center p-1 mx-1" style={{ width: 80, fontSize: 14 }}>Print <PrinterOutlined style={{ fontSize: 16 }}/></div>
               )}
             />
           }
-          <button className='btn-custom px-3' style={{ fontSize: 11 }}
+          <button className='btn-custom text-center px-3' style={{ fontSize: 14 }}
             onClick={() => {
               axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, { headers: { companyid: companyId } })
                 .then((x) => {
@@ -386,15 +359,15 @@ const PaymentsReceipt = ({ id, voucherData }) => {
                   setAll({ oldVouchers: true, oldVouchersList: tempData });
                 })
             }}
-          >Show Old <MdHistory /></button>
+          >Show Old <MdHistory style={{ fontSize: 16 }}/></button>
 
           {id != "new" && del && <DeleteVoucher companyId={companyId} setAll={setAll} state={state} id={id} setShowTable={setShowTable} />}
           {!isPaymentReceiptNew && (
-        <button className='btn-custom px-3' style={{ fontSize: 11 }} onClick={chkReturn}>
-          Cheque Return
+        <button className='btn-custom px-3' style={{ fontSize: 14 }} onClick={chkReturn}>
+          Cheque Return <RollbackOutlined style={{ fontSize: 16 }}/>
         </button>
       )}
-      {id!='new'&&<button className='btn-custom-green px-3 mx-1' onClick={() => refetch()}>Refresh</button>}
+      {id!='new'&&<button className='btn-custom-green text-center py-1 px-3 mx-1' style={{ fontSize: 14 }} onClick={() => refetch()}>Refresh <SyncOutlined style={{ fontSize: 16 }}/></button>}
 
 
 
@@ -417,10 +390,10 @@ const PaymentsReceipt = ({ id, voucherData }) => {
           }
           {state.selectedParty.name && <>
             <button
-              className="btn-custom-green"
+              className="btn-custom-green px-3 h-screen flex items-center justify-evenly"
               onClick={addNew}
             >
-              Add New
+              <span className='mx-1'>Add New</span><PlusOutlined style={{ fontSize: 16 }}/>
             </button>
           </>
           }

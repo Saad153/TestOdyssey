@@ -22,8 +22,8 @@ const DeleteVoucher = ({companyId, setAll, state, id, setShowTable}) => {
 
   return (
     <>
-      <button className='btn-red mx-3' style={{fontSize:11}} onClick={() => setAll({deleteVisible:true})}>
-        Delete <MdDeleteForever />
+      <button className='btn-red text-center mx-1' style={{fontSize:14}} onClick={() => setAll({deleteVisible:true})}>
+        Delete <MdDeleteForever style={{fontSize:16}}/>
       </button>
       <Modal 
         open={state.deleteVisible}

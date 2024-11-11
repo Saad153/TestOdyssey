@@ -221,7 +221,7 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
       // console.log("Not Approved")
       // console.log(deleteAccess)
     }
-
+    console.log(state)
   }, [allValues, state.equipments])
   return(
   <div className='client-styles' style={{overflowY:'auto', overflowX:'hidden'}}>

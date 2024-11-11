@@ -25,11 +25,11 @@ const Invoice = ({state, dispatch, companyId}) => {
       dispatch({type:'toggle', fieldName:'invoiceData', payload:x.data.result});
     })
   }
-
+  console.log(state)
   return (
     <div style={{minHeight:680}}>
       {!load && 
-        <InvoiceCharges  data={state.invoiceData} companyId={companyId} reload={getData} />
+        <InvoiceCharges  data={state.invoiceData} state={state} dispatch={dispatch} companyId={companyId} reload={getData} />
       }
       {load && 
       <div style={{textAlign:"center", paddingTop:'30%'}}>

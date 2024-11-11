@@ -23,7 +23,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
   }, [state.selectedParty, state.payType]);  
   
-  useEffect(() => { 
+  useEffect(() => {
     if(state.invoices.length>0){
       set('totalrecieving', totalRecieveCalc(state.invoices));
       calculateTransactions();

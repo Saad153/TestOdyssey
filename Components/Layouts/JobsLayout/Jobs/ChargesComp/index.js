@@ -24,9 +24,9 @@ import { Tabs } from 'antd';
     queryFn: () => getChargeHeads({id:state.selectedRecord.id})
   });
 
-  // useEffect(() => {
-  //   setHeadsCache(chargesData, dispatch, reset);
-  // }, [chargesData.status])
+  useEffect(() => {
+    getChargeHeads({id:state.selectedRecord.id})
+  }, [])
 
   useEffect(() => {
     if(chargesData){

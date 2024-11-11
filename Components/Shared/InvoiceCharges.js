@@ -15,10 +15,11 @@ import Router from 'next/router';
 import InvoiceEditor from './InvoiceEditor';
 import PartySearch from '../Layouts/JobsLayout/Jobs/ChargesComp/PartySearch';
 import { set } from 'js-cookie';
+import { DeleteOutlined, PrinterOutlined, RightOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 
-const InvoiceCharges = ({data, companyId, reload}) => {
+const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
 
 
   const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -410,6 +411,25 @@ const InvoiceCharges = ({data, companyId, reload}) => {
       }
     })
   };
+
+  const deleteInvoice = async () => {
+    axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/deleteInvoice`,
+      {
+        headers: {id: invoice.id}
+      }
+    ).then((x)=>{
+      if(x.data.status=="success"){
+        openNotification("Success", "Invoice Deleted!", "green")
+      }
+      if(state){
+        dispatch({type:'set', payload:{tabState:"4"}})
+        dispatch({type:'set', payload:{selectedInvoice:""}})
+        queryClient.removeQueries({ queryKey: ['charges'] })
+      }
+    })
+    
+  }
+
   const routeToPayRec = () => {
     dispatchNew(incrementTab({
       "label": "Payment / Receipt",
@@ -440,14 +460,17 @@ return (
         <div style={{ display: 'flex', justifyContent: 'space-between'}}>
           <div className='flex'>
             <Popover content={PrintOptions} placement="bottom" title="Printing Options">
-              <div className='div-btn-custom text-center py-2 px-3'>
-                <b>Print Invoice</b>
+              <div className='btn-custom-green px-3 py-1 h-screen flex items-center justify-evenly'>
+                <b><PrinterOutlined style={{fontSize:18, marginTop:3}}/></b>
               </div>
-            </Popover>
+            </Popover>        
+            <button disabled={invoice?.approved!="0"} className='py-1 px-3 mx-2' style={{backgroundColor:invoice?.approved=="0"?'#8B0000':"grey", color:'white', borderRadius:15}} type='button' onClick={()=>deleteInvoice()}>
+              <b><DeleteOutlined style={{fontSize:18, marginTop:3}}/></b>
+            </button>
             <InvoiceEditor data={data} reload={reload} />
           </div>
-          <div className='div-btn-custom text-center py-2 px-3' onClick={routeToPayRec}> 
-            <b>Go to Payment/Receipt</b>
+          <div className='btn-custom-green px-2 py-2 h-screen flex items-center justify-evenly' onClick={routeToPayRec}> 
+          <b style={{marginTop:1, paddingRight:2}}>Go to Payment/Receipt</b><RightOutlined style={{fontSize:14}}/>
           </div>
         </div>
         <Row className='py-3'>
@@ -690,7 +713,6 @@ return (
         </div>
       </div>
     </div>
-    {console.log(invoice)}
     {show && (
         <Modal
         title="Settlements"

@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 import openNotification from '/Components/Shared/Notification';
 import { delay } from "/functions/delay"
+import { PlusOutlined } from '@ant-design/icons';
 
 const InvoiceEditor = ({data, reload}) => {
 
@@ -54,8 +55,8 @@ const InvoiceEditor = ({data, reload}) => {
 
   return (
   <>
-    <button className='btn-custom py-2 px-3 mx-3' type='button' onClick={()=>setVisible(true)}>
-      <b>Add Charge</b>
+    <button className='btn-custom px-3 text-center' type='button' onClick={()=>setVisible(true)}>
+    <PlusOutlined style={{fontSize:18, marginTop:1, paddingTop:2, paddingBottom:2}} /><span style={{ fontSize:14}}>Charge</span>
     </button>
     {visible &&
       <Modal 
