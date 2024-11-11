@@ -50,13 +50,13 @@ import { Tabs } from 'antd';
       <Tabs defaultActiveKey="1" onChange={(e)=> dispatch({type:'toggle', fieldName:'chargesTab',payload:e})}>
       <Tabs.TabPane tab="Receivable" key="1">
         <Charges state={state} dispatch={dispatch} type={"Recievable"} register={register} setValue={setValue}
-          chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
+          chargeList={chargeList} fields={fields} append={append} reset={reset} remove={remove} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
       </Tabs.TabPane>
       <Tabs.TabPane tab="Payable" key="2">
         <Charges state={state} dispatch={dispatch} type={"Payble"} register={register} setValue={setValue}
-          chargeList={chargeList} fields={fields} append={append} reset={reset} control={control} 
+          chargeList={chargeList} fields={fields} append={append} reset={reset} remove={remove} control={control} 
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
       </Tabs.TabPane>

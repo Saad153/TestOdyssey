@@ -21,7 +21,6 @@ const { TextArea } = Input;
 
 const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
 
-
   const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
   let inputRef = useRef(null);
@@ -90,10 +89,6 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
       setInvoiceData(!invoiceData)
     }
   }, [data])
-
-  useEffect(()=>{
-    console.log(show)
-  }, [show])
 
   const cellClickListener = useCallback((e)=> {
     dispatchNew(incrementTab({"label": "Payment / Receipt","key": "3-4","id":e}))

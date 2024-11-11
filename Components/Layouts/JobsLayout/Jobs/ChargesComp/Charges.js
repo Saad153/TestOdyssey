@@ -7,15 +7,20 @@ import { getVendors, getClients } from '../states';
 import SelectComp from "/Components/Shared/Form/SelectComp";
 import { Row, Col, Table, Spinner } from 'react-bootstrap';
 import PopConfirm from '/Components/Shared/PopConfirm';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import PartySearch from './PartySearch';
-import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew } from "../states";
+import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew, approveHeads } from "../states";
 import { v4 as uuidv4 } from 'uuid';
+import openNotification from '/Components/Shared/Notification';
+import { checkEditAccess } from "../../../../../functions/checkEditAccess";
 
-const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, register, companyId, operationType, allValues, chargesData}) => {
+
+
+const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, remove, control, setValue, register, companyId, operationType, allValues, chargesData}) => {
 
   const { permissions } = state;
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
+  const [generate, setGenerate] = useState(false);
 
   useEffect(() => {
     if(chargeList){
@@ -61,6 +66,23 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       //chargesData.refetch();
     }
   };
+  const approveCharges = async () => {
+    if(!state.chargeLoad){
+      let charges = []
+      console.log(chargeList)
+      chargeList.forEach((x) => {
+        console.log(x.check)
+        if(x.check){
+          charges.push(x)
+        }
+      });
+      console.log(charges)
+      await calculate()
+      await dispatch({type:'toggle', fieldName:'chargeLoad', payload:true})
+      await approveHeads(charges, state, dispatch, reset);
+      //chargesData.refetch();
+    }
+  };
 
   const appendCharge = ()=>{
     if(!state.chargeLoad){
@@ -70,17 +92,63 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       local_amount: 0,  size_type:'40HC', dg_type:state.selectedRecord.dg=="Mix"?"DG":state.selectedRecord.dg, 
       qty:1, rate_charge:1, currency:'USD', amount:1, check: false, bill_invoice: '', charge: '', particular: '',
       discount:0, tax_apply:false, taxPerc:0.00, tax_amount:0, net_amount:0, invoiceType:"", name: "", 
-      partyId:"", sep:false, status:'', approved_by:'', approval_date:'', InvoiceId:null, 
+      partyId:"", sep:false, status:'0', approved_by:'', approval_date:'', InvoiceId:null, 
       SEJobId:state.selectedRecord.id
     })}
   };
 
+  useEffect(() => {
+    let allCheckedAreStatusOne = true;
+    let anyChecked = false;
+  
+    chargeList?.forEach((x) => {
+      if (x.check === true) {
+        anyChecked = true;
+        if (x.status !== '1') {
+          allCheckedAreStatusOne = false;
+        }
+      }
+    });
+  
+    if (anyChecked && allCheckedAreStatusOne) {
+      setGenerate(true);
+    } else {
+      setGenerate(false);
+    }
+  }, [chargeList]);
+  
+
   const generateInvoice = async () => {
-    if(!state.chargeLoad){
-      dispatch({type:'toggle', fieldName:'chargeLoad', payload:true})
-      await makeInvoice(chargeList, companyId, reset, operationType, dispatch, state);
+    console.log("Generate function called")
+    if (!state.chargeLoad) {
+      dispatch({ type: 'toggle', fieldName: 'chargeLoad', payload: true });
+      let abc = false;
+      let charges = [];
+  
+      chargeList?.forEach(x => {
+        if (x.check === true) {
+          if (x.status !== '1') {
+            abc = false;
+            // return; // Exit the loop early if any checked item is not approved
+          } else {
+            abc = true;
+            charges.push(x);
+          }
+        }
+      });
+      console.log(abc)
+      console.log(charges.length)
+      // Check if `charges` contains items and `abc` is true
+      if (charges.length > 0 && abc) {
+        console.log("Making Invoices");
+        await makeInvoice(charges, companyId, reset, operationType, dispatch, state);
+      } else {
+        dispatch({ type: 'toggle', fieldName: 'chargeLoad', payload: false });
+        openNotification('Error', `No Charge Selected!`, 'red');
+      }
     }
   };
+  
 
   return(
   <>
@@ -90,7 +158,11 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     </Col>
     <Col>
       <div className='div-btn-custom mx-2 py-1 px-3 fl-right' onClick={saveCharges}>Save Charges</div>
-      <div className='div-btn-custom-green fl-right py-1 px-3' onClick={generateInvoice}>Generate Invoice No</div>
+      <div className='div-btn-custom-green fl-right py-1 px-3' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
+        if(generate){
+          generateInvoice();
+        }
+      }}>Generate Invoice No</div>
       <div className='mx-2' style={{float:'right'}}>
         <InputNumber placeholder='Ex.Rate' size='small' className='my-1' min={"0.1"}  style={{position:'relative', bottom:2}}
           value={state.exRate} onChange={(e)=>dispatch({type:'toggle',fieldName:'exRate',payload:e})} 
@@ -105,7 +177,13 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       <thead>
         <tr className='table-heading-center'>
       <th>x</th>
-      <th>.</th>
+      <th>
+        <input type="checkbox" onChange={(e)=>{
+          chargeList.forEach((x, i)=>{
+            !x.invoice_id&&x.type==type?setValue(`chargeList.${i}.check`, e.target.checked):null
+          })
+        }} />
+      </th>
       <th>Bill/Invoice</th>
       <th>Charge</th>
       <th>Party</th>
@@ -150,8 +228,8 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                 })}}}
             />
           </td>
-          <td className='text-center'>
-            {(x.InvoiceId==null && x.new!=true) &&
+          <td style={{ backgroundColor: x.status === "1" ? "#DAF7A6" : "white" }} className='text-center'>
+            {(x.invoice_id==null && x.new!=true) &&
             <input type="checkbox" {...register(`chargeList.${index}.check`)}
               style={{ cursor: 'pointer' }}
               disabled={
@@ -165,7 +243,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </td>
           <td className='text-center'>{/* Invoice Number */}
           {x.invoice_id != null &&
-            <Tag color="geekblue" style={{ fontSize:15, cursor:"pointer" }}
+            <Tag color={x.Invoice?.approved === "1" ? "geekblue" : "red"} style={{ fontSize:15, cursor:"pointer" }}
               onClick={()=>dispatch({type:'set',payload:{selectedInvoice:x.invoice_id,tabState:"5"}})}
             >
               {x.invoice_id}
@@ -329,7 +407,10 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </td>
           <td>{x.local_amount}</td>
           <td>{x.particular}</td>
-          <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td><td></td><td></td></tr>
+          <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td>
+          <td></td>
+          <td></td>
+          </tr>
           }
         </>
       )})}
@@ -350,6 +431,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
+    {checkEditAccess() && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

@@ -419,7 +419,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
           {state.edit && <Notes state={state} dispatch={dispatch} />}
           {approved == "1" && <img src={'/approve.png'} height={100} />}
 
-          {approved1.approved == "0" && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
+          {approved != "0" && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
             <CheckGroupComp register={register} name='approved' control={control} label=''
               options={[{ label: "Approve Job", value: "1" }]}
             />

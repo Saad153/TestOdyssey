@@ -25,7 +25,6 @@ const Invoice = ({state, dispatch, companyId}) => {
       dispatch({type:'toggle', fieldName:'invoiceData', payload:x.data.result});
     })
   }
-  console.log(state)
   return (
     <div style={{minHeight:680}}>
       {!load && 

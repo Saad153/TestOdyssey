@@ -242,27 +242,11 @@ const getHeadsNew = async(id, dispatch, reset) => {
     headers:{"id": `${id}`}
   }).then(async(x)=>{
     if(x.data.status=="success"){
-      // let tempCharge = [];
-      // x.data.result.forEach((x)=>{
-      //   if(x.type!='Payble'){
-      //     tempCharge.push({...x, sep:false});
-      //   }
-      // });
-      // reciveableCharges = await tempCharge;
-      // tempCharge = [];
-      // x.data.result.forEach((x)=>{
-      //   if(x.type=='Payble'){
-      //     tempCharge.push({...x, sep:false});
-      //   }
-      // })
-      // paybleCharges = await tempCharge;
 
       let tempChargeHeadsArray = await calculateChargeHeadsTotal([...reciveableCharges, ...paybleCharges], "full");    
       await reset({chargeList:[...x.data.result]});
       dispatch({type:'set', 
       payload:{
-        // reciveableCharges,
-        // paybleCharges,
         chargeLoad:false,
         ...tempChargeHeadsArray
       }})
@@ -278,9 +262,42 @@ const saveHeads = async(charges, state, dispatch, reset) => {
     if(x.data.status=="success"){
       await delay(500)
       await getHeadsNew(state.selectedRecord.id, dispatch, reset)
-      await getHeadsNew(state.selectedRecord.id, dispatch, reset)
+      // await getHeadsNew(state.selectedRecord.id, dispatch, reset)
     }
   })
+}
+
+const approve = async(data) => {
+  try{
+    console.log(data.newInv)
+    await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/approve`,{
+      id:data.newInv.id
+    }).then(async(x)=>{
+      if(x.data.status=="success"){
+        // await getHeadsNew(state.selectedRecord.id, dispatch, reset)
+      }
+    })
+  }catch(e){
+    console.error(e)
+  }
+  
+};
+
+const approveHeads = async(charges, state, dispatch, reset) => {
+  console.log(charges)
+  for(let x of charges){
+    console.log(x)
+    await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/approveHeads`,{
+      id:x.id
+    }).then(async(x)=>{
+      if(x.data.status=="success"){
+        // await getHeadsNew(state.selectedRecord.id, dispatch, reset)
+      }
+    })
+    
+  }
+  await delay(500)
+  await getHeadsNew(state.selectedRecord.id, dispatch, reset)
 }
 
 async function getChargeHeads (id) {
@@ -346,32 +363,66 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
 
 const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
   // console.log("make invoice")
-  let tempList = list.filter((x)=>x.check);
-  tempList.forEach((x)=>{
+  list.forEach((x)=>{
+    console.log(x)
+  })
+  let tempList1 = list.filter((x)=>x.check && x.partyType.includes("client"));
+  let tempList2 = list.filter((x)=>x.check && x.partyType.includes("vendor"));
+  tempList1.forEach((x)=>{
     // console.log(x.invoiceType)
     if(x.description && x.invoiceType.includes("Invoice")){
       if(x.type == "Payble"){
-        x.amount = x.amount * -1
-        x.net_amount = x.net_amount * -1
-        x.local_amount = x.local_amount * -1
+        x.amount = parseFloat(x.amount) * -1
+        x.net_amount = parseFloat(x.net_amount) * -1
+        x.local_amount = parseFloat(x.local_amount) * -1
       }
     }else if(x.description && x.invoiceType.includes("Bill")){
       if(x.type == "Recievable"){
-        x.amount = x.amount * -1
-        x.net_amount = x.net_amount * -1
-        x.local_amount = x.local_amount * -1
+        x.amount = parseFloat(x.amount) * -1
+        x.net_amount = parseFloat(x.net_amount) * -1
+        x.local_amount = parseFloat(x.local_amount) * -1
       }
     }
 
   })
+  tempList2.forEach((x)=>{
+    // console.log(x.invoiceType)
+    if(x.description && x.invoiceType.includes("Invoice")){
+      if(x.type == "Payble"){
+        x.amount = parseFloat(x.amount) * -1
+        x.net_amount = parseFloat(x.net_amount) * -1
+        x.local_amount = parseFloat(x.local_amount) * -1
+      }
+    }else if(x.description && x.invoiceType.includes("Bill")){
+      if(x.type == "Recievable"){
+        x.amount = parseFloat(x.amount) * -1
+        x.net_amount = parseFloat(x.net_amount) * -1
+        x.local_amount = parseFloat(x.local_amount) * -1
+      }
+    }
+
+  })
+  let result1, result2;
   // console.log(tempList)
-  tempList.length>0?
-    await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
-      chargeList:tempList, companyId, type:type
+  tempList1.length>0?
+    result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
+      chargeList:tempList1, companyId, type:type
     }).then(async(x)=>{
       if(x.data.status=="success"){
+        // approve(x.data.result)
         await delay(500)
         await getHeadsNew(state.selectedRecord.id, dispatch, reset)
+      }
+    })
+  :null
+  tempList2.length>0?
+    result2 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
+      chargeList:tempList2, companyId, type:type
+    }).then(async(x)=>{
+      if(x.data.status=="success"){
+        console.log(x.data.result)
+        // approve(x.data.result)
+        await delay(500)
         await getHeadsNew(state.selectedRecord.id, dispatch, reset)
       }
     })
@@ -410,5 +461,5 @@ export {
   saveHeads, getHeadsNew, getStatus,
   calculateChargeHeadsTotal,
   makeInvoice, getInvoices,
-  setHeadsCache
+  setHeadsCache, approveHeads
 };
