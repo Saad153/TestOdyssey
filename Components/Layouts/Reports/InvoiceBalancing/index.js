@@ -19,7 +19,7 @@ const InvoiceBalaincing = () => {
   const [representator, setRepresentator] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [reportType, setReportType] = useState("viewer");
-  const [balance, setBalance] = useState("all");
+  const [balance, setBalance] = useState("exclude0");
   const [jobTypes, setJobTypes] = useState([]);
   const [values, setValues] = useState();
   const [payType, setPayType] = useState("All");
@@ -62,7 +62,7 @@ const InvoiceBalaincing = () => {
       setCurrency(value.currency),
       setJobTypes(value.jobTypes),
       setReportType(value.reportType)
-      setBalance(value.balance)
+      // setBalance(value.balance)
     }
   }, [filters])
 

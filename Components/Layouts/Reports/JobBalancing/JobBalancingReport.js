@@ -56,7 +56,7 @@ const JobBalancingReport = ({ result, query }) => {
         balance = balance + parseFloat(x.balance)
       }
     })
-    return balance > 0 ? commas(balance) : (`(${commas(balance * -1)})`);
+    return balance >= 0 ? commas(balance) : (`(${commas(balance * -1)})`);
   }
 
   const getAge = (date) => {

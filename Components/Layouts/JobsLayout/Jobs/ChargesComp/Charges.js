@@ -22,6 +22,8 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
   const [generate, setGenerate] = useState(false);
 
+  const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
+
   useEffect(() => {
     if(chargeList){
       let list = chargeList.filter((x)=>x.check);
@@ -396,7 +398,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           />
           </td>
           <td>{x.tax_amount}</td> {/* Tax Amount */}
-          <td>{x.net_amount}</td>
+          <td>{commas(x.net_amount)}</td>
           <td style={{ padding: 3 }}> {/* Ex. Rate */}
           {chargeList[index]?.currency!="PKR" && 
             <InputNumComp register={register} name={`chargeList.${index}.ex_rate`}  control={control} label='' width={10} 
@@ -405,7 +407,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           }
           {chargeList[index]?.currency=="PKR" && <InputNumber value={1.00} />}
           </td>
-          <td>{x.local_amount}</td>
+          <td>{commas(x.local_amount)}</td>
           <td>{x.particular}</td>
           <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td>
           <td></td>

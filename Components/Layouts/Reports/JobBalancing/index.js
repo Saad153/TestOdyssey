@@ -18,7 +18,7 @@ const JobBalancing = () => {
   const [ party, setParty ] = useState("");
   const [ overseasAgent, setOverseasAgent ] = useState("");
   const [ reportType, setReportType ] = useState("viewer");
-  const [ options, setOptions ] = useState("showall");
+  const [ options, setOptions ] = useState("exclude");
   const [ representator, setRepresentator ] = useState("");
   const [ currency, setCurrency ] = useState("");
   const [ jobTypes, setJobTypes ] = useState([]);
@@ -63,7 +63,7 @@ const JobBalancing = () => {
       setCurrency(value.currency),
       setJobTypes(value.jobTypes),
       setReportType(value.reportType)
-      setOptions(value.options)
+      // setOptions(value.options)
     }
   },[])
 
