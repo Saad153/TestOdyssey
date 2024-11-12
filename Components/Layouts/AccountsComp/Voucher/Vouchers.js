@@ -189,7 +189,6 @@ const narration = (e) =>{
 
   // calculationg closing balance
   useEffect(() => {
-    console.log(allValues.ChildAccountId, id, allValues.currency)
     if(allValues.ChildAccountId){
       axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_VOUCEHR_LEDGER_FOR_CLOSING,{
         headers:{
@@ -197,7 +196,6 @@ const narration = (e) =>{
           id:allValues.ChildAccountId,
         }
       }).then((x)=>{
-        console.log(x.data.result)
         if(x?.data?.status=="success"){
           let closingBalance = 0;
           x?.data?.result?.forEach((x)=>{
