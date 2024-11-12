@@ -51,10 +51,16 @@ const OpeningBalance = ({id, voucherData}) => {
     
     let tempState = [...voucherAccounts];
     console.log(tempState)
-    tempState.forEach((x, index)=>{
-      tempState[index][name] = e;
-      condition?tempState[index].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
-    })
+    if(name!="ChildAccountId"){
+      tempState.forEach((x, index)=>{
+        tempState[index][name] = e;
+        condition?tempState[index].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+      })
+    }else{
+      tempState[i][name] = e;
+      condition?tempState[i].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+
+    }
     setVoucherAccounts(tempState);
   }
 
@@ -169,7 +175,6 @@ const OpeningBalance = ({id, voucherData}) => {
             {currency!="PKR"&&<th style={{width:100}}>{currency}</th>}
             <th style={{width:140}}>Amount</th>
             <th>Narration</th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -198,9 +203,6 @@ const OpeningBalance = ({id, voucherData}) => {
               </td>
               <td className='p-1'>
                 <Input style={{width:"100%"}} value={x.narration} onChange={(e)=>setVouchers(e.target.value,i,'narration')} />
-              </td>
-              <td className='text-center'>
-                <CloseCircleOutlined className="fs-15 cross-icon" onClick={()=>removeList(x.id)} />
               </td>
             </tr>
           )})}
