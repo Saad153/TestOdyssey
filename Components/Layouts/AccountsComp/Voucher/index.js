@@ -93,7 +93,7 @@ const Voucher = ({ id }) => {
         })
       }
     }
-  
+    console.log("working")
     setLoad(true);
     let settlementAmmount = 0.00;
     let debit = 0.00, credit = 0.00;
@@ -117,7 +117,7 @@ const Voucher = ({ id }) => {
         amount: Math.abs(difference),
         type: difference > 0 ? 'credit' : 'debit',
         settlement: "1",
-        narration:data.payTo !== "" ? voucher.payTo : data.payTo,
+        narration:!data.payTo? voucher.payTo : data.payTo,
         defaultAmount: voucher.currency === "PKR" ? 0 : parseFloat(difference) / parseFloat(voucher.exRate),
       });
       voucher.Voucher_Heads = newHeads;
