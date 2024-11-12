@@ -5,6 +5,7 @@ import Router from "next/router";
 import axios from 'axios';
 import { CloseCircleOutlined } from "@ant-design/icons";
 import openNotification from "/Components/Shared/Notification";
+import Cookies from "js-cookie";
 
 const OpeningBalance = ({id, voucherData}) => {
 
@@ -25,6 +26,12 @@ const OpeningBalance = ({id, voucherData}) => {
       setVoucher_Id(voucherData.voucher_Id)
       setCompanyId(parseInt(voucherData.CompanyId))
       setVoucherAccounts(voucherData.Voucher_Heads)
+    }else if(voucherAccounts.length==0){
+      setCompanyId(parseInt(Cookies.get("companyId")))
+      let tempAccounts = [...voucherAccounts];
+      tempAccounts.push({ defaultAmount:1, amount:0.00, type:"debit", narration:"", ChildAccountId:"" });
+      tempAccounts.push({ defaultAmount:1, amount:0.00, type:"credit", narration:"", ChildAccountId:"" });
+      setVoucherAccounts(tempAccounts);
     }
   }, [])
 
@@ -41,9 +48,13 @@ const OpeningBalance = ({id, voucherData}) => {
   }, [companyId]);
 
   const setVouchers = (e, i, name, condition)=> {
+    
     let tempState = [...voucherAccounts];
-    tempState[i][name] = e;
-    condition?tempState[i].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+    console.log(tempState)
+    tempState.forEach((x, index)=>{
+      tempState[index][name] = e;
+      condition?tempState[index].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+    })
     setVoucherAccounts(tempState);
   }
 
@@ -92,10 +103,8 @@ const OpeningBalance = ({id, voucherData}) => {
         <div>Document #</div>
         <div style={{border:'1px solid silver', padding:3, paddingLeft:10, height:30, paddingTop:5}}>{voucher_Id}</div>
       </Col>
-      <Col md={12}>
-        <Row>
-          <Col md={5}>
-            <div className='mt-2'>Company</div>
+      <Col md={2}>
+      <div>Company</div>
             <Select style={{width:"100%"}} value={companyId} disabled={id!="new"}
               options={[
                 { value:1, label:'SEA NET LOGISTICS'  },
@@ -112,13 +121,25 @@ const OpeningBalance = ({id, voucherData}) => {
                   setVoucherAccounts(tempState);
                 }
             }}/>
-          </Col>
-        </Row>
       </Col>
-      <Col md={12}>
-        <Row>
-          <Col md={2}>
-            <div className='mt-2'>Currency</div>
+      <Col md={2}>
+      <div>Ex. Rate</div>
+            <InputNumber style={{width:"100%"}} value={exRate} 
+              min='0.0' disabled={currency=="PKR"}
+              onChange={(e)=>{
+                setExRate(e);
+                if(voucherAccounts.length>0){
+                  let tempState = [...voucherAccounts];
+                  tempState.forEach((x)=>{
+                    x.amount = parseFloat(x.defaultAmount) * parseFloat(e)
+                  })
+                  setVoucherAccounts(tempState);
+                }
+              }}
+            />
+      </Col>
+      <Col md={2}>
+      <div>Currency</div>
             <Select style={{width:"100%"}} value={currency} 
               onChange={(e)=>{
                 setCurrency(e);
@@ -135,32 +156,10 @@ const OpeningBalance = ({id, voucherData}) => {
                 { value:"CHF", label:"CHF"},
               ]}
             />
-          </Col>
-          <Col md={2}>
-            <div className='mt-2'>Ex. Rate</div>
-            <InputNumber style={{width:"100%"}} value={exRate} 
-              min='0.0' disabled={currency=="PKR"}
-              onChange={(e)=>{
-                setExRate(e);
-                if(voucherAccounts.length>0){
-                  let tempState = [...voucherAccounts];
-                  tempState.forEach((x)=>{
-                    x.amount = parseFloat(x.defaultAmount) * parseFloat(e)
-                  })
-                  setVoucherAccounts(tempState);
-                }
-              }}
-            />
-          </Col>
-        </Row>
       </Col>
+      
       <Col md={12}>
       <hr/>
-      <button className='btn-custom mb-3' onClick={() => {
-          let tempAccounts = [...voucherAccounts];
-          tempAccounts.push({ defaultAmount:1, amount:0.00, type:"", narration:"", ChildAccountId:"" });
-          setVoucherAccounts(tempAccounts);
-        }}>Add</button>
       <div>
       <Table bordered>
         <thead>
@@ -182,20 +181,14 @@ const OpeningBalance = ({id, voucherData}) => {
                   onChange={(e)=>setVouchers(e,i,'ChildAccountId')}
                   showSearch
                   filterOption={filterOption}
-                  options={ accounts.map((y) => {
+                  options={ accounts?.map((y) => {
                     return { label:y.title, value:y.id }
                   })}
                 />}
                 {load && <div className='text-center pt-2'><Spinner size='sm' /></div> }
               </td>
-              <td className='p-1'>
-                <Select style={{width:"100%"}} value={x.type} 
-                  onChange={(e)=>setVouchers(e,i,'type')}
-                  options={[
-                    { value:"debit", label:'Debit' },
-                    { value:"credit", label:'Credit' },
-                  ]}
-                />
+              <td className=''>
+                <p style={{textAlign:"center", padding:"0px", margin:"0px", fontSize:"14px"}}>{x.type}</p>
               </td>
               {currency!="PKR" &&<td className='p-1'>
                 <InputNumber style={{width:"100%"}} value={x.defaultAmount} onChange={(e)=>setVouchers(e,i,'defaultAmount',true)} min={"0.0"} />

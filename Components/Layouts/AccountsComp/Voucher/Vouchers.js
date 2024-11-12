@@ -106,8 +106,8 @@ const narration = (e) =>{
     let iD = "";
     let settleId = "";
     let ChildAccountId = "";
-    let createdAt = voucherData.createdAt ? moment(voucherData.createdAt) : "";
-    let chequeDate = voucherData.chequeDate ? moment(voucherData.chequeDate) : "";
+    let createdAt = voucherData.createdAt ? moment(voucherData.createdAt) : moment().format("YYYY-MM-DD");
+    let chequeDate = voucherData.chequeDate ? moment(voucherData.chequeDate) : moment().format("YYYY-MM-DD");
     let Voucher_Heads = voucherData.Voucher_Heads?.filter((x) => x.settlement !== "1");
     voucherData?.Voucher_Heads?.filter((x) => {
       if (x.settlement === "1") {
