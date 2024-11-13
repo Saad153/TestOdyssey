@@ -50,7 +50,7 @@ const MainLayout = ({children}) => {
     let tempUser = await Cookies.get('username');
     if(companyValue){
       dispatch(companySelect(companyValue));
-      setCompany(companyValue);
+      setCompany(parseInt(companyValue));
     }
     setUsername(tempUser)
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_COMPANIES)
@@ -67,7 +67,7 @@ const MainLayout = ({children}) => {
 
   const handleChange = (value) => {
     Cookies.set('companyId', value, { expires: 1000000000 });
-    setCompany(value);
+    setCompany(parseInt(value));
     dispatch(companySelect(value))
     Router.push('/')
   };

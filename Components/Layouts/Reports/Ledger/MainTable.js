@@ -10,14 +10,14 @@ import Cookies from "js-cookie";
 import PrintTopHeader from "/Components/Shared/PrintTopHeader";
 import { CSVLink } from "react-csv";
 
-const MainTable = ({ ledger, closing, opening, name, company, currency, from, to }) => {
+const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, currency, from, to }) => {
   
   let inputRef = useRef(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const dispatch = useDispatch();
   const [username, setUserName] = useState("");
   const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
-
+  console.log(ledger)
   const TableComponent = ({overFlow}) => {
     return (
       <div className="">
@@ -56,6 +56,16 @@ const MainTable = ({ ledger, closing, opening, name, company, currency, from, to
                 </tr>
               </thead>
               <tbody>
+                {console.log(openingVoucher)}
+                {openingVoucher && <tr>
+                  <td>0</td>
+                  <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
+                  <td className="text-center fs-12 grey-txt">{moment(openingVoucher["Voucher.date"]).format("YYYY-MM-DD")}</td>
+                  <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
+                  <td className="text-end fs-12">{openingVoucher.type == "debit" && commas(openingVoucher.amount)}</td>
+                  <td className="text-end fs-12">{openingVoucher.type == "credit" && commas(openingVoucher.amount)}</td>
+                  <td className="text-end fs-12 blue-txt">{commas(openingVoucher.amount)}</td>
+                </tr>}
                 {ledger.map((x, i) => {
                   return (
                     <tr key={i}>

@@ -21,7 +21,7 @@ const JobBalancingReport = ({ result, query }) => {
   const [username, setUserName] = useState("");
   const dispatch = useDispatch();
   const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.0';
-
+  console.log(result)
   const getTotal = (type, list) => {
     let values = 0.00;
     list.forEach((x) => {

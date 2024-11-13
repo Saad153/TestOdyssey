@@ -15,7 +15,7 @@ import Pagination from "/Components/Shared/Pagination";
 const InvoiceBalancingReport = ({ result, query }) => {
   let inputRef = useRef(null);
   const dispatch = useDispatch();
-
+  console.log(result)
   const [load, setLoad] = useState(true);
   const [records, setRecords] = useState([]);
   const [username, setUserName] = useState("");
@@ -76,15 +76,13 @@ const InvoiceBalancingReport = ({ result, query }) => {
     if (value.status == "success") {
       let newArray = [...value.result];
       newArray.forEach((x) => {
-        // console.log(x)
         let invAmount = 0;
-        invAmount = parseFloat(x.total) / parseFloat(x.ex_rate);
+        invAmount = parseFloat(x.total);
         x.total = invAmount;
         x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
         x.debit = x.payType == "Recievable" ? invAmount : 0
         x.credit = x.payType != "Recievable" ? invAmount : 0
         x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved)/parseFloat(x.ex_rate) : parseFloat(x.paid)/parseFloat(x.ex_rate);
-        // console.log(x.payType == "Recievable" ? (x.recieved):parseFloat(x.paid))
         x.balance = invAmount - x.paidRec
         x.age = getAge(x.createdAt);
       })
