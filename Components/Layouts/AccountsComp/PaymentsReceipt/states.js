@@ -1,6 +1,5 @@
 import axios from "axios";
 import moment from "moment";
-
 function recordsReducer(state, action){
   switch (action.type) {
     case"receiving":{
@@ -140,7 +139,7 @@ const totalRecieveCalc = (vals) => {
 }
 
 const getNewInvoices = async(id, state, companyId, dispatch) => {
-  // dispatch({type:"setAll", payload:{ load:true }});
+  dispatch({type:"setAll", payload:{ load:true }});
   console.log(state)
   console.log(state.invoices[0].payType)
   await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/getAllInvoices`,{

@@ -168,6 +168,7 @@ const MainLayout = ({children}) => {
     charges:false,
     invoiceBills:false,
     paymentReceipt:false,
+    paymentReceipt1:false,
     jobBalancing:false,
     jobBalancingReport:false,
     accountActivity:false,
@@ -234,6 +235,7 @@ const MainLayout = ({children}) => {
         else if(tabs.key=='3-1'){ tempTabActive.accounts=true }
         else if(tabs.key=='3-3'){ tempTabActive.invoiceBills=true }
         else if(tabs.key=='3-4'){ tempTabActive.paymentReceipt=true }
+        else if(tabs.key=='3-13'){ tempTabActive.paymentReceipt1=true }
         else if(tabs.key=='3-5'){ tempTabActive.voucherSys=true }
         else if(tabs.key=='3-6'){ tempTabActive.voucherList=true }
         else if(tabs.key=='3-7'){ tempTabActive.officeVoucherList=true }
@@ -306,6 +308,7 @@ const MainLayout = ({children}) => {
   }
 
   const toggleTab = (x) => {
+    console.log("toggleTabs",x)
     setToggleState(x.key);
     if(x.key=='1-1'){ Router.push('/dashboard/home') }
     else if(x.key=='1-2'){ Router.push('/dashboard/requests') }

@@ -9,7 +9,6 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
   const [openingVoucher, setOpeningVoucher] = useState({});
   
   useEffect(() => {
-    console.log(voucherData)
     if (name && voucherData.status == "success") {
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
       voucherData.result.forEach((y) => {
@@ -27,7 +26,6 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
             
           }
           if (y["Voucher.vType"] === "OP") {
-            console.log(y)
             setOpeningVoucher(y);
             openingBalance =
               y.type === "debit" ? 
@@ -51,7 +49,6 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
           }
           
         } else {
-          console.log(y)
           setOpeningVoucher(y);
           openingBalance = y.type === "debit" ? openingBalance + parseFloat(y.amount) / exRate : openingBalance - parseFloat(y.amount) / exRate;
           prevBalance = isDone?prevBalance:openingBalance;

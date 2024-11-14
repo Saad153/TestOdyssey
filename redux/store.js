@@ -9,6 +9,7 @@ import filterValuesReducer from './filters/filterSlice';
 import ledgerReducer from './ledger/ledgerSlice';
 import invoiceReducer from './invoice/invoiceSlice';
 import profitLossReducer from './profitLoss/profitLossSlice';
+import paymentReceiptReducer from './paymentReciept/paymentRecieptSlice';
 export const store = configureStore({
   reducer: {
     [seJobValues.reducerPath]: seJobValues.reducer,
@@ -21,6 +22,7 @@ export const store = configureStore({
     tabs: tabsReducer,
     blCreationValues: blCreationReducer,
     persistValues: persistValuesReducer,
+    paymentReciept: paymentReceiptReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(seJobValues.middleware),

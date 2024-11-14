@@ -19,6 +19,7 @@ const BillComp = ({companyId, state, dispatch}) => {
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
   const [checked, setChecked] = useState(false);
   useEffect(() => {
+    console.log(state.selectedParty)
     getInvoices(state, companyId, dispatch);
     // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
   }, [state.selectedParty, state.payType]);  

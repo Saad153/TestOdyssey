@@ -18,10 +18,20 @@ import Pagination from '../../../Shared/Pagination';
 import openNotification from "../../../Shared/Notification";
 import {checkEditAccess} from "../../../../functions/checkEditAccess";
 import {checkEmployeeAccess} from "../../../../functions/checkEmployeeAccess";
+import {
+  setTranVisible, 
+  setSelectedParty, 
+  setEdit, 
+  setOldInvoices, 
+  setId, 
+  setPayType, 
+  setPartyType, 
+  setInvoiceCurrency 
+} from '../../../../redux/paymentReciept/paymentRecieptSlice';
+
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 const PaymentsReceipt = ({ id, voucherData, q }) => {
-
 
   let inputRef = useRef(null);
   const gridRef = useRef();
@@ -30,6 +40,12 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   const setAll = (x) => dispatch({ type: 'setAll', payload: x })
   const router = useRouter()
   const companyId = useSelector((state) => state.company.value);
+  const tranVisible = useSelector((state) => state.paymentReciept.tranVisible);
+  const selectedParty = useSelector((state) => state.paymentReciept.selectedParty);
+  const payType = useSelector((state) => state.paymentReciept.payType);
+  const partytype = useSelector((state) => state.paymentReciept.partytype);
+  const invoiceCurrency = useSelector((state) => state.paymentReciept.invoiceCurrency);
+  const edit = useSelector((state) => state.paymentReciept.edit);
   const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
   const rowData = state.oldVouchersList;
   const [query, setQuery] = useState("");
@@ -43,9 +59,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
 
   const [del, setDel] = useState(false);
-  console.log(voucherData, id)
-  console.log(q)
-  console.log(query)
 
   useEffect(() => {
     // Ensure companyId is available before making the request
@@ -73,8 +86,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
   useEffect(() => {
     setAll({ partytype: 'client' });
+    dispatchNew(setPartyType('client'));
     if (router?.query?.id == 'undefined') {
-      Router.push({ pathname: "/accounts/paymentReceipt/new" }, undefined, { shallow: true });
+      router.push({ pathname: "/accounts/paymentReceipt/new" }, undefined, { shallow: true });
       dispatchNew(incrementTab({
         "label": "Payment / Receipt",
         "key": "3-4",
@@ -88,10 +102,15 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         invoiceCurrency: router.query.currency,
         tranVisible: true
       })
+      dispatchNew(setTranVisible(true),)
+      dispatchNew(setSelectedParty({ id: router.query.partyid.toString(), name: router.query.name }))
+      dispatchNew(setPayType(router.query.paytype))
+      dispatchNew(setPartyType(router.query.type))
+      dispatchNew(setInvoiceCurrency(router.query.currency))
+
     } else if (router?.query?.id != 'undefined' && router?.query?.id != 'new') {
       let payAcc = {}, partyAcc = {}, taxAc = { acc: {}, amount: 0 }, bankAc = { acc: {}, amount: 0 }, gainLoss = { acc: {}, amount: 0 }
       voucherData?.Voucher_Heads.forEach((x) => {
-        console.log(x)
         if (x.accountType == 'payAccount') {
           payAcc = x.Child_Account
         }
@@ -140,13 +159,39 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         manualExRate: voucherData.exRate,
         subType: voucherData.subType
       })
+      dispatchNew(setTranVisible(true));
+      dispatchNew(setSelectedParty({ id: voucherData.partyId.toString(), name: voucherData.partyName }));
+      dispatchNew(setEdit(true));
+      dispatchNew(setOldInvoices(voucherData.invoices));
+      dispatchNew(setId(voucherData.id));
+      dispatchNew(setPayType(voucherData.vType === "BRV" ? "Recievable" :
+        voucherData.vType === "CRV" ? "Recievable" : "Payble"));
+      dispatchNew(setPartyType(voucherData.partyType));
+      dispatchNew(setInvoiceCurrency(voucherData.currency));
+
+
     }
 
     setDel(checkEmployeeAccess())
   }, [router]);
 
+  useEffect(() => {
+    console.log(selectedParty)
+    console.log(tranVisible)
+  },[selectedParty, tranVisible])
 
-  const addNew = () => router.push("/accounts/paymentReceipt/new");
+
+  // const addNew = () => router.push("/accounts/paymentReceipt/new");
+  const addNew = () => {
+    setAll({ selectedParty: { id: '', name: '' }, partytype: 'client', payType: 'Recievable', invoiceCurrency: 'USD', tranVisible: false })
+    dispatchNew(setTranVisible(false))
+    dispatchNew(setSelectedParty({ id: '', name: '' }))
+    dispatchNew(setPayType('Recievable'))
+    dispatchNew(setPartyType('client'))
+    dispatchNew(setInvoiceCurrency('PKR') )
+    router.push("/accounts/paymentReceipt/new")
+    
+  }
   const chkReturn = async () => {
     let vv_id = voucherData
     let InvoiceId = vv_id.invoices;
@@ -181,74 +226,71 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
   const searchParties = async () => {
     if (state.search.length > 2) {
-      // setShowTable(false); // Hide table and pagination
-      // console.log(state.partyType)
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
-        { search: state.search, type: state.partytype }
+        { search: state.search, type: partytype }
       ).then((x) => {
         if (x.data.status === "success") {
 
 
           setAll({ partyOptions: x.data.result });
 
-
         } else {
           setAll({ partyOptions: [] });
         }
       });
-      // console.log(state.partyOptions)
     } else {
-      setShowTable(true); // Show table and pagination if search is cleared
+      setShowTable(true);
     }
   };
 
   const refetch = async () => {
-    console.log(state)
     getNewInvoices(id, state, companyId, dispatch)
   }
 
   const ListComp = ({ data }) => {
     return (
       <List
-  size="small"
-  bordered
-  dataSource={data}
-  renderItem={(item) => (
-    <List.Item
-      key={item.id}
-      className="searched-item"
-      onClick={() => {
-        Router.push({
-          pathname: "/accounts/paymentReceipt/new",
-          query: {
-            name: item.name,
-            partyid: item.id,
-            type: state.partytype,
-            paytype: state.payType,
-            currency: state.invoiceCurrency,
-          },
-        },
-        undefined,
-        { shallow: true });
-        dispatchNew(  
-          incrementTab({
-            label: "Payment/ Reciept Details",
-            key: "3-13",
-            id: `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`,
-          })
-        );
-        setAll({
-          selectedParty: { id: item.id, name: item.name },
-          tranVisible: true,
-          search: "",
-        });
-      }}
-    >
-      {`${item.code} ${item.name}`}
-    </List.Item>
-  )}
-  style={{ maxHeight: "300px", overflowY: "auto" }} // Adjust maxHeight as needed
-/>
+        size="small"
+        bordered
+        dataSource={data}
+        renderItem={(item) => (
+          <List.Item
+            key={item.id}
+            className="searched-item"
+            onClick={() => {
+              router.push({
+                pathname: "/accounts/paymentReceipt/new",
+                query: {
+                  name: item.name,
+                  partyid: item.id,
+                  type: partytype,
+                  paytype: payType,
+                  currency: invoiceCurrency,
+                },
+              },
+              undefined,
+              { shallow: true });
+              // dispatchNew(  
+              //   incrementTab({
+              //     label: "Payment/ Reciept Details",
+              //     key: "3-13",
+              //     id: `new?name=${item.name}&partyid=${item.id}&type=${partytype}&paytype=${payType}&currency=${invoiceCurrency}`,
+              //   })
+              // );
+              setAll({
+                selectedParty: { id: item.id, name: item.name },
+                tranVisible: true,
+                search: "",
+              });
+              dispatchNew(setTranVisible(true))
+              dispatchNew(setSelectedParty({ id: item.id.toString(), name: item.name }))
+            }}
+          >
+            {`${item.code} ${item.name}`}
+          </List.Item>
+        )}
+        style={{ maxHeight: "300px", overflowY: "auto" }} // Adjust maxHeight as needed
+      />
 
     )
   };
@@ -289,12 +331,12 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
   const cellClickedListener = useCallback((e) => {
     dispatchNew(incrementTab({ "label": "Payment / Receipt", "key": "3-4", "id": e.data.id }))
-    Router.push(`/accounts/paymentReceipt/${e.data.id}`)
+    router.push(`/accounts/paymentReceipt/${e.data.id}`)
   }, []);
 
   const cellClickListener = useCallback((e)=> {
     dispatchNew(incrementTab({"label": "Payment / Receipt","key": "3-4","id":e.id}))
-    Router.push(`/accounts/paymentReceipt/${e.id}`)
+    router.push(`/accounts/paymentReceipt/${e.id}`)
   }, []);
 
   return (
@@ -302,7 +344,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       <Row>
         <Col md={4}>
           <b>Type: </b>
-          <Radio.Group className='mt-1' size='small' value={state.partytype}
+          <Radio.Group className='mt-1' size='small' value={partytype}
             onChange={(e) => {
               let value = "", TempInvoiceCurrency = "";
               if (e.target.value == "vendor") {
@@ -315,11 +357,14 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                 value = "Payble";
                 TempInvoiceCurrency = "USD"
               }
-              // console.log(e.target.value)
               setAll({
                 selectedParty: { id: "", name: "" }, partytype: e.target.value,
                 search: "", payType: value, invoiceCurrency: TempInvoiceCurrency
               })
+              dispatchNew(setPartyType(e.target.value),)
+              dispatchNew(setSelectedParty({ id: '', name: '' }))
+              dispatchNew(setPayType(value))
+              dispatchNew(setInvoiceCurrency(TempInvoiceCurrency))
             }}>
             <Radio value={"client"} defaultChecked>Client</Radio>
             <Radio value={"vendor"}>Vendor</Radio>
@@ -328,8 +373,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         </Col>
         <Col md={3}>
           <b>Pay Type: </b>
-          <Radio.Group className='mt-1' value={state.payType} onChange={(e) => setAll({ search: "", payType: e.target.value })}
-            disabled={state.partytype == "agent"}
+          <Radio.Group className='mt-1' value={payType} onChange={(e) => {setAll({ search: "", payType: e.target.value }); dispatchNew(setPayType(e.target.value))}}
+            disabled={partytype == "agent"}
           >
             <Radio value={"Payble"}>Payable</Radio>
             <Radio value={"Recievable"}>Receivable</Radio>
@@ -337,7 +382,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         </Col>
 
         <Col md={5} style={{ display: 'flex', justifyContent: 'end' }}>
-          {state.edit &&
+          {edit &&
             <ReactToPrint
               content={() => inputRef}
               trigger={() => (
@@ -345,7 +390,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               )}
             />
           }
-          <button className='btn-custom text-center px-3' style={{ fontSize: 14 }}
+          <button className='btn-custom text-center px-3' style={{ fontSize: 14, marginRight: '5px' }}
             onClick={() => {
               axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, { headers: { companyid: companyId } })
                 .then((x) => {
@@ -374,7 +419,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
         </Col>
         <Col md={6} className='mt-3'>
-          {!state.selectedParty.name && <>
+          {!selectedParty.name && <>
             <Input placeholder="Search type" size='small'
               suffix={state.search.length > 2 ? <CloseCircleOutlined onClick={() => setAll({ search: "" })} /> : <SearchOutlined />}
               value={state.search} onChange={(e) => {setAll({ search: e.target.value })}}
@@ -388,7 +433,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
             }
           </>
           }
-          {state.selectedParty.name && <>
+          {selectedParty.name && <>
             <button
               className="btn-custom-green px-3 h-screen flex items-center justify-evenly"
               onClick={addNew}
@@ -398,9 +443,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           </>
           }
         </Col>
-        {!state.tranVisible && <Col md={1} className='mt-3'>
-          <Select disabled={state.partytype != "agent" ? true : false} value={state.invoiceCurrency} size='small'
-            onChange={(e) => setAll({ invoiceCurrency: e })}
+        {!tranVisible && <Col md={1} className='mt-3'>
+          <Select disabled={partytype != "agent" ? true : false} value={invoiceCurrency} size='small'
+            onChange={(e) => {setAll({ invoiceCurrency: e }); dispatchNew(setInvoiceCurrency(e))}}
             options={[
               { value: "PKR", label: "PKR" },
               { value: "USD", label: "USD" },
@@ -414,18 +459,18 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           />
         </Col>
         }
-        {!state.tranVisible && <Col md={4} className='mt-3'>
+        {!tranVisible && <Col md={4} className='mt-3'>
           <div className='d-flex justify-content-end'>
             <Input type="text" placeholder="Search..." size='small' onChange={e => setQuery(e.target.value)} />
           </div>
         </Col>
         }
 
-        {/* <Col md={4} className='mt-3'style={{border:'1px solid silver'}}>{state.selectedParty.name}</Col> */}
+        {/* <Col md={4} className='mt-3'style={{border:'1px solid silver'}}>{selectedParty.name}</Col> */}
         <Col md={12}><hr className='p-0 my-3' /></Col>
       </Row>
       {/* table start */}
-      {showTable && !state.tranVisible && (
+      {showTable && !tranVisible && (
         <>
           <div className='mt-3' style={{ maxHeight: "55vh", overflowY: 'auto', overflowX: "scroll" }}>
             <Table className='tableFixHead'>
@@ -453,7 +498,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                       x?.amount?.toString().includes(query)
                   })
                     .map((x, index) => {
-                      console.log(x)
                       return (
                         <tr onClick={() => cellClickListener(x)} key={index} style={{ cursor: 'pointer' }}>
                           <td className='blue-txt fw-6 fs-12' >{x.voucher_Id}</td>
@@ -483,7 +527,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
       {/* table ends */}
 
-      {state.tranVisible && <BillComp companyId={companyId} state={state} dispatch={dispatch}/>}
+      {tranVisible && <BillComp companyId={companyId} state={state} dispatch={dispatch}/>}
       <div className="d-none">
         <div ref={(res) => (inputRef = res)} className="px-2">
           <PrintTransaction companyId={companyId} state={state} dispatch={dispatch} />
@@ -492,8 +536,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       <Modal
         width={'80%'}
         open={state.oldVouchers}
-        onOk={() => setAll({ oldVouchers: false })}
-        onCancel={() => setAll({ oldVouchers: false })}
+        onOk={() => {setAll({ oldVouchers: false }) }}
+        onCancel={() => {setAll({ oldVouchers: false }) }}
         footer={false}
         centered
         maskClosable={false}

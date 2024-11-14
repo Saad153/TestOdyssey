@@ -34,7 +34,7 @@ import axios from 'axios';
 
 // Simple in-memory cache (this will be reset on every server restart)
 const cache = {};
-
+let count = 0
 const paymentReceipt = ({id, voucherData, query}) => {
   return <PaymentsReceipt id={id} voucherData={voucherData} q={query} />
 }
@@ -45,6 +45,8 @@ export async function getServerSideProps(context) {
   let voucherData = {};
     console.log(params)
     console.log(">>",query)
+    console.log(count)
+    count++
   // Check cache first (cache key can be the `id`)
   if (cache[params.id]) {
     console.log('Returning cached data');

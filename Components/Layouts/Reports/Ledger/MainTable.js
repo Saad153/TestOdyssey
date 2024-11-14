@@ -17,7 +17,6 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
   const dispatch = useDispatch();
   const [username, setUserName] = useState("");
   const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
-  console.log(ledger)
   const TableComponent = ({overFlow}) => {
     return (
       <div className="">
@@ -56,7 +55,6 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                 </tr>
               </thead>
               <tbody>
-                {console.log(openingVoucher)}
                 {openingVoucher && <tr>
                   <td>0</td>
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
