@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import moment from 'moment';
 import PrintTopHeader from "/Components/Shared/PrintTopHeader";
 import { Table } from "react-bootstrap";
-import exportExcelFile from "/functions/exportExcelFile";
+// import exportExcelFile from "/functions/exportExcelFile";
 import Pagination from "/Components/Shared/Pagination";
+import ExcelJS from "exceljs";
 
 const Report = ({query, result}) => {
-  // console.log("query",query)
   const reportView = query.reportType;
   const option = query.options;
   // console.log(option)
@@ -20,6 +20,40 @@ const Report = ({query, result}) => {
       clCredit:0,
     });
     const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
+
+    const makeParentTransaction = (data) => {
+      let transactions  = {
+        opDebit:0,
+        opCredit:0,
+        trDebit:0,
+        trCredit:0,
+        clDebit:0,
+        clCredit:0,
+      }
+      data.forEach((x)=>{
+        x.Voucher_Heads.forEach((y)=>{
+          const createdAtDate = moment(y.createdAt);
+          if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
+            y.type=="debit"?
+              transactions.trDebit += parseFloat(y.amount):
+              transactions.trCredit += parseFloat(y.amount)
+          } else {
+            y.type=="debit"?
+              transactions.opDebit += parseFloat(y.amount):
+              transactions.opCredit += parseFloat(y.amount)
+          }
+
+        });
+      });
+
+      let amount = transactions.trDebit + transactions.opDebit - transactions.opCredit - transactions.trCredit
+      amount>0?
+        transactions.clDebit = parseFloat(amount):
+        transactions.clCredit = parseFloat(amount)*-1
+
+        return transactions
+
+    }
 
     const makeTransaction = (data, type) => {
       // console.log("Make Transaction", data, type)
@@ -55,23 +89,28 @@ const Report = ({query, result}) => {
 
     useEffect(() => {
       let temp = [];
-      result?.result?.forEach((x)=>{
-        if(x?.Child_Accounts?.length>0){
-          temp.push({
-            title:x.title, type:'parent'
-          });
-          let type = "Non-EX"
-          x.Child_Accounts.forEach((y)=>{
-            // console.log("Accounts", y)
-            y.title.includes("EX-CHANGE RATE GAIN / LOSS")?type = "EX":null
+      if(result.result.length>0){
+
+        result?.result?.forEach((x)=>{
+          if(x?.Child_Accounts?.length>0){
             temp.push({
-              title:y.title,
-              type:'child',
-              ...makeTransaction(y.Voucher_Heads, type)
+              title:x.title, type:'parent', code:x.code,
+              ...makeParentTransaction(x?.Child_Accounts)
             });
-          })
-        }
-      })
+            let type = "Non-EX"
+            x.Child_Accounts.forEach((y)=>{
+              // console.log("Accounts", y)
+              y.title.includes("EX-CHANGE RATE GAIN / LOSS")?type = "EX":null
+              temp.push({
+                title:y.title,
+                type:'child',
+                code:y.code,
+                ...makeTransaction(y.Voucher_Heads, type)
+              });
+            })
+          }
+        })
+      }
       makeTotal(temp)
       setRecords(temp)
     }, []);
@@ -115,6 +154,213 @@ const Report = ({query, result}) => {
       )
     }
 
+    const ImageToBlob = (imageUrl) => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous'; // Enable CORS if required
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob(resolve);
+        };
+        img.onerror = reject;
+        img.src = imageUrl;
+      });
+    };
+  
+    const exportToExcel = async () => {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Invoice Report');
+    
+      // Column definitions
+      worksheet.columns = [
+        { header: '#', key: 'index', width: 5 },
+        { header: 'Code', key: 'code', width: 15  },
+        { header: 'Title of Account', key: 'title', width: 35  },
+        { header: 'Debit', key: 'Odebit', width: 20  },
+        { header: 'Credit', key: 'Ocredit', width: 20 },
+        { header: 'Debit', key: 'Tdebit', width: 20  },
+        { header: 'Credit', key: 'Tcredit', width: 20 },
+        { header: 'Debit', key: 'Cdebit', width: 20  },
+        { header: 'Credit', key: 'Ccredit', width: 20 },
+      ];
+  
+      const headerRow = worksheet.getRow(1);
+      headerRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'D3D3D3' } 
+        };
+        cell.border = {
+          right: { style: 'thin', color: { argb: '000000' } },
+          left: { style: 'thin', color: { argb: '000000' } },
+          top: { style: 'thin', color: { argb: '000000' } },
+          bottom: { style: 'thin', color: { argb: '000000' } },
+        }
+        cell.font = {
+          size: 14,
+          bold: true,
+        };
+      
+        cell.alignment = {
+          horizontal: 'center',
+          vertical: 'middle'
+        };
+      });
+      console.log(records)
+      const data = records.map((x, i) => ({
+        index: i + 1,
+        code: x.code,
+        title: x.title,
+        Odebit: commas(x.opDebit),
+        Ocredit: commas(x.opCredit),
+        Tdebit: commas(x.trDebit),
+        Tcredit: commas(x.trCredit),
+        Cdebit: commas(x.clDebit),
+        Ccredit: commas(x.clCredit),
+      }));
+      
+  
+    
+        worksheet.addRows(data);
+
+        records.forEach((x, i) => {
+          if (x.type === "parent") {
+            const row = worksheet.getRow(i + 2); // Account for header row (index starts from 1)
+            row.eachCell((cell) => {
+              cell.font = { bold: true };
+              cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'd7d7d7' } 
+              }; // Set font to bold
+            });
+          }
+        });
+
+        worksheet.insertRow(1, ['', '', '', 'Opening', '',  'Transactions', '', 'Closing']);
+        worksheet.insertRow(1, ['']);
+        worksheet.insertRow(1, ['', '', '', 'Date: From: ' + query.from + ' To: ' + query.to,]);
+        worksheet.insertRow(1, ['', '', '', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+        query.company=='1' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics']);
+        query.company=='2' && worksheet.insertRow(1, ['', '', '', 'Air Cargo Services']);
+        query.company!='1' && query.company!='2' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics & Air Cargo Services']);
+        worksheet.insertRow(1, ['']);
+        worksheet.insertRow(1, ['']);
+
+        worksheet.mergeCells('D7:E7');
+        worksheet.mergeCells('F7:G7');
+        worksheet.mergeCells('H7:I7');
+  
+      worksheet.getCell('D3').font = {
+        size: 16,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      worksheet.getCell('D4').font = {
+        size: 16,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      worksheet.getCell('D5').font = {
+        size: 14,  // Increase font size
+        bold: true  // Make the text bold
+      };
+
+      worksheet.getCell('D7').alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }
+      worksheet.getCell('F7').alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }
+      worksheet.getCell('H7').alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }
+      worksheet.getCell('D7').font = {
+        size: 14,
+        bold: true
+      };
+      worksheet.getCell('F7').font = {
+        size: 14,
+        bold: true
+      };
+      worksheet.getCell('H7').font = {
+        size: 14,
+        bold: true
+      };
+      worksheet.getCell('D7').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      worksheet.getCell('F7').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      worksheet.getCell('H7').fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      worksheet.getCell('E7').border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
+      }
+      worksheet.getCell('G7').border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
+      }
+      worksheet.getCell('I7').border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
+      }
+  
+      const imageUrl = query.company=='1' ? '/seanet-colored.png' : query.company=='2' ? '/acs-colored.png' : '/sns-acs.png';
+  
+      // const imageUrl = '/public/seanet-logo-complete.png'
+      const imageBlob = await ImageToBlob(imageUrl);
+  
+      const imageId = workbook.addImage({
+        buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+        extension: 'png', // Image extension
+      });
+  
+      worksheet.addImage(imageId, {
+        tl: { col: 1, row: 1 }, // Top-left position (column, row)
+        ext: { width: 150, height: 100 }, // Image width and height
+      });
+  
+      try{
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'TrialBalance.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      }catch(e){
+        console.log(e)
+        console.error(e)
+      }
+    
+      
+    };
+
     const [currentPage,setCurrentPage] = useState(1);
     const [recordsPerPage] = useState(20);
     const indexOfLast = currentPage * recordsPerPage ;
@@ -126,7 +372,10 @@ const Report = ({query, result}) => {
     return (
       <div className="">
         <div className="d-flex justify-content-end " >
-            <button className="btn-custom mx-2 px-3 fs-11 text-center" onClick={exportData}>To Excel</button>
+            {/* <button className="btn-custom mx-2 px-3 fs-11 text-center" onClick={exportData}>To Excel</button> */}
+            <button className="btn-custom-green px-3 mx-2" onClick={exportToExcel}>
+              Export to Excel
+            </button>
         </div>
         <PrintTopHeader company={query.company} from={query.from} to={query.to} />
         {/* <hr className="" /> */}

@@ -111,7 +111,9 @@ const JobBalancingReport = ({ result, query }) => {
       };
       cell.border = {
         right: { style: 'thin', color: { argb: '000000' } },
-        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
       }
       cell.font = {
         bold: true,
@@ -198,33 +200,6 @@ const JobBalancingReport = ({ result, query }) => {
       ext: { width: 150, height: 100 }, // Image width and height
     });
 
-  
-    // Add totals row
-    // worksheet.addRow({
-    //   index: '',
-    //   invoice_No: '',
-    //   jobNo: '',
-    //   date: '',
-    //   hbl: '',
-    //   party_Name: '',
-    //   fd: '',
-    //   jt: '',
-    //   ft: '',
-    //   container: '',
-    //   weight: '',
-    //   vol: '',
-    //   currency: '',
-    //   debit: getTotal('Recievable', records),
-    //   credit: getTotal('Payble', records),
-    //   paidRec: paidReceivedTotal(records),
-    //   balance: balanceTotal(records),
-    //   age: '',
-    // });
-  
-    // Style the header row
-    // worksheet.getRow(5).font = { bold: true };
-    // worksheet.getRow(5).alignment = { horizontal: 'center' };
-
     try{
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
@@ -246,9 +221,7 @@ const JobBalancingReport = ({ result, query }) => {
 
   const balanceTotal = (list) => {
     let balance = 0.00;
-    // console.log(list)
     list.forEach((x) => {
-      // console.log(balance, x.balance)
       if (x.payType == "Payble") {
         balance = balance - parseFloat(x.balance)
       } else {

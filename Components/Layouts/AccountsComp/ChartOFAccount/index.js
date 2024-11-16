@@ -3,6 +3,8 @@ import { Row, Col } from 'react-bootstrap';
 import CreateOrEdit from './CreateOrEdit';
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import ExcelJS from "exceljs";
+
 
 import { PlusCircleOutlined, MinusCircleOutlined, RightOutlined, EditOutlined } from '@ant-design/icons';
 import { Modal } from 'antd';
@@ -131,7 +133,146 @@ const ChartOFAccount = ({accountsData}) => {
         }
     
     };
+
+    const ImageToBlob = (imageUrl) => {
+        return new Promise((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = 'anonymous'; // Enable CORS if required
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob(resolve);
+          };
+          img.onerror = reject;
+          img.src = imageUrl;
+        });
+      };
+
+    const exportToExcel = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Invoice Report');
+      
+        // Column definitions
+        worksheet.columns = [
+          { header: 'Code', key: 'code', width: 15 },
+          { header: 'Account Title', key: 'title', width: 35  },
+          { header: 'Type', key: 'type', width: 15  },
+          { header: 'Category', key: 'cat', width: 15  },
+          { header: 'Sub Category', key: 'subCat', width: 15  },
+        ];
     
+        const headerRow = worksheet.getRow(1);
+        headerRow.eachCell((cell) => {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'D3D3D3' } 
+          };
+          cell.border = {
+            right: { style: 'thin', color: { argb: '000000' } },
+            left: { style: 'thin', color: { argb: '000000' } },
+            top: { style: 'thin', color: { argb: '000000' } },
+            bottom: { style: 'thin', color: { argb: '000000' } },
+          }
+          cell.font = {
+            bold: true,
+          };
+        
+          cell.alignment = {
+            horizontal: 'center',
+            vertical: 'middle'
+          };
+        });
+
+        let data1 = []
+
+        records.forEach((x, i)=>{
+            data1.push({
+                index: i + 1,
+                code: x.code,
+                title: x.title,
+                type: "Group"
+            })
+            x.Parent_Accounts.forEach((y, index)=>{
+                data1.push({
+                    index: i + 1,
+                    code: y.code,
+                    title: y.title,
+                    type: "Parent",
+                    cat: x.title
+                })
+                y.Child_Accounts.forEach((z, indexTwo)=>{
+                    data1.push({
+                        index: i + 1,
+                        code: z.code,
+                        title: z.title,
+                        type: "Child",
+                        cat: x.title,
+                        subCat: z.subCategory
+                    })
+                })
+            })
+        })
+        
+        console.log(data1)
+          worksheet.addRows(data1);
+          worksheet.insertRow(1, ['']);
+          worksheet.insertRow(1, ['']);
+        //   worksheet.insertRow(1, ['', '', '', 'Date: From: ' + query.from + ' To: ' + query.to,]);
+          worksheet.insertRow(1, ['', '', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+          Cookies.get('companyId')=='1' && worksheet.insertRow(1, ['', '', 'Seanet Shipping & Logistics']);
+          Cookies.get('companyId')=='2' && worksheet.insertRow(1, ['', '', 'Air Cargo Services']);
+        //   Cookies.get('companyId')!='1' && query.company!='2' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics & Air Cargo Services']);
+          worksheet.insertRow(1, ['']);
+          worksheet.insertRow(1, ['']);
+    
+        worksheet.getCell('C3').font = {
+          size: 16,  // Increase font size
+          bold: true  // Make the text bold
+        };
+        worksheet.getCell('C4').font = {
+          size: 16,  // Increase font size
+          bold: true  // Make the text bold
+        };
+    
+        const imageUrl = Cookies.get('companyId')=='1' ? '/seanet-colored.png' : Cookies.get('companyId')=='2' ? '/acs-colored.png' : '/sns-acs.png';
+    
+        // const imageUrl = '/public/seanet-logo-complete.png'
+        const imageBlob = await ImageToBlob(imageUrl);
+    
+        const imageId = workbook.addImage({
+          buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+          extension: 'png', // Image extension
+        });
+    
+        worksheet.addImage(imageId, {
+          tl: { col: 1, row: 1 }, // Top-left position (column, row)
+          ext: { width: 150, height: 100 }, // Image width and height
+        });
+    
+        try{
+          const buffer = await workbook.xlsx.writeBuffer();
+          const blob = new Blob([buffer], {
+            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'ChartOfAccounts.xlsx';
+          link.click();
+          window.URL.revokeObjectURL(url);
+        }catch(e){
+          console.log(e)
+          console.error(e)
+        }
+      
+        
+      };
+
+    console.log(records)
 
 return (
     <div className='dashboard-styles'>
@@ -145,6 +286,9 @@ return (
                 </button>            */}
                 <button className='btn-custom right' onClick={()=>{ dispatch({ type: 'create'}) }}>
                     Create
+                </button>
+                <button className="btn-custom-green px-3 py-1 mx-2 float-end" onClick={exportToExcel}>
+                    Export to Excel
                 </button>
             </Col>
         </Row>

@@ -77,7 +77,9 @@ const Report = ({ query }) => {
       };
       cell.border = {
         right: { style: 'thin', color: { argb: '000000' } },
-        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
       }
       cell.font = {
         bold: true,
@@ -89,7 +91,6 @@ const Report = ({ query }) => {
       };
     });
     const data = state?.records
-      .filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance) !== 0 : x))
       .map((x, i) => ({
         index: i + 1,
         jobNo: x.jobNo,
