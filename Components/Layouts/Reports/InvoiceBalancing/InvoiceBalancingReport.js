@@ -11,6 +11,8 @@ import Router from 'next/router';
 import { AgGridReact } from 'ag-grid-react';
 import { CSVLink } from "react-csv";
 import Pagination from "/Components/Shared/Pagination";
+import ExcelJS from "exceljs";
+
 
 const InvoiceBalancingReport = ({ result, query }) => {
   let inputRef = useRef(null);
@@ -91,6 +93,151 @@ const InvoiceBalancingReport = ({ result, query }) => {
     setLoad(false)
   };
 
+  const ImageToBlob = (imageUrl) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Enable CORS if required
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(resolve);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  };
+  
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+  
+    // Column definitions
+    worksheet.columns = [
+      { header: '#', key: 'index', width: 5 },
+      { header: 'Inv. No', key: 'invoice_No', width: 15  },
+      { header: 'Job. No', key: 'jobNo', width: 15  },
+      { header: 'Date', key: 'date', width: 15  },
+      { header: 'HBL/HAWB', key: 'hbl', width: 15  },
+      { header: 'Agent Name', key: 'party_Name', width: 35  },
+      { header: 'F. Dest', key: 'fd', width: 15  },
+      { header: 'J/Tp', key: 'jt', width: 10 },
+      { header: 'F/Tp', key: 'ft', width: 10 },
+      { header: 'Containers', key: 'container', width: 25  },
+      { header: 'WT', key: 'weight', width: 10 },
+      { header: 'Vol', key: 'vol', width: 10 },
+      { header: 'Curr', key: 'currency', width: 10 },
+      { header: 'Debit', key: 'debit', width: 15  },
+      { header: 'Credit', key: 'credit', width: 15  },
+      { header: 'Paid/Rcvd', key: 'paidRec', width: 15  },
+      { header: 'Balance', key: 'balance', width: 15  },
+      { header: 'Age', key: 'age', width: 5  },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      cell.border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        right: { style: 'thin', color: { argb: '000000' } },
+      }
+      cell.font = {
+        bold: true,
+      };
+    
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      };
+    });
+    const data = currentRecords
+      .filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance) !== 0 : x))
+      .map((x, i) => ({
+        index: i + 1,
+        invoice_No: x.invoice_No,
+        jobNo: x.SE_Job?.jobNo,
+        date: x.createdAt,
+        hbl: x?.SE_Job?.Bl?.hbl,
+        party_Name: x.party_Name,
+        fd: x.SE_Job?.fd,
+        jt: x.SE_Job?.subType,
+        ft: x.Charge_Heads[0].pp_cc,
+        container: x.SE_Job?.container,
+        weight: x.SE_Job?.weight,
+        vol: x.SE_Job?.vol,
+        currency: x.currency,
+        debit: x.debit,
+        credit: x.credit,
+        paidRec: x.paidRec,
+        balance: x.balance,
+        age: x.age,
+      }));
+
+  
+    worksheet.addRows(data);
+    worksheet.insertRow(1, ['']);
+    worksheet.insertRow(1, ['']);
+    worksheet.insertRow(1, ['', '', '', 'Date: From: ' + query.from + ' To: ' + query.to,]);
+    worksheet.insertRow(1, ['', '', '', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+    query.company=='1' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics']);
+    query.company=='2' && worksheet.insertRow(1, ['', '', '', 'Air Cargo Services']);
+    query.company!='1' && query.company!='2' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics & Air Cargo Services']);
+    worksheet.insertRow(1, ['']);
+    worksheet.insertRow(1, ['']);
+
+    worksheet.getCell('D3').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D4').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D5').font = {
+      size: 14,  // Increase font size
+      bold: true  // Make the text bold
+    };
+
+    const imageUrl = query.company=='1' ? '/seanet-colored.png' : query.company=='2' ? '/acs-colored.png' : '/sns-acs.png';
+
+    // const imageUrl = '/public/seanet-logo-complete.png'
+    const imageBlob = await ImageToBlob(imageUrl);
+
+    const imageId = workbook.addImage({
+      buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+      extension: 'png', // Image extension
+    });
+
+    worksheet.addImage(imageId, {
+      tl: { col: 1, row: 1 }, // Top-left position (column, row)
+      ext: { width: 150, height: 100 }, // Image width and height
+    });
+
+    try{
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'AgtInvBlncingReport.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }catch(e){
+      console.log(e)
+      console.error(e)
+    }
+  
+    
+  };
+
   // Pagination Variables
   const [currentPage,setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(20);
@@ -110,7 +257,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
               <PrintTopHeader company={query.company} />
               <hr className='mb-2' />
               <div className='table-sm-1' style={{ maxHeight: overflow ? 600 : "100%", overflowY: 'auto' }}>
-                <Table className='tableFixHead' bordered style={{ fontSize: 12 }}>
+                <Table className='tableFixHead' bordered style={{ fontSize: 12 }} ref={inputRef}>
                   <thead>
                     <tr>
                       <th className='text-center'>#</th>
@@ -120,7 +267,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
                       <th className='text-center' >HBL/HAWB</th>
                       <th className='text-center'style={{ minWidth: 200 }}>Name</th>
                       <th className='text-center' style={{ minWidth: 100 }}>F. Dest</th>
+                      <th className='text-center'>J/Tp</th>
                       <th className='text-center'>F/Tp</th>
+                      <th className='text-center'>Container</th>
+                      <th className='text-center'>Weight</th>
+                      <th className='text-center'>Volume</th>
                       <th className='text-center'>Curr</th>
                       <th className='text-center'style={{ minWidth: 100 }}>Debit</th>
                       <th className='text-center'style={{ minWidth: 100 }}>Credit</th>
@@ -135,6 +286,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                     }).map((x, i) => {
                     return (
                       <tr key={i}>
+                        {console.log(x)}
                         <td>{i + 1}</td>
                         <td
                           className="blue-txt"
@@ -166,8 +318,12 @@ const InvoiceBalancingReport = ({ result, query }) => {
                         <td>{x.createdAt}</td>
                         <td>{x?.SE_Job?.Bl?.hbl}</td>
                         <td>{x.party_Name}</td>
-                        <td>{x.fd}</td>
-                        <td>{x.ppcc}</td>
+                        <td>{x.SE_Job?.fd}</td>
+                        <td>{x.SE_Job?.subType}</td>
+                        <td>{x.Charge_Heads[0].pp_cc}</td>
+                        <td>{x.SE_Job?.container}</td>
+                        <td>{x.SE_Job?.weight}</td>
+                        <td>{x.SE_Job?.vol}</td>
                         <td>{x.currency}</td>
                         <td>{commas(x.debit)}</td>
                         <td>{commas(x.credit)}</td>
@@ -177,7 +333,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                       </tr>
                     )})}
                     <tr>
-                      <td colSpan={9} style={{ textAlign: 'right' }}><b>Total</b></td>
+                      <td colSpan={13} style={{ textAlign: 'right' }}><b>Total</b></td>
                       <td style={{ textAlign: 'right' }}>{getTotal("Recievable", records)}</td>
                       <td style={{ textAlign: 'right' }}>{getTotal("Payble", records)}</td>
                       <td style={{ textAlign: 'right' }}>{paidReceivedTotal(records)}</td>
@@ -234,9 +390,12 @@ const InvoiceBalancingReport = ({ result, query }) => {
         <ReactToPrint content={() => inputRef} trigger={() => <AiFillPrinter className="blue-txt cur fl-r" size={30} />} />
         {/* <---- Excel Download button ----> */}
         <div className="d-flex justify-content-end items-end" >
-          <CSVLink data={result.result} className="btn-custom mx-2 fs-11 text-center" style={{ width: "110px", float: 'left' }}>
+          {/* <CSVLink data={result.result} className="btn-custom mx-2 fs-11 text-center" style={{ width: "110px", float: 'left' }}>
             Excel
-          </CSVLink>
+          </CSVLink> */}
+          <button className="btn-custom-green px-3 mx-2" onClick={exportToExcel}>
+            Export to Excel
+          </button>
         </div>
       </>
     )}
