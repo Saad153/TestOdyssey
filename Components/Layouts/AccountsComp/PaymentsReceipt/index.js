@@ -22,7 +22,7 @@ import {
   setTranVisible, 
   setSelectedParty, 
   setEdit, 
-  setOldInvoices, 
+  // setOldInvoices, 
   setId, 
   setPayType, 
   setPartyType, 
@@ -129,10 +129,11 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           gainLoss.acc = x.Child_Account
         }
       });
+      console.log(voucherData.invoices)
       setAll({
         voucherHeads: voucherData.Voucher_Heads,
         id: id,
-        createdAt: voucherData.createdAt,
+        createdAt: voucherData.createdAt,  
         edit: true,
         oldInvoices: voucherData.invoices,
         selectedParty: { id: voucherData.partyId, name: voucherData.partyName },
@@ -162,7 +163,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       dispatchNew(setTranVisible(true));
       dispatchNew(setSelectedParty({ id: voucherData.partyId.toString(), name: voucherData.partyName }));
       dispatchNew(setEdit(true));
-      dispatchNew(setOldInvoices(voucherData.invoices));
+      // dispatchNew(setOldInvoices(voucherData.invoices));
       dispatchNew(setId(voucherData.id));
       dispatchNew(setPayType(voucherData.vType === "BRV" ? "Recievable" :
         voucherData.vType === "CRV" ? "Recievable" : "Payble"));
