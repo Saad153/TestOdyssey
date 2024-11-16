@@ -9,6 +9,8 @@ import moment from 'moment';
 import { Spinner } from "react-bootstrap";
 import { AgGridReact } from 'ag-grid-react';
 import { CSVLink } from "react-csv";
+import ExcelJS from "exceljs";
+
 
 const Report = ({ query }) => {
 
@@ -23,6 +25,147 @@ const Report = ({ query }) => {
   useEffect(() => {
     getValues();
   }, []);
+
+  console.log(state)
+
+  const ImageToBlob = (imageUrl) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Enable CORS if required
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(resolve);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  };
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+  
+    // Column definitions
+    worksheet.columns = [
+      { header: '#', key: 'index', width: 5 },
+      { header: 'Job. #', key: 'jobNo', width: 20  },
+      { header: 'Job Date', key: 'jobDate', width: 15  },
+      { header: 'HBL.No/HAWB', key: 'hbl', width: 20  },
+      { header: 'Client', key: 'client', width: 35 },
+      { header: 'Shipper', key: 'shipper', width: 35  },
+      { header: 'Local Agent', key: 'localAgent', width: 35  },
+      { header: 'Final Dest.', key: 'finalDestination', width: 20  },
+      { header: 'Type', key: 'type', width: 10  },
+      { header: 'Cnts', key: 'containers', width: 25  },
+      { header: 'WT', key: 'weight', width: 10  },
+      { header: 'Vol', key: 'volume', width: 10  },
+      { header: 'Revenue', key: 'revenue', width: 15  },
+      { header: 'Cost', key: 'cost', width: 15  },
+      { header: 'Profit / Loss', key: 'profitLoss', width: 15  },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      cell.border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        right: { style: 'thin', color: { argb: '000000' } },
+      }
+      cell.font = {
+        bold: true,
+      };
+    
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      };
+    });
+    const data = state?.records
+      .filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance) !== 0 : x))
+      .map((x, i) => ({
+        index: i + 1,
+        jobNo: x.jobNo,
+        jobDate: moment(x.createdAt).format("MM/DD/YY"),
+        hbl: x.Bl?.hbl,
+        client: x.Client.name,
+        shipper: x.shipper.name,
+        localAgent: x.local_vendor.name,
+        finalDestination: x.fd,
+        type: x.jobType,
+        containers: x?.SE_Job?.operation,
+        weight: x.weight,
+        volume: x.vol,
+        revenue: x.revenue,
+        cost: x.cost,
+        profitLoss: x.pnl
+      }));
+
+  
+      worksheet.addRows(data);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['', '', '', 'Date: From: ' + query.from + ' To: ' + query.to,]);
+      worksheet.insertRow(1, ['', '', '', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+      query.company=='1' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics']);
+      query.company=='2' && worksheet.insertRow(1, ['', '', '', 'Air Cargo Services']);
+      query.company!='1' && query.company!='2' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics & Air Cargo Services']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+
+    worksheet.getCell('D3').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D4').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D5').font = {
+      size: 14,  // Increase font size
+      bold: true  // Make the text bold
+    };
+
+    const imageUrl = query.company=='1' ? '/seanet-colored.png' : query.company=='2' ? '/acs-colored.png' : '/sns-acs.png';
+
+    // const imageUrl = '/public/seanet-logo-complete.png'
+    const imageBlob = await ImageToBlob(imageUrl);
+
+    const imageId = workbook.addImage({
+      buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+      extension: 'png', // Image extension
+    });
+
+    worksheet.addImage(imageId, {
+      tl: { col: 1, row: 1 }, // Top-left position (column, row)
+      ext: { width: 150, height: 100 }, // Image width and height
+    });
+
+    try{
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'JobP&L.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }catch(e){
+      console.log(e)
+      console.error(e)
+    }
+  
+    
+  };
 
   async function getValues() {
     await set({
@@ -121,6 +264,8 @@ const Report = ({ query }) => {
 
   ]);
 
+
+
   const defaultColDef = useMemo(() => ({
     sortable: true,
     resizable: true,
@@ -135,11 +280,16 @@ const Report = ({ query }) => {
       {/* <---- Reports View only , setting overflow to true ----> */}
       {query.report == "viewer" && <>
         <ReactToPrint content={() => inputRef} trigger={() => <AiFillPrinter className="blue-txt cur fl-r" size={30} />} />
-        {state.csvData.length > 0 && <div className="d-flex justify-content-end " >
+        {/* {state.csvData.length > 0 && <div className="d-flex justify-content-end " >
           <CSVLink data={state.csvData}  className="btn-custom mx-2 fs-11 text-center" style={{ width: "110px", float: 'left' }}>
             Excel
           </CSVLink>
-        </div>}
+        </div>} */}
+        <div className="d-flex justify-content-end " >
+          <button className="btn-custom-green px-3 mx-2" onClick={exportToExcel}>
+            Export to Excel
+          </button>
+        </div>
         {!state.load &&
           <>
             <PrintTopHeader company={query.company} />
