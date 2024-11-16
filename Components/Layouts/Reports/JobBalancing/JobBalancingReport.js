@@ -12,6 +12,7 @@ import { useDispatch } from 'react-redux';
 import Router from 'next/router';
 import Pagination from "/Components/Shared/Pagination";
 import exportExcelFile from "/functions/exportExcelFile";
+import ExcelJS from "exceljs";
 
 const JobBalancingReport = ({ result, query }) => {
 
@@ -45,6 +46,204 @@ const JobBalancingReport = ({ result, query }) => {
     return total > 0 ? commas(total) : (`${commas(total * -1)}`);
   }
 
+  const ImageToBlob = (imageUrl) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Enable CORS if required
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(resolve);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  };
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+  
+    // Column definitions
+    worksheet.columns = [
+      { header: '#', key: 'index', width: 5 },
+      { header: 'Job. No', key: 'jobNo', width: 20  },
+      { header: 'Job Date', key: 'jobDate', width: 15  },
+      { header: 'Invoice/Bill#', key: 'invoiceNo', width: 20  },
+      { header: 'Invoice/Bill Date', key: 'invoiceDate', width: 20  },
+      { header: 'HBL.No/HAWB', key: 'hbl', width: 20  },
+      { header: 'MBL.No/MAWB', key: 'mbl', width: 20  },
+      { header: 'Sailing Date', key: 'sailingDate', width: 20 },
+      { header: 'Arrival Date', key: 'arrivalDate', width: 20 },
+      { header: 'OP Code', key: 'opCode', width: 10  },
+      { header: 'Voyage/Flight', key: 'voyageNo', width: 20 },
+      { header: 'Party', key: 'party', width: 35 },
+      { header: 'Client Code', key: 'clientCode', width: 20 },
+      { header: 'Shipper', key: 'shipper', width: 35  },
+      { header: 'Consignee', key: 'consignee', width: 35  },
+      { header: 'Sales Rep', key: 'salesRep', width: 25  },
+      { header: 'Shipping Line', key: 'shippingLine', width: 35  },
+      { header: 'Vessel', key: 'vessel', width: 15  },
+      { header: 'Final Destination', key: 'finalDestination', width: 20  },
+      { header: 'J/Type', key: 'jType', width: 10  },
+      { header: 'F/Type', key: 'fType', width: 10  },
+      { header: 'Containers', key: 'containers', width: 25  },
+      { header: 'Weight', key: 'weight', width: 10  },
+      { header: 'Volume', key: 'volume', width: 10  },
+      { header: 'Currency', key: 'currency', width: 10  },
+      { header: 'Recievable', key: 'recievable', width: 15  },
+      { header: 'Payable', key: 'payable', width: 15  },
+      { header: 'Recieved', key: 'recieved', width: 15  },
+      { header: 'Paid', key: 'paid', width: 15  },
+      { header: 'Balance', key: 'balance', width: 15  },
+      { header: 'Aging Days', key: 'agingDays', width: 15  },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      cell.border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        right: { style: 'thin', color: { argb: '000000' } },
+      }
+      cell.font = {
+        bold: true,
+      };
+    
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      };
+    });
+    const data = result.result
+      .filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance) !== 0 : x))
+      .map((x, i) => ({
+        index: i + 1,
+        jobNo: x.SE_Job?.jobNo,
+        jobDate: moment(x.SE_Job?.createdAt).format('DD-MM-YYYY'),
+        invoiceNo: x.invoice_No,
+        invoiceDate: moment(x.createdAt).format('DD-MM-YYYY'),
+        hbl: x?.SE_Job?.Bl?.hbl,
+        mbl: x?.SE_Job?.Bl?.mbl,
+        sailingDate: x?.SE_Job?.shipDate?moment(x?.SE_Job?.shipDate).format('DD-MM-YYYY'):null,
+        arrivalDate: x?.SE_Job?.arrivalDate?moment(x?.SE_Job?.arrivalDate).format('DD-MM-YYYY'):null,
+        opCode: x?.SE_Job?.operation,
+        voyageNo: x?.SE_Job?.Voyage.voyage,
+        party: x.party_Name,
+        clientCode: x?.SE_Job?.Client.code,
+        shipper: x?.SE_Job?.shipper?.name,
+        consignee: x?.SE_Job?.consignee?.name,
+        salesRep: x?.SE_Job?.sales_representator?.name,
+        shippingLine: x?.SE_Job?.shipping_line?.name,
+        vessel: x?.SE_Job?.vessel?.name,
+        finalDestination: x.SE_Job?.fd,
+        jType: x.SE_Job?.subType,
+        fType: x.Charge_Heads[0].pp_cc,
+        containers: x.SE_Job?.container,
+        weight: x.SE_Job?.weight,
+        volume: x.SE_Job?.vol,
+        currency: x.currency,
+        recievable: x.payType == "Recievable" ?commas(x.total):'-',
+        payable: x.payType != "Recievable" ?commas(x.total):'-',
+        recieved: x.recieved,
+        paid: x.paid,
+        balance: x.payType != "Recievable" ?commas(x.total-x.paid):commas(x.total-x.recieved),
+        agingDays: getAge(x.createdAt)+1,
+      }));
+
+  
+      worksheet.addRows(data);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['', '', '', 'Date: From: ' + query.from + ' To: ' + query.to,]);
+      worksheet.insertRow(1, ['', '', '', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+      query.company=='1' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics']);
+      query.company=='2' && worksheet.insertRow(1, ['', '', '', 'Air Cargo Services']);
+      query.company!='1' && query.company!='2' && worksheet.insertRow(1, ['', '', '', 'Seanet Shipping & Logistics & Air Cargo Services']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+
+    worksheet.getCell('D3').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D4').font = {
+      size: 16,  // Increase font size
+      bold: true  // Make the text bold
+    };
+    worksheet.getCell('D5').font = {
+      size: 14,  // Increase font size
+      bold: true  // Make the text bold
+    };
+
+    const imageUrl = query.company=='1' ? '/seanet-colored.png' : query.company=='2' ? '/acs-colored.png' : '/sns-acs.png';
+
+    // const imageUrl = '/public/seanet-logo-complete.png'
+    const imageBlob = await ImageToBlob(imageUrl);
+
+    const imageId = workbook.addImage({
+      buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+      extension: 'png', // Image extension
+    });
+
+    worksheet.addImage(imageId, {
+      tl: { col: 1, row: 1 }, // Top-left position (column, row)
+      ext: { width: 150, height: 100 }, // Image width and height
+    });
+
+  
+    // Add totals row
+    // worksheet.addRow({
+    //   index: '',
+    //   invoice_No: '',
+    //   jobNo: '',
+    //   date: '',
+    //   hbl: '',
+    //   party_Name: '',
+    //   fd: '',
+    //   jt: '',
+    //   ft: '',
+    //   container: '',
+    //   weight: '',
+    //   vol: '',
+    //   currency: '',
+    //   debit: getTotal('Recievable', records),
+    //   credit: getTotal('Payble', records),
+    //   paidRec: paidReceivedTotal(records),
+    //   balance: balanceTotal(records),
+    //   age: '',
+    // });
+  
+    // Style the header row
+    // worksheet.getRow(5).font = { bold: true };
+    // worksheet.getRow(5).alignment = { horizontal: 'center' };
+
+    try{
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'JobBalancing.xlsx';
+      link.click();
+      window.URL.revokeObjectURL(url);
+    }catch(e){
+      console.log(e)
+      console.error(e)
+    }
+  
+    
+  };
+
   const balanceTotal = (list) => {
     let balance = 0.00;
     // console.log(list)
@@ -67,70 +266,71 @@ const JobBalancingReport = ({ result, query }) => {
   }
 
   useEffect(() => {
-    getValues(result);
+    // getValues(result);
     getUserName();
     async function getUserName() {
       let name = await Cookies.get("username");
       setUserName(name)
     }
+    setLoad(false)
+
   }, [])
 
-  async function getValues(value) {
-    if (value.status == "success") {
-    let newArray = [...value.result];
-    await newArray.forEach((y, i) => {
-      y.no = i + 1;
-      y.balance = y.total!="0"?y.payType == "Recievable" ?
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
-      y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
-      y.paid = (parseFloat(y.paid)) + parseFloat(y.roundOff)
-      y.recieved = (parseFloat(y.recieved)) + parseFloat(y.roundOff)
-      y.age = getAge(y.createdAt);
-      y.freightType = y?.SE_Job?.freightType == "Prepaid" ? "PP" : "CC"
-      y.fd = y?.SE_Job?.fd;
-      y.createdAt = moment(y.createdAt).format("DD-MMM-YY")
-      y.hbl = y?.SE_Job?.Bl?.hbl
+  // async function getValues(value) {
+  //   if (value.status == "success") {
+  //   let newArray = [...value.result];
+  //   await newArray.forEach((y, i) => {
+  //     y.no = i + 1;
+  //     y.balance = y.total!="0"?y.payType == "Recievable" ?
+  //       (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
+  //       (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
+  //     y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
+  //     y.paid = (parseFloat(y.paid)) + parseFloat(y.roundOff)
+  //     y.recieved = (parseFloat(y.recieved)) + parseFloat(y.roundOff)
+  //     y.age = getAge(y.createdAt);
+  //     y.freightType = y?.SE_Job?.freightType == "Prepaid" ? "PP" : "CC"
+  //     y.fd = y?.SE_Job?.fd;
+  //     y.createdAt = moment(y.createdAt).format("DD-MMM-YY")
+  //     y.hbl = y?.SE_Job?.Bl?.hbl
       
-      y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
-      y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
-      y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;
-      // console.log(y.balanced, y.recieved, commas(y.recieved))
-      y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
+  //     y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
+  //     y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
+  //     y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;
+  //     // console.log(y.balanced, y.recieved, commas(y.recieved))
+  //     y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
 
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.recieved : x.paid}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
-    })
-    if(query.options!="showall"){
-      // console.log(newArray)
-      newArray = await newArray.filter((x)=>{
-        return x.balance!=0
-      })
-      // console.log(newArray)
+  //     // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
+  //     // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? x.total : "-"}</td>
+  //     // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.recieved : x.paid}</td>
+  //     // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
+  //   })
+  //   if(query.options!="showall"){
+  //     // console.log(newArray)
+  //     newArray = await newArray.filter((x)=>{
+  //       return x.balance!=0
+  //     })
+  //     // console.log(newArray)
 
-    }
-    setRecords(newArray);
-    } else {}
-    setLoad(false)
-  }
+  //   }
+  //   setRecords(newArray);
+  //   } else {}
+  // }
 
   // Pagination Variables
   const [currentPage,setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(20);
   const indexOfLast = currentPage * recordsPerPage ;
   const indexOfFirst = indexOfLast - recordsPerPage;
-  const currentRecords = records ? records.slice(indexOfFirst,indexOfLast) : [];
+  const currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
   const noOfPages = records ? Math.ceil(records.length / recordsPerPage) : 0 ;
   // Pagination Variables
-
+  
   const TableComponent = ({overflow}) => {
     return (
     <>
     {!load &&
       <>
-      {records?.length > 0 &&
+      {result.result?.length > 0 &&
         <>
           <PrintTopHeader company={query.company} />
           <hr className='mb-2' />
@@ -140,7 +340,7 @@ const JobBalancingReport = ({ result, query }) => {
               <tr>
                 <th className='text-center'>#</th>
                 <th className='text-center' style={{ minWidth: 110 }}>Inv. No</th>
-                <th className='text-center' style={{ minWidth: 50 }}>Job. No</th>
+                <th className='text-center' style={{ minWidth: 110 }}>Job. No</th>
                 <th className='text-center' style={{ minWidth: 90 }}>Job. Date</th>
                 <th className='text-center' style={{ minWidth: 90 }}>Date</th>
                 <th className='text-center' style={{ minWidth: 100 }}>HBL/HAWB</th>
@@ -161,16 +361,17 @@ const JobBalancingReport = ({ result, query }) => {
                 <th className='text-center'>Weight</th>
                 <th className='text-center'>Volume</th>
                 <th className='text-center'>Currency</th>
-                <th className='text-center' style={{ minWidth: 100 }}>Debit</th>
-                <th className='text-center'style={{ minWidth: 100 }}>Credit</th>
-                <th className='text-center'style={{ minWidth: 100 }}>Paid/Rcvd</th>
+                <th className='text-center' style={{ minWidth: 100 }}>Receivable</th>
+                <th className='text-center'style={{ minWidth: 100 }}>Payable</th>
+                <th className='text-center'style={{ minWidth: 100 }}>Recieved</th>
+                <th className='text-center'style={{ minWidth: 100 }}>Paid</th>
                 <th className='text-center'style={{ minWidth: 100 }}>Balance</th>
                 <th className='text-center'>Age</th>
               </tr>
             </thead>
             <tbody>
               {/* without print  */}
-              {overflow ? currentRecords.map((x,i)=>{
+              {overflow ? result.result.map((x,i)=>{
                 const date = x.SE_Job?.jobDate;
                 const formattedDate = moment(date).format('DD-MMM-YYYY');
                 const sailDate = x.SE_Job?.shipDate;
@@ -213,34 +414,35 @@ const JobBalancingReport = ({ result, query }) => {
                   }>
                     {x?.SE_Job?.jobNo}
                   </td>
-                  <td style={{width:150}}>{sailDate?formattedDate:null}</td>
-                  <td style={{}}>{x.createdAt}</td>
-                  <td style={{width:50}}>{x.hbl}</td>
+                  <td style={{width:150}}>{moment(x.SE_Job?.createdAt).format('DD-MMM-YYYY')}</td>
+                  <td style={{}}>{moment(x.createdAt).format('DD-MMM-YYYY')}</td>
+                  <td style={{width:50}}>{x.SE_Job?.Bl?.hbl}</td>
                   <td style={{width:50}}>{x.SE_Job?.Bl?.mbl}</td>
-                  <td style={{width:50}}>{sailDate?formattedSailDate:null}</td>
-                  <td style={{width:50}}>{formattedArrivalDate}</td> 
+                  <td style={{width:50}}>{moment(x.SE_Job?.shipDate).format('DD-MMM-YYYY')}</td>
+                  <td style={{width:50}}>{x.SE_Job?.arrivalDate?moment(x.SE_Job?.arrivalDate).format('DD-MMM-YYYY'):null}</td> 
                   <td style={{width:150}}><b>{x.party_Name}</b></td>
                   <td style={{width:150}}><b>{x.SE_Job?.Client?.code}</b></td>
-                  <td style={{width:150}}><b>{x.SE_Job?.Client?.name}</b></td>
+                  <td style={{width:150}}><b>{x.SE_Job?.shipper?.name}</b></td>
                   <td style={{width:150}}><b>{x.SE_Job?.consignee?.name}</b></td>
                   <td style={{width:150}}><b>{x.SE_Job?.sales_representator?.name}</b></td>
                   <td style={{ maxWidth: 70 }}>{x.SE_Job?.shipping_line?.name}</td>
-                  <td style={{ maxWidth: 70 }}>{x.SE_Job?.Vessel?.name}</td>
-                  <td style={{ maxWidth: 70 }}>{x.fd}</td>
+                  <td style={{ maxWidth: 70 }}>{x.SE_Job?.vessel?.name}</td>
+                  <td style={{ maxWidth: 70 }}>{x.SE_Job?.fd}</td>
                   <td style={{width:20}}>{x.SE_Job?.subType}</td>
                   <td style={{width:20}}>{x.freightType}</td>
                   <td style={{width:20}}>{x.SE_Job?.weight}</td>
                   <td style={{width:20}}>{x.SE_Job?.vol}</td>
                   <td style={{width:20}}>{x.currency}</td>
-                  <td style={{ textAlign: 'right' }} >{x.Receivable}</td>
-                  <td style={{ textAlign: 'right' }} >{x.payble}</td>
-                  <td style={{ textAlign: 'right' }} >{x.balanced}</td>
-                  <td style={{ textAlign: 'right' }} >{x.finalBalance}</td>
-                  <td style={{ width: 1 }}>{x.age}</td>
+                  <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.total):'-'}</td>
+                  <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total):'-'}</td>
+                  <td style={{ textAlign: 'right' }} >{x.recieved}</td>
+                  <td style={{ textAlign: 'right' }} >{x.paid}</td>
+                  <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total-x.paid):commas(x.total-x.recieved)}</td>
+                  <td style={{ width: 1 }}>{getAge(x.createdAt)+1}</td>
                 </tr>
               )}) : 
               // print mode 
-              records.map((x, i) => {
+              result.result.map((x, i) => {
                   return (
                   <tr key={i}>
                     <td style={{ maxWidth: 30 }}>{i + 1}</td>
@@ -309,7 +511,7 @@ const JobBalancingReport = ({ result, query }) => {
           }
         </>
       }
-      {records.length == 0 && <>No Similar Record</>}
+      {result.result.length == 0 && <>No Similar Record</>}
       </>
     }
     {load && <div className='text-center py-5 my-5'> <Spinner /> </div>}
@@ -391,30 +593,7 @@ const JobBalancingReport = ({ result, query }) => {
     floatingFilter: true,
   }));
   const getRowHeight = 38;
-  const exportData = () => {
-  
-    exportExcelFile(
-      currentRecords,
-      [
-          { header: "Invoice No.", key: "invoice_No", width: 18, height:10 },
-          { header: "Job No.", key: "jobNo", width: 18, height:10 },
-          { header: "Date", key: "createdAt", width: 15, height:10 },
-          { header: "HBL/MBL", key: "hbl", width: 32, height:10 },
-          { header: "Party", key: "party_Name", width: 32, height:10 },
-          { header: "F.Dest", key: "fd", width: 32, height:10 },
-          { header: "J/Tp", key: "subType", width: 12, height:10 },
-          { header: "F/Tp", key: "freightType", width: 12, height:10 },
-          { header: "Weight", key: "weight", width: 12, height:10 },
-          { header: "volume", key: "vol", width: 12, height:10 },
-          { header: "Currency", key: "currency", width: 12, height:10 },
-          { header: "Debit", key: "Recievable", width: 32, height:10 },
-          { header: "Credit", key: "payble", width: 32, height:10 },
-          { header: "Paid/Rcvd", key: "balanced", width: 32, height:10 },
-          { header: "Balance", key: "finalBalance", width: 32, height:10 },
-          { header: "Age", key: "age", width: 12, height:10 },
-      ]
-    )
-  }
+
 
   return (
   <div className='base-page-layout'>
@@ -423,7 +602,9 @@ const JobBalancingReport = ({ result, query }) => {
         <ReactToPrint content={() => inputRef} trigger={() => <AiFillPrinter className="blue-txt cur fl-r" size={30} />} />
         {/* <---- Excel Download button ----> */}
         <div className="d-flex justify-content-end " >
-          <button className="btn-custom mx-2 px-3 fs-11 text-center" onClick={exportData}>To Excel</button>
+          <button className="btn-custom-green px-3 mx-2" onClick={exportToExcel}>
+            Export to Excel
+          </button>
         </div>
       </>
     )}
