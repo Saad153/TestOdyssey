@@ -5,6 +5,8 @@ import { Table } from "react-bootstrap";
 import exportExcelFile from "/functions/exportExcelFile";
 import Pagination from "/Components/Shared/Pagination";
 import { Row, Col } from 'react-bootstrap';
+import ExcelJS from "exceljs";
+import Cookies from "js-cookie";
 
 const Report = ({query, result}) => {
   // console.log(result)
@@ -345,22 +347,499 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
     setTotalAdminExp(temp)
   }
 
-  const exportData = () => {
-    let temp = [...records];
-    temp.push({title:'', ...total})
-    exportExcelFile(
-      temp,
-      [
-        { header: "Account", key: "title", width: 30, height:10 },
-        { header: "Opening Dr.", key: "opDebit", width: 25, height:10 },
-        { header: "Opening Cr.", key: "opCredit", width: 25, height:10 },
-        { header: "Transaction Dr.", key: "trDebit", width: 25, height:10 },
-        { header: "Transaction Cr.p", key: "trCredit", width: 25, height:10 },
-        { header: "Closing Dr.", key: "clDebit", width: 25, height:10 },
-        { header: "Closing Cr.", key: "clCredit", width: 25, height:10 },
-      ]
+  // const exportData = () => {
+  //   let temp = [...records];
+  //   temp.push({title:'', ...total})
+  //   exportExcelFile(
+  //     temp,
+  //     [
+  //       { header: "Account", key: "title", width: 30, height:10 },
+  //       { header: "Opening Dr.", key: "opDebit", width: 25, height:10 },
+  //       { header: "Opening Cr.", key: "opCredit", width: 25, height:10 },
+  //       { header: "Transaction Dr.", key: "trDebit", width: 25, height:10 },
+  //       { header: "Transaction Cr.p", key: "trCredit", width: 25, height:10 },
+  //       { header: "Closing Dr.", key: "clDebit", width: 25, height:10 },
+  //       { header: "Closing Cr.", key: "clCredit", width: 25, height:10 },
+  //     ]
+  //   )
+  // }
+
+  const ImageToBlob = (imageUrl) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Enable CORS if required
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob(resolve);
+      };
+      img.onerror = reject;
+      img.src = imageUrl;
+    });
+  };
+
+  function generateString(data) {
+    const dateFrom = new Date(data.from).toLocaleDateString('en-GB'); // Format to DD/MM/YYYY
+    const dateTo = new Date(data.to).toLocaleDateString('en-GB'); // Format to DD/MM/YYYY
+    
+    return `Date From = ${dateFrom},Date Till = ${dateTo},Company = ${data.company},Currency = ${data.currency},Account Level = ${data.accountLevel},Report Type = ${data.reportType}`;
+}
+
+
+  const exportToExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+  
+    // Column definitions
+    worksheet.columns = [
+      // { header: '#', key: 'index', width: 2 },
+      { header: 'Account Name', key: 'title', width: 20  },
+      { header: '', key: 'index', width: 30 },
+      { header: 'Balance', key: 'balance', width: 50  },
+    ];
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      cell.border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
+      }
+      cell.font = {
+        bold: true,
+      };
+    
+      cell.alignment = {
+        wrapText: true,
+        horizontal: 'center',
+        vertical: 'middle'
+      };
+    });
+    console.log(filteredTempData)
+    console.log(cogsArray)
+    console.log(query)
+    const data = []
+    data.push({
+      title: 'Revenue',
+      index: "-"
+    })
+    data.push(
+      ...filteredTempData.map((x) => ({
+        title: x.title,
+        balance: parseFloat(x.debit || x.credit),
+      index: "-"
+      }))
     )
-  }
+    data.push({
+      title: 'Total for Revenue',
+      balance: parseFloat(total?.credit - total?.debit),
+      index: "-"
+    })
+    data.push({
+      title: 'COGS / Selling Expense',
+      index: "-"
+    })
+    data.push(
+      ...cogsArray.map((x) => ({
+        title: x.title,
+        balance: parseFloat(x.debit || x.credit),
+      index: "-"
+      }))
+    )
+    data.push({
+      title: 'Total for COGS / Selling Expense',
+      balance: parseFloat(totalCogs?.debit?.toFixed(2)),
+      index: "-"
+    })
+    data.push({
+      title: 'Gross Profit',
+      balance: parseFloat((total?.credit - total?.debit)-totalCogs?.debit),
+      index: "-"
+    })
+    data.push({
+      title: 'Admin Expenses',
+      index: "-"
+    })
+    data.push(
+      ...AdminExpArray.map((x) => ({
+      title: x.title,
+      balance: parseFloat(x.debit || x.credit),
+      index: "-"
+    }))
+  )
+    data.push({
+      title: 'Total for Admin Expenses',
+      balance: parseFloat(totalAdminExp?.debit?.toFixed(2)),
+      index: "-"
+    })
+    data.push({
+      title: 'Profit/(Loss)',
+      balance: parseFloat((total?.credit - total?.debit)-totalCogs?.debit-totalAdminExp?.debit),
+      index: "-"
+    })
+
+
+    worksheet.addRows(data);
+
+    // worksheet.columns.forEach((column) => {
+    //   let maxWidth = 10; // Set a minimum width for each column
+    //   column.eachCell({ includeEmpty: true }, (cell) => {
+    //     if (cell.value) {
+    //       const cellValueLength = cell.value.toString().length;
+    //       if (cellValueLength > maxWidth) {
+    //         maxWidth = cellValueLength + 2; // Add padding for better spacing
+    //       }
+    //     }
+    //   });
+    //   column.width = maxWidth;
+    // });
+    let string = generateString(query)
+    console.log(string)
+    worksheet.insertRow(1, ['Profit & Loss Income Statement'])
+    worksheet.insertRow(1, [string])
+    worksheet.insertRow(1)
+    worksheet.insertRow(1)
+    worksheet.insertRow(1, ['', 'House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+    Cookies.get('companyId')=='1' && worksheet.insertRow(1, ['', 'Seanet Shipping & Logistics']);
+    Cookies.get('companyId')=='2' && worksheet.insertRow(1, ['', 'Air Cargo Services']);
+    Cookies.get('companyId')!='1' && Cookies.get('companyId')!='2' && worksheet.insertRow(1, ['', 'Seanet Shipping & Logistics & Air Cargo Services']);
+    const totalColumns = worksheet.columns.length; // Total columns based on column definitions
+
+    worksheet.eachRow((row, rowIndex) => {
+      // Iterate through cells only up to the total number of columns
+      rowIndex==1?worksheet.mergeCells(`B${rowIndex}:C${rowIndex}`):null
+      rowIndex==2?worksheet.mergeCells(`B${rowIndex}:C${rowIndex}`):null
+      rowIndex==3?worksheet.mergeCells(`B${rowIndex}:C${rowIndex}`):null
+      rowIndex==4?worksheet.mergeCells(`B${rowIndex}:C${rowIndex}`):null
+      rowIndex==5?worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`):null
+      rowIndex==6?worksheet.mergeCells(`A${rowIndex}:C${rowIndex}`):null
+      rowIndex>6?worksheet.mergeCells(row._cells[0].address, row._cells[1].address):null
+      for (let colIndex = 1; colIndex <= totalColumns; colIndex++) {
+        const cell = row.getCell(colIndex);
+        if(rowIndex>6){
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        }
+        if(rowIndex<=6){
+          cell.font = {
+            bold: true
+          }
+        }
+        if(rowIndex==1){
+          row.font = {
+            size: 18,
+            bold: true
+          }
+        }
+        if(rowIndex==6){
+          row.font = {
+            size: 14,
+            bold: true
+          }
+        }
+        colIndex==3&&rowIndex>6?
+          cell.alignment = {
+            horizontal: 'right',
+          }:
+          cell.alignment = {
+            horizontal: 'left',
+          }
+          cell.numFmt = '#,##0.00'
+        // console.log("row Index>", rowIndex, row.getCell(1).value)
+        rowIndex==8?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+9?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+10?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+cogsArray.length+11?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+cogsArray.length+12?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+cogsArray.length+13?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+cogsArray.length+AdminExpArray.length+14?cell.font = { bold: true}:null
+        rowIndex==filteredTempData.length+cogsArray.length+AdminExpArray.length+15?cell.font = { bold: true}:null
+      }
+    }); 
+    worksheet.getCell('B1').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('B2').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('A5').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getCell('A6').alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.pageSetup.orientation = 'landscape';
+
+    // Optionally, set other page setup options
+    worksheet.pageSetup = {
+      orientation: 'portrait', // portrait mode
+      paperSize: 9, // A4 size
+      fitToPage: true, // Enable fitting to a single page
+      fitToWidth: 1, // Fit columns to one page
+      fitToHeight: 0, // Allow rows to spill onto multiple pages
+      margins: {
+        left: 0.25,
+        right: 0.25,
+        top: 0.25,
+        bottom: 0.25,
+        header: 0,
+        footer: 0,
+      },
+    };
+
+    const imageUrl = Cookies.get('companyId')=='1' ? '/seanet-colored.png' : Cookies.get('companyId')=='2' ? '/acs-colored.png' : '/sns-acs.png';
+
+    const imageBlob = await ImageToBlob(imageUrl);
+
+    const imageId = workbook.addImage({
+      buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+      extension: 'png', // Image extension
+    });
+
+    worksheet.addImage(imageId, {
+      tl: { col: 0.2, row: 0 }, // Top-left position (column, row)
+      ext: { width: 135, height: 90 }, // Image width and height
+    });
+
+      try{
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'IncomeStatementPnL.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      }catch(e){
+        console.log(e)
+        console.error(e)
+      }
+  
+    
+    };
+
+    const exportToExcelGrid = async () => {
+      const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Invoice Report');
+      // console.log(columnDefs)
+
+    worksheet.columns = columnDefs.map((col) => ({
+      header: col.headerName,
+      key: col.field,
+      width: col.width
+    }))
+
+    const headerRow = worksheet.getRow(1);
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'D3D3D3' } 
+      };
+      cell.border = {
+        right: { style: 'thin', color: { argb: '000000' } },
+        left: { style: 'thin', color: { argb: '000000' } },
+        top: { style: 'thin', color: { argb: '000000' } },
+        bottom: { style: 'thin', color: { argb: '000000' } },
+      }
+      cell.font = {
+        bold: true,
+      };
+    
+      cell.alignment = {
+        wrapText: true,
+        horizontal: 'center',
+        vertical: 'middle'
+      };
+    });
+    const data = [...records]
+
+    const flattenedData = records.map((x) => {
+      return {
+        invoice_No: x.invoice_No,
+        'SE_Job.jobNo': x.SE_Job.jobNo,
+        'SE_Job.jobDate': x.SE_Job.jobDate,
+        createdAt: x.createdAt,
+        // doDate: x.doDate,
+        'SE_Job.Bl.hbl': x.SE_Job.Bl.hbl,
+        'SE_Job.Bl.mbl': x.SE_Job.Bl.mbl,
+        'SE_Job.shipDate': x.SE_Job.shipDate,
+        'SE_Job.fd': x.SE_Job.fd,
+        'SE_Job.freightType': x.SE_Job.freightType,
+        'SE_Job.subType': x.SE_Job.subType,
+        'SE_Job.shipper.name': x.SE_Job.shipper.name,
+        'SE_Job.consignee.name': x.SE_Job.consignee.name,
+        'SE_Job.sales_representator.name': x.SE_Job.sales_representator.name,
+        'SE_Job.shippingLine.name': x.SE_Job.shipping_line.name,
+        'SE_Job.weight': x.SE_Job.weight,
+        'SE_Job.vol': x.SE_Job.vol,
+        'SE_Job.payType': x.SE_Job.payType,
+        'SE_Job.customerRef': x.SE_Job.customerRef,
+        'SE_Job.fileNo': x.SE_Job.fileNo,
+        'SE_Job.arrivalDate': x.SE_Job.arrivalDate,
+        'SE_Job.Voyage.voyage': x.SE_Job.Voyage.voyage,
+        'SE_Job.Client.code': x.SE_Job.Client.code,
+        'SE_Job.vessel.name': x.SE_Job.vessel.name,
+        customerRef: x.SE_Job.customerRef,
+        company: x.company,
+        paid: x.paid,
+        age: x.age,
+        containers: x.containers,
+        ppcc: x.ppcc,
+        currency: x.currency,
+        party_Name: x.party_Name,
+        balance: x.payType == "Recievable" ? commas(x.balance) : `(${commas(x.balance)})`,
+        total: x.payType != "Recievable" ? commas(x.total):"0",
+        total: x.payType == "Recievable" ? commas(x.total):"0",
+        paidRcvd: x.payType != "Recievable" ?commas(x.paid):commas(x.recieved),
+        // total: commas(x.total),
+      };
+    });
+
+    console.log(flattenedData)
+  
+
+      worksheet.addRows(flattenedData);
+      const totalColumns = columnDefs.length; // Total columns based on column definitions
+
+      worksheet.eachRow((row, rowIndex) => {
+        // Iterate through cells only up to the total number of columns
+        for (let colIndex = 1; colIndex <= totalColumns; colIndex++) {
+          const cell = row.getCell(colIndex);
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        }
+      });
+
+      worksheet.columns.forEach((column) => {
+        let maxWidth = 10; // Set a minimum width for each column
+        column.eachCell({ includeEmpty: true }, (cell) => {
+          if (cell.value) {
+            const cellValueLength = cell.value.toString().length;
+            if (cellValueLength > maxWidth) {
+              maxWidth = cellValueLength + 2; // Add padding for better spacing
+            }
+          }
+        });
+        column.width = maxWidth;
+      });
+
+      const fieldNamesToFormat = ['Balance', 'Credit', 'Debit', 'Paid/Rcvd']; // Fields to apply formatting
+
+      worksheet.insertRow(1, ['', '', '', '', '','Agent Invoice Balancing Grid']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['']);
+      worksheet.insertRow(1, ['', '', '', '', '','Date: From: ' + query.from + ' To: ' + query.to,]);
+      worksheet.insertRow(1, ['', '', '', '', '','House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
+      Cookies.get('companyId')=='1' && worksheet.insertRow(1, ['', '', '', '', '','Seanet Shipping & Logistics']);
+      Cookies.get('companyId')=='2' && worksheet.insertRow(1, ['', '', '', '', '','Air Cargo Services']);
+      Cookies.get('companyId')!='1' && Cookies.get('companyId')!='2' && worksheet.insertRow(1, ['', '', '', '', '','Seanet Shipping & Logistics & Air Cargo Services']);
+
+      let cell = worksheet.getCell('F1');
+      cell.font = {
+        size: 18,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      };    
+      cell = worksheet.getCell('F2');
+      cell.font = {
+        size: 13,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }; 
+      cell = worksheet.getCell('F3');
+      cell.font = {
+        size: 13,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }; 
+      cell = worksheet.getCell('F7');
+      cell.font = {
+        size: 16,  // Increase font size
+        bold: true  // Make the text bold
+      };
+      cell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      }; 
+
+      worksheet.mergeCells("F1:J1")
+      worksheet.mergeCells("F2:J2")
+      worksheet.mergeCells("F3:J3")
+      worksheet.mergeCells("F7:J7")
+
+      worksheet.pageSetup.orientation = 'landscape';
+
+      // Optionally, set other page setup options
+      worksheet.pageSetup = {
+        orientation: 'landscape', // Landscape mode
+        paperSize: 9, // A4 size
+        fitToPage: true, // Enable fitting to a single page
+        fitToWidth: 1, // Fit columns to one page
+        fitToHeight: 0, // Allow rows to spill onto multiple pages
+        margins: {
+          left: 0.25,
+          right: 0.25,
+          top: 0.25,
+          bottom: 0.25,
+          header: 0,
+          footer: 0,
+        },
+      };
+
+      const imageUrl = Cookies.get('companyId')=='1' ? '/seanet-colored.png' : Cookies.get('companyId')=='2' ? '/acs-colored.png' : '/sns-acs.png';
+
+      // const imageUrl = '/public/seanet-logo-complete.png'
+      const imageBlob = await ImageToBlob(imageUrl);
+
+      const imageId = workbook.addImage({
+        buffer: await imageBlob.arrayBuffer(), // Convert Blob to ArrayBuffer
+        extension: 'png', // Image extension
+      });
+
+      worksheet.addImage(imageId, {
+        tl: { col: 0, row: 0 }, // Top-left position (column, row)
+        ext: { width: 150, height: 100 }, // Image width and height
+      });
+
+      try{
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], {
+          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'JobBalancingGrid.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      }catch(e){
+        console.log(e)
+        console.error(e)
+      }
+    }
+
   const profitLoss = (revenue - (totalCogs?.debit || 0) - (totalAdminExp?.debit || 0)).toFixed(2);
   const formattedProfitLoss = profitLoss < 0 ? `(${Math.abs(profitLoss)})` : profitLoss;
   const ProfitLossReport = ({ accountLevel, report, overFlow }) => {
@@ -368,12 +847,15 @@ const revenue = accLevelOneArray?.[3]?.credit.toFixed(2);
       return (
         <div className="">
         <div className="d-flex justify-content-end">
-        <button 
+        {/* <button 
           className="btn-custom mx-2 px-3 fs-11 text-center" 
           onClick={exportData}
         >
           To Excel
-        </button>
+        </button> */}
+          <button className="btn-custom-green px-3 mx-2" onClick={exportToExcel}>
+            Export to Excel
+          </button>
       </div>
       <PrintTopHeader company={query.company} from={query.from} to={query.to} />
         

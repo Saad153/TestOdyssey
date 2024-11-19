@@ -25,6 +25,7 @@
     "@tiptap/react": "^2.0.2",
     "@tiptap/starter-kit": "^2.0.2",
     "ag-grid-community": "^30.2.0",
+    "ag-grid-enterprise": "^32.3.3",
     "ag-grid-react": "^30.2.0",
     "antd": "^4.24.13",
     "apexcharts": "^3.44.0",
