@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import { Layout, Menu, Select } from 'antd';
 import Router, { useRouter } from 'next/router';
-import Cookies from 'js-cookie';
+import Cookies, { set } from 'js-cookie';
 import axios from 'axios';
 import { setAccesLevels } from '/functions/setAccesLevels';
 import logout from '/functions/logout';
@@ -13,6 +13,7 @@ import { setTab } from '/redux/tabs/tabSlice';
 import { SlLogout } from "react-icons/sl";
 import { FaRegBell } from "react-icons/fa";
 import { incrementTab } from '/redux/tabs/tabSlice';
+import Condition from 'yup/lib/Condition';
 
 const { Header, Content, Sider } = Layout;
 
@@ -74,76 +75,119 @@ const MainLayout = ({children}) => {
 
   useEffect(() => {
     // When visiting pages inside folders the initial path in url confilts, so to this is mandatory for resolving it
-  
-    if(newRouter.pathname.includes("/reports/jobBalancing/[id]")){
+    if(newRouter.pathname==="/reports/jobBalancing/[id]"){
       setToggleState('5-1-1');
     }
-    if(newRouter.pathname.includes("/reports/invoiceBalancing/[id]")){
+    if(newRouter.pathname==="/reports/jobBalancing"){
+      setToggleState('5-1');
+    }
+    if(newRouter.pathname==="/reports/invoiceBalancing"){
+      setToggleState('5-6');
+    }
+    if(newRouter.pathname==="/reports/invoiceBalancing/[id]"){
       setToggleState('5-8');
     }
-    if(newRouter.pathname.includes("/reports/ledgerReport/[id]")){
+    if(newRouter.pathname==="/reports/ledger"){
+      setToggleState('5-5');
+    }
+    if(newRouter.pathname==="/reports/ledgerReport/[id]"){
       setToggleState('5-7');
     }
-    if(newRouter.pathname.includes("/reports/trialBalance/report")){
+    if(newRouter.pathname==="/reports/trialBalance"){
+      setToggleState('5-9');
+    }
+    if(newRouter.pathname==="/reports/trialBalance/report"){
       setToggleState('5-10');
     }
-    if(newRouter.pathname.includes("/reports/incomeStatement/report")){
+    if(newRouter.pathname==="/reports/incomeStatement"){
+      setToggleState('5-11');
+    }
+    if(newRouter.pathname==="/reports/incomeStatement/report"){
       setToggleState('5-12');
     }
-    if(newRouter.pathname.includes("/reports/invoice/[id]")){
+    if(newRouter.pathname==="/reports/invoice/[id]"){
       setToggleState('2-11');
     }
-    if(newRouter.pathname.includes("/reports/jobPLReport/report")){
+    if(newRouter.pathname==="/reports/jobPLReport"){
+      setToggleState('5-4');
+    }
+    if(newRouter.pathname==="/reports/jobPLReport/report"){
       setToggleState('5-4-1');
     }
-    if(newRouter.pathname.includes("/airJobs/manifest/[id]")){
+    if(newRouter.pathname==="/airJobs/manifest/[id]"){
       setToggleState('7-8');
     }
-    if(newRouter.pathname.includes("/airJobs/import/bl/[id]")){
+    if(newRouter.pathname==="/airJobs/import/bl/[id]"){
       setToggleState('7-6');
     }
-    if(newRouter.pathname.includes("/airJobs/import/[id]")){
+    if(newRouter.pathname==="/airJobs/aiJobList"){
+      setToggleState('7-4');
+    }
+    if(newRouter.pathname==="/airJobs/import/[id]"){
       setToggleState('7-5');
     }
-    if(newRouter.pathname.includes("/airJobs/export/[id]")){
+    if(newRouter.pathname==="/airJobs/aeJobList"){
+      setToggleState('7-1');
+    }
+    if(newRouter.pathname==="/airJobs/export/[id]"){
       setToggleState('7-2');
     }
-    if(newRouter.pathname.includes("/airJobs/export/bl/[id]")){
+    if(newRouter.pathname==="/airJobs/export/bl/[id]"){
       setToggleState('7-3');
     }
-    if(newRouter.pathname.includes("/seaJobs/import/[id]")){
+    if(newRouter.pathname==="/seaJobs/import/[id]"){
       setToggleState('4-6');
     }
-    if(newRouter.pathname.includes("seaJobs/import/bl/[id]")){
+    if(newRouter.pathname==="/seaJobs/siJobList"){
+      setToggleState('4-5');
+    }
+    if(newRouter.pathname==="seaJobs/import/bl/[id]"){
       setToggleState('4-7');
     }
-    if(newRouter.pathname.includes("seaJobs/export/[id]")){
+    if(newRouter.pathname==="/seaJobs/export/[id]"){
       setToggleState('4-3');
     }
-    if(newRouter.pathname.includes("/accounts/openingInvoices/[id]") && !newRouter.pathname.includes("/accounts/openingInvoices/list")){
+    if(newRouter.pathname==="/accounts/openingInvoices/[id]" && !newRouter.pathname===("/accounts/openingInvoices/list")){
       setToggleState('3-12');
     }
-    if(newRouter.pathname.includes("/seaJobs/export/bl/[id]")){
+    if(newRouter.pathname==="/seaJobs/seJobList"){
+      setToggleState('4-1');
+    }
+    if(newRouter.pathname==="/seaJobs/export/bl/[id]"){
       setToggleState('4-4');
     }
-    if(newRouter.pathname.includes("accounts/vouchers/")){
+    if(newRouter.pathname==="accounts/vouchers/"){
       setToggleState('3-5');
     }
-    if(!newRouter.pathname.includes("/accounts/officeVouchers/list") && newRouter.pathname.includes("/accounts/officeVouchers/")){
+    if(newRouter.pathname==="/accounts/voucherList"){
+      setToggleState('3-6');
+    }
+    if(newRouter.pathname==="/accounts/officeVouchers/list"){
+      setToggleState('3-7');
+    }
+    if(!newRouter.pathname==="/accounts/officeVouchers/list" && newRouter.pathname===("/accounts/officeVouchers/")){
       setToggleState('3-8');
     }
-    if(newRouter.pathname.includes("setup/client") && !newRouter.pathname.includes("setup/clientList")){
+    if(newRouter.pathname==="/setup/clientList"){
+      setToggleState('2-2');
+    }
+    if(newRouter.pathname==="/setup/client/[id]"){
       setToggleState('2-7');
     }
-    if(newRouter.pathname.includes("setup/vendor") && !newRouter.pathname.includes("setup/vendorList")){
+    if(newRouter.pathname==="/setup/vendorList"){
+      setToggleState('2-5');
+    }
+    if(newRouter.pathname==="/setup/vendor/[id]"){
       setToggleState('2-8');
     }
-    if(newRouter.pathname.includes("setup/voyage")){
+    if(newRouter.pathname==="setup/voyage"){
       setToggleState('2-4');
     }
-    if(newRouter.pathname.includes("tasks/riders/riderAssign/")){
+    if(newRouter.pathname==="tasks/riders/riderAssign/"){
       setToggleState('6-2');
     }
+    console.log("pathname:",newRouter.pathname)
+    console.log("toggleState",toggleState)
   }, [newRouter])
 
   const [toggleState, setToggleState] = useState(0);
@@ -276,6 +320,7 @@ const MainLayout = ({children}) => {
         else if(tabs.key=='7-8'){ tempTabActive.manifest=true }        
         dispatch(setTab(tempTabs))
         //setTabItems(tempTabs);
+        console.log('active',tempTabActive)
         setTabActive(tempTabActive);
       }
     }
@@ -398,6 +443,8 @@ const MainLayout = ({children}) => {
         item = x
       }
     })
+    dispatch(incrementTab({ "label": item.label, "key": item.key }))
+    // dispatch(incrementTab({item: {}}));
     toggleTab(item);
   }
 
@@ -464,6 +511,8 @@ const MainLayout = ({children}) => {
           return(
           <div key={index} className={toggleState===x.key?"tabs active-tabs":"tabs"}>
             <button onClick={()=>toggleTab(x)}> {x.label} </button>
+            {console.log('x',toggleState)}
+            {console.log('y',tabActive)}
               <CloseOutlined onClick={()=>removeTab(x.key)} className='clos-btn'/>
           </div>
         )})}
