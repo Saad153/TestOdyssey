@@ -10,6 +10,7 @@ import ledgerReducer from './ledger/ledgerSlice';
 import invoiceReducer from './invoice/invoiceSlice';
 import profitLossReducer from './profitLoss/profitLossSlice'
 import openingInvoiceSlice from './openingInvoices/openingInvoicesSlice';
+import { paymentRecieptSlice } from './paymentReciept/paymentRecieptSlice';
 export const store = configureStore({
   reducer: {
     [seJobValues.reducerPath]: seJobValues.reducer,
@@ -22,7 +23,8 @@ export const store = configureStore({
     tabs: tabsReducer,
     blCreationValues: blCreationReducer,
     persistValues: persistValuesReducer,
-    openingInvoice:openingInvoiceSlice
+    openingInvoice:openingInvoiceSlice,
+    paymentReciept:paymentRecieptSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(seJobValues.middleware),
