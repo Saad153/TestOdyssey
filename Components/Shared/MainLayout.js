@@ -186,8 +186,8 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="tasks/riders/riderAssign/"){
       setToggleState('6-2');
     }
-    console.log("pathname:",newRouter.pathname)
-    console.log("toggleState",toggleState)
+    // console.log("pathname:",newRouter.pathname)
+    // console.log("toggleState",toggleState)
   }, [newRouter])
 
   const [toggleState, setToggleState] = useState(0);
@@ -320,7 +320,7 @@ const MainLayout = ({children}) => {
         else if(tabs.key=='7-8'){ tempTabActive.manifest=true }        
         dispatch(setTab(tempTabs))
         //setTabItems(tempTabs);
-        console.log('active',tempTabActive)
+        // console.log('active',tempTabActive)
         setTabActive(tempTabActive);
       }
     }
@@ -427,6 +427,7 @@ const MainLayout = ({children}) => {
     tempTabs = tempTabs.filter((x)=>{
       return x.key!=index
     })
+    console.log("MainLayout>>",tempTabs)
     dispatch(setTab(tempTabs))
     if(toggleState==index){
       setToggleState(0)
@@ -511,8 +512,8 @@ const MainLayout = ({children}) => {
           return(
           <div key={index} className={toggleState===x.key?"tabs active-tabs":"tabs"}>
             <button onClick={()=>toggleTab(x)}> {x.label} </button>
-            {console.log('x',toggleState)}
-            {console.log('y',tabActive)}
+            {/* {console.log('x',toggleState)} */}
+            {/* {console.log('y',tabActive)} */}
               <CloseOutlined onClick={()=>removeTab(x.key)} className='clos-btn'/>
           </div>
         )})}

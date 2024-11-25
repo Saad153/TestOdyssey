@@ -810,7 +810,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td style={{width:20}}>{x.currency}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.total):'-'}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total):'-'}</td>
-                  <td style={{ textAlign: 'right' }} >{x.recieved}</td>
+                  <td style={{ textAlign: 'right' }} >{commas(x.recieved)}</td>
                   <td style={{ textAlign: 'right' }} >{x.paid}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total-x.paid):commas(x.total-x.recieved)}</td>
                   <td style={{ width: 1 }}>{getAge(x.createdAt)+1}</td>

@@ -2,93 +2,64 @@ import { createSlice } from '@reduxjs/toolkit';
 import moment from 'moment';
 
 const initialState = {
-  id: '',
-  oldVouchers: false,
-  oldVouchersList: [],
-  records: [],
-  voucherHeads: [],
-  edit: false,
-  oldBills: false,
-  oldrecords: [],
-  load: false,
-  visible: false,
-  glVisible: false,
-  deleteVisible: false,
-  searchTerm: '',
-  tranVisible: false,
-  search: '',
-  selectedParty: { id: '', name: '' },
+  type: 'client',
   payType: 'Recievable',
-  payTypeByDifference: 'Recievable',
-  partyType: 'client',
-  invoiceCurrency: 'PKR',
-  partyOptions: [],
-  createdAt: '',
+  currency: 'PKR',
+  search: '',
+  searchAccount: '',
+  accounts: [],
+  oldVouchers: [],
+  oldVouchersList: [],
+  selectedAccount: undefined,
+  edit: false,
   invoices: [],
-  autoOn: false,
-  auto: '0',
-  exRate: '1',
-  manualExRate: '1',
-  transaction: 'Cash',
+  load: false,
+  transactionMode: 'Cash',
+  receivingAccounts: [],
+  receivingAccount: undefined,
+  adjustAccounts: [],
+  bankChargesAccount: undefined,
+  bankChargesAmount: 0.0,
+  taxAccount: undefined,
+  taxAmount: 0.0,
+  taxPercent: 0.0,
+  gainLossAccount: undefined,
+  gainLossAmount: 0.0,
   subType: 'Cheque',
-  onAccount: 'Client',
-  variable: '',
-  drawnAt: '',
-  accounts: [
-    {
-      Parent_Account: { CompanyId: 1, title: '', Account: {} },
-      title: '',
-    },
-  ],
-  checkNo: '',
+  autoKnockOff: false,
+  percent: false,
+  checkNo: "",
   checkDate: moment(),
   date: moment(),
-  bankCharges: 0.0,
-  gainLoss: 'Gain',
-  gainLossAmount: 0.0,
-  taxAmount: 0.0,
-  isPerc: false,
-  accountsLoader: false,
-  taxPerc: 0.0,
-  finalTax: 0.0,
-  indexes: [],
-  partyAccountRecord: {},
-  payAccountRecord: {},
-  taxAccountRecord: {},
-  bankChargesAccountRecord: {},
-  gainLossAccountRecord: {},
-  totalrecieving: 0.0,
-  transactionCreation: [],
-  activityCreation: [],
-  transLoad: false,
-  invoiceLosses: [],
+  totalReceivable: 0.0,
+  exRate: 1.0,
+  modal: false,
+  transactions: [],
+  onAccount: 'client',
+  
 };
 
 export const paymentRecieptSlice = createSlice({
   name: 'records',
   initialState,
   reducers: {
-    receiving(state, action) {
-      state.invoices = state.invoices.map((invoice) => ({
-        ...invoice,
-        receiving: action.payload.receiving,
-      }));
+    setField(state, action) {
+        const { field, value } = action.payload;
+        if (field in state) {
+          state[field] = value;
+        } else {
+          console.warn(`Field "${field}" does not exist in the state.`);
+        }
+      },
+    setType(state, action) {
+      state.type = action.payload;
     },
-    set(state, action) {
-      state[action.payload.var] = action.payload.pay;
-    },
-    setAll(state, action) {
-      Object.assign(state, action.payload);
-    },
-    on(state) {
-      state.visible = true;
-    },
-    off(state) {
-      state.visible = false;
+    setPayType(state, action) {
+      state.payType = action.payload;
     },
   },
 });
 
-export const { receiving, set, setAll, on, off } = paymentRecieptSlice.actions;
+export const { setField } = paymentRecieptSlice.actions;
 
 export default paymentRecieptSlice.reducer;

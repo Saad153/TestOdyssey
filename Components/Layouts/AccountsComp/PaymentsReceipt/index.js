@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, useReducer } from 'react';
-import { SearchOutlined, CloseCircleOutlined, SyncOutlined, PrinterOutlined, RollbackOutlined, PlusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { MdHistory } from "react-icons/md";
+import { SearchOutlined, CloseCircleOutlined, SyncOutlined, PrinterOutlined, RollbackOutlined, PlusCircleOutlined, PlusOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { MdDeleteForever, MdHistory } from "react-icons/md";
 import { Input, List, Radio, Modal, Select } from 'antd';
 import { recordsReducer, initialState, getNewInvoices } from './states';
 import { useSelector, useDispatch } from 'react-redux';
@@ -18,502 +18,239 @@ import Pagination from '../../../Shared/Pagination';
 import openNotification from "../../../Shared/Notification";
 import {checkEditAccess} from "../../../../functions/checkEditAccess";
 import {checkEmployeeAccess} from "../../../../functions/checkEmployeeAccess";
+import { setField } from '/redux/paymentReciept/paymentRecieptSlice';
+import Cookies from "js-cookie";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 const PaymentsReceipt = ({ id, voucherData, q }) => {
-
-
-  let inputRef = useRef(null);
-  const gridRef = useRef();
-  const dispatchNew = useDispatch();
-  const [state, dispatch] = useReducer(recordsReducer, initialState);
-  const setAll = (x) => dispatch({ type: 'setAll', payload: x })
-  const router = useRouter()
-  const companyId = useSelector((state) => state.company.value);
-  const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") };
-  const rowData = state.oldVouchersList;
-  const [query, setQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [recordsPerPage] = useState(20);
-  const indexOfLast = currentPage * recordsPerPage;
-  const indexOfFirst = indexOfLast - recordsPerPage;
-  const currentRecords = rowData ? rowData.slice(indexOfFirst, indexOfLast) : [];
-  const noOfPages = rowData ? Math.ceil(rowData.length / recordsPerPage) : 0;
-  const [showTable, setShowTable] = useState(true);
-  const [isPaymentReceiptNew, setIsPaymentReceiptNew] = useState(false);
-
-  const [del, setDel] = useState(false);
-  console.log(voucherData, id)
-  console.log(q)
-  console.log(query)
-
+  const dispatch = useDispatch();
+  const state = useSelector((state) => state.paymentReciept);
   useEffect(() => {
-    // Ensure companyId is available before making the request
-    if (companyId) {
+    const fetchOldVouchers = async () => {
       axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
-        headers: { companyid: companyId }
+        headers: { companyid: Cookies.get('companyId') }
+      }).then((x) => {
+        console.log(x.data.result)
+        const temp = [];
+        temp.push(...x.data.result.map((x) => { // Use spread syntax to flatten the result
+          return {
+            id: x.id,
+            voucherNo: x.voucher_Id,
+            name: x.partyName,
+            party: x.partyType,
+            type: x.vType,
+            data: moment(x.createdAt).format('DD-MM-YYYY'),
+            currency: x.currency,
+            amount: x.Voucher_Heads[0].amount,
+            partyId: x.partyId,
+            x: x
+          };
+        }));
+
+        dispatch(setField({ field: 'oldVouchers', value: temp }));
       })
-        .then((response) => {
-          let tempData = [];
-          response.data?.result?.forEach((item, index) => {
-            tempData.push({
-              ...item, no: index + 1,
-              amount: (item.Voucher_Heads?.reduce((sum, cur) => sum + Number(cur.amount), 0) || 0) / Number(item.exRate)
-            });
-          });
-          setAll({ oldVouchers: false, oldVouchersList: tempData });
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
-    }
-  }, [companyId]);
-
-
-
-  useEffect(() => {
-    setAll({ partytype: 'client' });
-    if (router?.query?.id == 'undefined') {
-      Router.push({ pathname: "/accounts/paymentReceipt/new" }, undefined, { shallow: true });
-      dispatchNew(incrementTab({
-        "label": "Payment / Receipt",
-        "key": "3-4",
-        "id": "new"
-      }))
-    } else if (router.query.name != 'undefined' && router.query.partyid != 'undefined' && router.query.partyid) {
-      setAll({
-        selectedParty: { id: router.query.partyid, name: router.query.name },
-        partytype: router.query.type,
-        payType: router.query.paytype,
-        invoiceCurrency: router.query.currency,
-        tranVisible: true
-      })
-    } else if (router?.query?.id != 'undefined' && router?.query?.id != 'new') {
-      let payAcc = {}, partyAcc = {}, taxAc = { acc: {}, amount: 0 }, bankAc = { acc: {}, amount: 0 }, gainLoss = { acc: {}, amount: 0 }
-      voucherData?.Voucher_Heads.forEach((x) => {
-        console.log(x)
-        if (x.accountType == 'payAccount') {
-          payAcc = x.Child_Account
-        }
-        if (x.accountType == "partyAccount") {
-          partyAcc = x.Child_Account
-        }
-        if (x.accountType == "Tax") {
-          taxAc.acc = x.Child_Account
-          taxAc.amount = x.amount
-        }
-        if (x.accountType == "BankCharges") {
-          bankAc.acc = x.Child_Account
-          bankAc.amount = x.amount
-        }
-        if (x.accountType == "gainLoss") {
-          gainLoss.acc = x.Child_Account
-        }
-      });
-      setAll({
-        voucherHeads: voucherData.Voucher_Heads,
-        id: id,
-        createdAt: voucherData.createdAt,
-        edit: true,
-        oldInvoices: voucherData.invoices,
-        selectedParty: { id: voucherData.partyId, name: voucherData.partyName },
-        partytype: voucherData.partyType,
-        payType: voucherData.vType == "BRV" ?
-          "Recievable" :
-          voucherData.vType == "CRV" ? "Recievable" : "Payble",
-        invoiceCurrency: voucherData.currency,
-        tranVisible: true,
-        transaction:
-          (voucherData.vType == "BRV" || voucherData.vType == "BPV") ? "Bank" :
-            (voucherData.vType == "CRV" || voucherData.vType == "CPV") ? "Cash" : "Adjust",
-        date: moment(voucherData.tranDate),
-        checkNo: voucherData.chequeNo,
-        payAccountRecord: payAcc,
-        partyAccountRecord: partyAcc,
-        bankChargesAccountRecord: bankAc.acc,
-        bankCharges: bankAc.amount/voucherData.exRate,
-        taxAccountRecord: taxAc.acc,
-        taxAmount: taxAc.amount,
-        gainLossAccountRecord: gainLoss.acc,
-        onAccount: voucherData.onAccount,
-        drawnAt: voucherData.drawnAt,
-        manualExRate: voucherData.exRate,
-        subType: voucherData.subType
-      })
-    }
-
-    setDel(checkEmployeeAccess())
-  }, [router]);
-
-
-  const addNew = () => router.push("/accounts/paymentReceipt/new");
-  const chkReturn = async () => {
-    let vv_id = voucherData
-    let InvoiceId = vv_id.invoices;
-    let vheads = voucherData?.Voucher_Heads
-    let debitEntry = vheads?.filter(entry => entry.type === "credit");
-    const { VoucherId, ChildAccountId, accountType, settlement, amount, defaultAmount } = debitEntry[0];
-    const narration = "Cheaque Returned"
-    const type = "debit"
-
-    const data = {
-      InvoiceId, VoucherId, ChildAccountId, accountType, settlement, amount, defaultAmount, type, narration
-
-    }
-    const checkreturn = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CHEAQUE_RETURNED, data)
-
-    dispatch({
-      type: "receiving",
-      payload: {
-        'receiving': '0',
-        'remBalance': '0'
+        
       }
-    });
-
-    openNotification("Success", "Cheaque Returned Successfully!", "green")
-  }
-
-  useEffect(() => { searchParties() }, [state.search, state.partyType]);
+    if(state.oldVouchers.length == 0){
+      // dispatch(setField({ field: 'selectedAccount', value: selectedAccount }));
+      fetchOldVouchers();
+    }
+  })
 
   useEffect(() => {
-    setIsPaymentReceiptNew(router.asPath === '/accounts/paymentReceipt/new');
-  }, [router.asPath]);
-
-  const searchParties = async () => {
-    if (state.search.length > 2) {
-      // setShowTable(false); // Hide table and pagination
-      // console.log(state.partyType)
-      await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
-        { search: state.search, type: state.partytype }
+    const fetchAccounts = async () => {
+      const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
+        { search: state.searchAccount, type: state.type }
       ).then((x) => {
-        if (x.data.status === "success") {
-
-
-          setAll({ partyOptions: x.data.result });
-
-
-        } else {
-          setAll({ partyOptions: [] });
-        }
-      });
-      // console.log(state.partyOptions)
-    } else {
-      setShowTable(true); // Show table and pagination if search is cleared
+        dispatch(setField({ field: 'accounts', value: x.data.result }));
+      })
     }
-  };
+    fetchAccounts();
+  }, [state.type])
 
-  const refetch = async () => {
-    console.log(state)
-    getNewInvoices(id, state, companyId, dispatch)
-  }
-
-  const ListComp = ({ data }) => {
-    return (
-      <List
-  size="small"
-  bordered
-  dataSource={data}
-  renderItem={(item) => (
-    <List.Item
-      key={item.id}
-      className="searched-item"
-      onClick={() => {
-        Router.push({
-          pathname: "/accounts/paymentReceipt/new",
-          query: {
-            name: item.name,
-            partyid: item.id,
-            type: state.partytype,
-            paytype: state.payType,
-            currency: state.invoiceCurrency,
-          },
-        },
-        undefined,
-        { shallow: true });
-        dispatchNew(  
-          incrementTab({
-            label: "Payment/ Reciept Details",
-            key: "3-13",
-            id: `new?name=${item.name}&partyid=${item.id}&type=${state.partytype}&paytype=${state.payType}&currency=${state.invoiceCurrency}`,
-          })
-        );
-        setAll({
-          selectedParty: { id: item.id, name: item.name },
-          tranVisible: true,
-          search: "",
-        });
-      }}
-    >
-      {`${item.code} ${item.name}`}
-    </List.Item>
-  )}
-  style={{ maxHeight: "300px", overflowY: "auto" }} // Adjust maxHeight as needed
-/>
-
-    )
-  };
-
-  const [columnDefs, setColumnDefs] = useState([
-    { headerName: '#', field: 'no', width: 50, filter: false },
-    { headerName: 'Voucher No.', field: 'voucher_Id', filter: true },
-    { headerName: 'Name', field: 'partyName', flex: 1, minWidth: 100, filter: true },
-    { headerName: 'Party', field: 'partyType', filter: true, width: 100, },
-    { headerName: 'Type', field: 'vType', width: 104, filter: true },
-    { headerName: 'Date', field: 'tranDate', filter: true },
-    {
-      headerName: 'Currency', field: 'currency', filter: true, width: 90,
-      cellRenderer: (params) => {
-        return (
-          <>
-            <span style={{ fontWeight: 600, color: params.data.currency == "PKR" ? 'green' : '#2EA2D5' }}>{params.data.currency}</span>
-          </>
-        )
-      }
-    },
-    {
-      headerName: 'Amount', field: 'amount', filter: true,
-      cellRenderer: (params) => {
-        return (
-          <>{commas(params.value)}</>
-        )
-      }
-    },
-  ]);
-
-  const defaultColDef = useMemo(() => ({
-    sortable: true,
-    filter: "agTextColumnFilter",
-    floatingFilter: true,
-    resizable: true
-  }));
-
-  const cellClickedListener = useCallback((e) => {
-    dispatchNew(incrementTab({ "label": "Payment / Receipt", "key": "3-4", "id": e.data.id }))
-    Router.push(`/accounts/paymentReceipt/${e.data.id}`)
-  }, []);
-
-  const cellClickListener = useCallback((e)=> {
-    dispatchNew(incrementTab({"label": "Payment / Receipt","key": "3-4","id":e.id}))
-    Router.push(`/accounts/paymentReceipt/${e.id}`)
-  }, []);
+  const columnDefs = [
+    { title: "Voucher No.", dataIndex: "voucherNo", key: "voucherNo" },
+    { title: "Name", dataIndex: "name", key: "name" },
+    { title: "Party", dataIndex: "party", key: "party" },
+    { title: "Type", dataIndex: "type", key: "type" },
+    { title: "Date", dataIndex: "date", key: "date" },
+    { title: "Currency", dataIndex: "currency", key: "currency" },
+    { title: "Amount", dataIndex: "amount", key: "amount" },
+  ]
 
   return (
     <div className='base-page-layout'>
-      <Row>
-        <Col md={4}>
-          <b>Type: </b>
-          <Radio.Group className='mt-1' size='small' value={state.partytype}
-            onChange={(e) => {
-              let value = "", TempInvoiceCurrency = "";
-              if (e.target.value == "vendor") {
-                value = "Payble"
-                TempInvoiceCurrency = "PKR"
-              } else if (e.target.value == "client") {
-                value = "Recievable";
-                TempInvoiceCurrency = "PKR"
-              } else if (e.target.value == "agent") {
-                value = "Payble";
-                TempInvoiceCurrency = "USD"
-              }
-              // console.log(e.target.value)
-              setAll({
-                selectedParty: { id: "", name: "" }, partytype: e.target.value,
-                search: "", payType: value, invoiceCurrency: TempInvoiceCurrency
-              })
-            }}>
-            <Radio value={"client"} defaultChecked>Client</Radio>
-            <Radio value={"vendor"}>Vendor</Radio>
-            <Radio value={"agent"} >Agent </Radio>
+      <div>
+        <h5>Payment / Receipt</h5>
+        <hr></hr>
+      </div>
+      <Row style={{ height: '30px'}}>
+        <Col md={3}>
+          <b>Type</b>
+          <Radio.Group style={{marginLeft: 10}} value={state.type} onChange={(e)=>{
+            if(e.target.value == 'client'){
+              dispatch(setField({ field: 'type', value: e.target.value }));
+              dispatch(setField({ field: 'payType', value: 'Recievable' }));
+              dispatch(setField({ field: 'currency', value: 'PKR' }));
+              dispatch(setField({ field: 'selectedAccount', value: undefined}));
+            }
+            if(e.target.value == 'vendor'){
+              dispatch(setField({ field: 'type', value: e.target.value }));
+              dispatch(setField({ field: 'payType', value: 'Payble' }));
+              dispatch(setField({ field: 'currency', value: 'PKR' }));
+              dispatch(setField({ field: 'selectedAccount', value: undefined }));
+            }
+            if(e.target.value == 'agent'){
+              dispatch(setField({ field: 'type', value: e.target.value }));
+              dispatch(setField({ field: 'payType', value: 'Payble' }));
+              dispatch(setField({ field: 'currency', value: 'USD' }));
+              dispatch(setField({ field: 'selectedAccount', value: undefined }));
+            }
+          }}>
+            <Radio value={'client'}>Client</Radio>
+            <Radio value={'vendor'}>Vendor</Radio>
+            <Radio value={'agent'}>Agent</Radio>
           </Radio.Group>
         </Col>
         <Col md={3}>
-          <b>Pay Type: </b>
-          <Radio.Group className='mt-1' value={state.payType} onChange={(e) => setAll({ search: "", payType: e.target.value })}
-            disabled={state.partytype == "agent"}
-          >
-            <Radio value={"Payble"}>Payable</Radio>
-            <Radio value={"Recievable"}>Receivable</Radio>
+          <b>Pay Type</b>
+          <Radio.Group style={{marginLeft: 10}} disabled={state.type == 'agent' ? true : false} value={state.payType} onChange={(e)=>{dispatch(setField({ field: 'payType', value: e.target.value }))}}>
+            <Radio value={'Payble'}>Payable</Radio>
+            <Radio value={'Recievable'}>Receivable</Radio>
           </Radio.Group>
         </Col>
-
-        <Col md={5} style={{ display: 'flex', justifyContent: 'end' }}>
-          {state.edit &&
-            <ReactToPrint
-              content={() => inputRef}
-              trigger={() => (
-                <div className="div-btn-custom text-center p-1 mx-1" style={{ width: 80, fontSize: 14 }}>Print <PrinterOutlined style={{ fontSize: 16 }}/></div>
-              )}
-            />
-          }
-          <button className='btn-custom text-center px-3' style={{ fontSize: 14 }}
-            onClick={() => {
-              axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, { headers: { companyid: companyId } })
-                .then((x) => {
-                  let tempData = [];
-                  x.data?.result?.forEach((y, i) => {
-                    tempData.push({
-                      ...y, no: i + 1,
-                      amount: (y.Voucher_Heads?.reduce((x, cur) => x + Number(cur.amount), 0) || 0) / Number(y.exRate)
-                    })
-                  });
-                  setAll({ oldVouchers: true, oldVouchersList: tempData });
-                })
-            }}
-          >Show Old <MdHistory style={{ fontSize: 16 }}/></button>
-
-          {id != "new" && del && <DeleteVoucher companyId={companyId} setAll={setAll} state={state} id={id} setShowTable={setShowTable} />}
-          {!isPaymentReceiptNew && (
-        <button className='btn-custom px-3' style={{ fontSize: 14 }} onClick={chkReturn}>
-          Cheque Return <RollbackOutlined style={{ fontSize: 16 }}/>
-        </button>
-      )}
-      {id!='new'&&<button className='btn-custom-green text-center py-1 px-3 mx-1' style={{ fontSize: 14 }} onClick={() => refetch()}>Refresh <SyncOutlined style={{ fontSize: 16 }}/></button>}
-
-
-
-
+        <Col md={6}>
+          <Row style={{ display: "flex", justifyContent: "flex-end", height: '30px' }}>
+            {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
+              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#921a12", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Delete</span> <MdDeleteForever style={{ fontSize: 16 }}/></button>
+            </Col>}
+            {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={3}>
+              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Cheque Return</span> <RollbackOutlined style={{ fontSize: 16 }}/></button>
+            </Col>}
+            {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
+              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Refresh</span> <SyncOutlined style={{ fontSize: 16 }}/></button>
+            </Col>}
+            {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<Col md={2}>
+              <button onClick={()=>{
+                dispatch(setField({ field: 'selectedAccount', value: undefined }));
+                dispatch(setField({ field: 'invoices', value: [] }))
+                dispatch(setField({ field: 'edit', value: false }))
+                }} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><ArrowLeftOutlined style={{ fontSize: 16 }}/><span style={{marginLeft: 5}}>Back</span></button>
+            </Col>}
+          </Row>
         </Col>
-        <Col md={6} className='mt-3'>
-          {!state.selectedParty.name && <>
-            <Input placeholder="Search type" size='small'
-              suffix={state.search.length > 2 ? <CloseCircleOutlined onClick={() => setAll({ search: "" })} /> : <SearchOutlined />}
-              value={state.search} onChange={(e) => {setAll({ search: e.target.value })}}
-            />
-            {state.search.length > 2 &&
-              <div style={{ position: "absolute", zIndex: 10 }}>
-                {/* <ListComp data={state.partyOptions} /> */}
-                <ListComp data={state.partyOptions} style={{ maxHeight: '300px', overflowY: 'auto' }} />
-
-              </div>
-            }
-          </>
-          }
-          {state.selectedParty.name && <>
-            <button
-              className="btn-custom-green px-3 h-screen flex items-center justify-evenly"
-              onClick={addNew}
-            >
-              <span className='mx-1'>Add New</span><PlusOutlined style={{ fontSize: 16 }}/>
-            </button>
-          </>
-          }
-        </Col>
-        {!state.tranVisible && <Col md={1} className='mt-3'>
-          <Select disabled={state.partytype != "agent" ? true : false} value={state.invoiceCurrency} size='small'
-            onChange={(e) => setAll({ invoiceCurrency: e })}
-            options={[
-              { value: "PKR", label: "PKR" },
-              { value: "USD", label: "USD" },
-              { value: "EUR", label: "EUR" },
-              { value: "GBP", label: "GBP" },
-              { value: "AED", label: "AED" },
-              { value: "OMR", label: "OMR" },
-              { value: "BDT", label: "BDT" },
-              { value: "CHF", label: "CHF" },
-            ]}
-          />
-        </Col>
-        }
-        {!state.tranVisible && <Col md={4} className='mt-3'>
-          <div className='d-flex justify-content-end'>
-            <Input type="text" placeholder="Search..." size='small' onChange={e => setQuery(e.target.value)} />
-          </div>
-        </Col>
-        }
-
-        {/* <Col md={4} className='mt-3'style={{border:'1px solid silver'}}>{state.selectedParty.name}</Col> */}
-        <Col md={12}><hr className='p-0 my-3' /></Col>
       </Row>
-      {/* table start */}
-      {showTable && !state.tranVisible && (
-        <>
-          <div className='mt-3' style={{ maxHeight: "55vh", overflowY: 'auto', overflowX: "scroll" }}>
-            <Table className='tableFixHead'>
-              <thead>
-                <tr>
-                  <th style={{ width: 70 }}>Voucher No #</th>
-                  <th style={{ width: 150 }}>Name</th>
-                  <th style={{ width: 50 }}>Party</th>
-                  <th style={{ width: 50 }}>Type </th>
-                  <th style={{ width: 70 }}>Date </th>
-                  <th style={{ width: 80 }}>Currency </th>
-                  <th style={{ width: 80 }}>amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {
-                  currentRecords?.filter((x) => {
-                    return x.voucher_Id.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.partyName?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.partyType?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.vType?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.vType?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.createdAt?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.currency?.toLowerCase().includes(query.toLowerCase()) ||
-                      x?.amount?.toString().includes(query)
-                  })
-                    .map((x, index) => {
-                      console.log(x)
-                      return (
-                        <tr onClick={() => cellClickListener(x)} key={index} style={{ cursor: 'pointer' }}>
-                          <td className='blue-txt fw-6 fs-12' >{x.voucher_Id}</td>
-                          <td>{x.partyName}</td>
-                          <td>{x.partyType}</td>
-                          <td>{x.vType}</td>
-                          <td>
-                            Date: <span className='blue-txt'>{x.createdAt ? moment(x.createdAt).format("YYYY-MM-DD") : "-"}</span>
-                          </td>
-                          <td>{x.currency}</td>
-                          <td>{commas(x.amount)}</td>
-                        </tr>
-                      )
-                    })
-                }
-              </tbody>
-            </Table>
-          </div>
-          {(query == '' || query == null) &&
-            <div className='d-flex justify-content-end items-end my-4' style={{ maxWidth: "100%" }} >
-              <Pagination noOfPages={noOfPages} currentPage={currentPage} setCurrentPage={setCurrentPage} />
-            </div>
+      <Row style={{marginTop: 10}}>
+        <Col md={6}>
+        <Select
+          allowClear
+          showSearch
+          style={{ width: '90%' }}
+          placeholder={`Select ${state.type}`}
+          value={state.selectedAccount}
+          options={state.accounts.map((account) => ({
+            label: `(${account.code}) ${account.name}`,
+            value: account.id,
+          }))}
+          filterOption={(input, option) =>
+            option?.label.toLowerCase().includes(input.toLowerCase())
           }
-        </>
-      )}
+          onChange={(e) => {dispatch(setField({ field: 'selectedAccount', value: e }))}}
+        />
 
+        </Col>
+        <Col md={1}>
+          <Select 
+            style={{ width: '90%' }}
+            placeholder={`Curr`}
+            value={state.currency}
+            disabled={state.type != 'agent' ? true : false}
+            onChange={(e)=>{dispatch(setField({ field: 'currency', value: e }))}}
+          >
+            <Select.Option value="PKR">PKR</Select.Option>
+            <Select.Option value="USD">USD</Select.Option>
+            <Select.Option value="EUR">EUR</Select.Option>
+            <Select.Option value="GBP">GBP</Select.Option>
+            <Select.Option vlaue="AED">AED</Select.Option>
+            <Select.Option value="OMR">OMR</Select.Option>
+            <Select.Option value="BDT">BDT</Select.Option>
+            <Select.Option value="CHF">CHF</Select.Option>
+          </Select>
+        </Col>
+        <Col md={5}>
+          <Input
+            placeholder='Search...'
+            value={state.search}
+            disabled={state.selectedAccount!=""&&state.selectedAccount!=undefined}
+            onChange={(e) => {dispatch(setField({ field: 'search', value: e.target.value }))}}
+          ></Input>
+        </Col>
+      </Row>
+      <hr></hr>
+      {(state.selectedAccount==""||state.selectedAccount==undefined)&&<table>
+        <thead style={{backgroundColor: '#f3f3f3', color: 'black'}}>
+          <tr>
+            <th style={{ width: '7%', padding: 10 }}>Voucher No</th>
+            <th style={{ width: '20%', padding: 10 }}>Name</th>
+            <th style={{ width: '10%', padding: 10 }}>Party</th>
+            <th style={{ width: '10%', padding: 10 }}>Type</th>
+            <th style={{ width: '10%', padding: 10 }}>Date</th>
+            <th style={{ width: '10%', padding: 10 }}>Currency</th>
+            <th style={{ width: '10%', padding: 10 }}>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {state.oldVouchers.filter((x) => {
+            if(state.search.length > 0){
+              if(x.name.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+              if(x.party.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+              if(x.type.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+              if(x.data.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+              if(x.currency.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+              if(x.amount.toLowerCase().includes(state.search.toLowerCase())){
+                return x
+              }
+            }else{
+              return x
+            }
+          }).map((x, i) => {
+            return (
+              <tr key={i} style={{borderBottom: '1px solid #d7d7d7', cursor: 'pointer'}} onClick={()=>{
+                console.log(x);
+                dispatch(setField({ field: 'type', value: x.party }))
+                dispatch(setField({ field: 'edit', value: true }))
+                dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
+                dispatch(setField({ field: 'currency', value: x.currency }))
+                if(x.type=='BPV'||x.type=='CPV'){
+                  dispatch(setField({ field: 'payType', value: 'Payble' }))
+                }else{
+                  dispatch(setField({ field: 'payType', value: 'Recievable' }))
+                }
 
-      {/* table ends */}
-
-      {state.tranVisible && <BillComp companyId={companyId} state={state} dispatch={dispatch}/>}
-      <div className="d-none">
-        <div ref={(res) => (inputRef = res)} className="px-2">
-          <PrintTransaction companyId={companyId} state={state} dispatch={dispatch} />
-        </div>
-      </div>
-      <Modal
-        width={'80%'}
-        open={state.oldVouchers}
-        onOk={() => setAll({ oldVouchers: false })}
-        onCancel={() => setAll({ oldVouchers: false })}
-        footer={false}
-        centered
-        maskClosable={false}
-        title={<>Old Vouchers</>}
-      >
-        {state.oldVouchers &&
-          <div className="ag-theme-alpine" style={{ width: "100%", height: '72vh' }}>
-            <AgGridReact
-              ref={gridRef} // Ref for accessing Grid's API
-              rowData={state.oldVouchersList} // Row Data for Rows
-              columnDefs={columnDefs} // Column Defs for Columns
-              defaultColDef={defaultColDef} // Default Column Properties
-              animateRows={true} // Optional - set to 'true' to have rows animate when sorted
-              rowSelection='multiple' // Options - allows click selection of rows
-              onCellClicked={cellClickedListener}
-              getRowHeight={30}
-            />
-          </div>
-        }
-      </Modal>
+                }}>
+                <td className='blue-txt fw-6 fs-12' style={{ padding: 10 }}>{x.voucherNo}</td>
+                <td style={{ padding: 10 }}>{x.name}</td>
+                <td style={{ padding: 10 }}>{x.party}</td>
+                <td style={{ padding: 10 }}>{x.type}</td>
+                <td style={{ padding: 10 }}>{x.data}</td>
+                <td style={{ padding: 10 }}>{x.currency}</td>
+                <td style={{ padding: 10 }}>{commas(x.amount)}</td>
+              </tr>
+            )
+          })}
+        </tbody>
+      </table>}
+      {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<BillComp companyId={Cookies.get('companyId')} state={state} dispatch={dispatch} />}
     </div>
   )
 }

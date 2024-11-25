@@ -35,12 +35,12 @@ const Report = ({query, result}) => {
           const createdAtDate = moment(y.createdAt);
           if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
             y.type=="debit"?
-              transactions.trDebit += parseFloat(y.amount):
-              transactions.trCredit += parseFloat(y.amount)
+              transactions.trDebit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate):
+              transactions.trCredit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate)
           } else {
             y.type=="debit"?
-              transactions.opDebit += parseFloat(y.amount):
-              transactions.opCredit += parseFloat(y.amount)
+              transactions.opDebit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate):
+              transactions.opCredit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate)
           }
 
         });
@@ -66,15 +66,16 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
+        console.log(x)
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           x.type=="debit"?
-            transactions.trDebit += parseFloat(x.amount):
-            transactions.trCredit += parseFloat(x.amount)
+            transactions.trDebit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate):
+            transactions.trCredit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate)
         } else {
           x.type=="debit"?
-            transactions.opDebit += parseFloat(x.amount):
-            transactions.opCredit += parseFloat(x.amount)
+            transactions.opDebit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate):
+            transactions.opCredit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate)
         }
 
       });

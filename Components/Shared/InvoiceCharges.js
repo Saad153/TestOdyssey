@@ -139,9 +139,9 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
   const calculateTotal = (data) => {
     let result = 0;
     data?.forEach((x)=>{
-      // console.log(x)
+      console.log(x)
       let amount = x.partyType=="client"? parseFloat(x.local_amount) : parseFloat(x.amount);
-      result = result + parseFloat(x.local_amount);
+      result = result + parseFloat(amount);
     });
     return result.toFixed(2);
   };
