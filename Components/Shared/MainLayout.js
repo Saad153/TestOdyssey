@@ -147,8 +147,8 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/seaJobs/export/[id]"){
       setToggleState('4-3');
     }
-    if(newRouter.pathname==="/accounts/openingInvoices/[id]" && !newRouter.pathname===("/accounts/openingInvoices/list")){
-      setToggleState('3-12');
+    if(newRouter.pathname===("/accounts/openingInvoices/list")){
+      setToggleState('3-11');
     }
     if(newRouter.pathname==="/seaJobs/seJobList"){
       setToggleState('4-1');
@@ -156,7 +156,10 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/seaJobs/export/bl/[id]"){
       setToggleState('4-4');
     }
-    if(newRouter.pathname==="accounts/vouchers/"){
+    if(newRouter.pathname==="/accounts/invoiceAndBills"){
+      setToggleState('3-3');
+    }
+    if(newRouter.pathname==="accounts/vouchers/new" || "/accounts/vouchers/[id]"){
       setToggleState('3-5');
     }
     if(newRouter.pathname==="/accounts/voucherList"){
@@ -165,7 +168,7 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/accounts/officeVouchers/list"){
       setToggleState('3-7');
     }
-    if(!newRouter.pathname==="/accounts/officeVouchers/list" && newRouter.pathname===("/accounts/officeVouchers/")){
+    if( newRouter.pathname===("/accounts/officeVouchers/new") || newRouter.pathname==="/accounts/officeVouchers/[id]"){
       setToggleState('3-8');
     }
     if(newRouter.pathname==="/setup/clientList"){
