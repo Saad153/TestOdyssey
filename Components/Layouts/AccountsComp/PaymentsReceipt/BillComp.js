@@ -596,7 +596,6 @@ const BillComp = ({companyId, state, dispatch}) => {
               ))}
             </tbody>
           </table>
-          {state.load&&<Loading/>}
     </Col>}
     <Modal title={`Proceed with transaction?`} open={state.modal} onOk={()=>dispatch(setField({ field: 'modal', value: false }))} 
         onCancel={()=>dispatch(setField({ field: 'modal', value: false }))} footer={false} maskClosable={false} width={'80%'} centered
@@ -613,7 +612,7 @@ const BillComp = ({companyId, state, dispatch}) => {
           <tbody>
             {console.log(state.transactions)}
             {state.transactions.map((x)=>(
-              <tr style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
+              <tr key={x.id} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountType}</td>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountName}</td>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{commas(x.debit)}</td>
