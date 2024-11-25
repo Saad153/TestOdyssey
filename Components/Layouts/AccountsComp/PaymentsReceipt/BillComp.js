@@ -2,643 +2,627 @@ import { getNetInvoicesAmount } from '/functions/amountCalculations';
 import { getAccounts, totalRecieveCalc, getInvoices, getTotal } from './states';
 import openNotification from '/Components/Shared/Notification';
 import TransactionInfo from './TransactionInfo';
-import { Empty, InputNumber, Checkbox, Radio } from 'antd';
+import { Empty, InputNumber, Checkbox, Radio, Input, DatePicker, Select, Modal } from 'antd';
 import { Spinner, Table, Col, Row } from 'react-bootstrap';
 import React, { useEffect, useReducer, useState } from 'react';
 import { CloseCircleOutlined } from '@ant-design/icons';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import { useDispatch } from 'react-redux';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 import Gl from './Gl';
+import moment from 'moment';
+import { setField } from '/redux/paymentReciept/paymentRecieptSlice';
+
+const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
 const BillComp = ({companyId, state, dispatch}) => {
-  const router = useRouter();
-  const dispatchNew = useDispatch();
-  const { payType } = state;
-  const set = (a, b) => { dispatch({type:'set', var:a, pay:b}) }
-  const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
-  const [checked, setChecked] = useState(false);
-  useEffect(() => {
-    getInvoices(state, companyId, dispatch);
-    // let record = state.invoices.filter(x=>x?.total!=x?.recieved && x?.total!=x?.paid)
-  }, [state.selectedParty, state.payType]);  
-  
-  useEffect(() => {
-    if(state.invoices.length>0){
-      set('totalrecieving', totalRecieveCalc(state.invoices));
-      calculateTransactions();
-      //}
-    }
-  }, [
-    state.invoices,
-    state.manualExRate,
-    state.exRate,
-    state.autoOn
-  ]);  
+  const [firstCall, setFirstCall] = useState(true);
 
   useEffect(() => {
-    calculateTax();
-  }, [
-    state.totalrecieving, 
-    state.taxPerc, 
-    state.taxAmount, 
-    state.autoOn, 
-    state.exRate, 
-    state.manualExRate
-  ]);  
+    console.log("SelectedAccount>>",state.selectedAccount)
+    const fetchInvoices = async () => {
+      dispatch(setField({ field: 'load', value: true }))
+      try{
+        console.log(state)
+        console.log(companyId)
+        await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
+          headers: {
+            id: state.selectedAccount,
+            companyid: companyId,
+            invoicecurrency: state.currency,
+            pay: state.payType,
+            type: state.type,
+            // edit: false
+          }
+        }).then((x) => {
+          console.log(x.data.result)
+          x.data.result.forEach((y)=>{
+            console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
+            console.log(parseFloat(y.total)-parseFloat(y.recieved))
+            console.log(parseFloat(y.total)-parseFloat(y.paid))
 
-  async function calculateTax(){
-    let tempRate = state.autoOn? state.exRate:state.manualExRate
-    if(state.isPerc){
-      let tax = ((state.totalrecieving * tempRate)/100)*state.taxPerc;
-      set('finalTax', tax);
-    } else {
-      set('finalTax', state.taxAmount);
-    }
-  };
-
-  const calculateTransactions = () => {
-    let tempGainLoss = 0.00;
-    let tempInvoiceLosses = [];
-    let debitReceiving = 0.00
-    let creditReceiving = 0.00
-    state.invoices.forEach((x)=>{
-      if(x.receiving && (x.receiving!=0|| state.edit)){
-        let tempExAmount = parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))
-        if(x.payType=="Payble"){
-          tempExAmount = -1*tempExAmount
-        }
-        tempGainLoss = tempGainLoss + tempExAmount
-        let tempAmount = (parseFloat(state.manualExRate)*(x.receiving===null?0:parseFloat(x.receiving)) - parseFloat(x.ex_rate)*(x.receiving===null?0:parseFloat(x.receiving))).toFixed(2)
-        let invoieLossValue = {}
-        x.payType == 'Recievable'?
-          debitReceiving = debitReceiving + parseFloat(x.receiving):
-          creditReceiving = creditReceiving + parseFloat(x.receiving)
-        invoieLossValue = {
-          amount:x.receiving,
-          InvoiceId:x.id,
-          gainLoss: x.payType =="Recievable"?
-            parseFloat(tempAmount)==0?
-              0:parseFloat(tempAmount)*(-1)
-            :
-            tempAmount, 
-        }
-        if(x.Invoice_Transactions.length>0){
-          invoieLossValue.id = x.Invoice_Transactions[0].id
-        }
-        tempInvoiceLosses.push(invoieLossValue)
+          })
+          let temp = []
+          !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+          temp = x.data.result
+          console.log("Invoices>>", temp)
+          temp.forEach((x) => {
+            x.receiving = 0.0;
+          });
+          dispatch(setField({ field: 'invoices', value: temp }))
+          dispatch(setField({ field: 'load', value: false }))
+        })
+      }catch(e){
+        console.log(e)
       }
-    });
-    dispatch({type:'setAll', payload:{
-      gainLossAmount:tempGainLoss.toFixed(2),
-      invoiceLosses:tempInvoiceLosses,
-      debitReceiving:debitReceiving,
-      creditReceiving:creditReceiving,
-      totalrecieving:debitReceiving-creditReceiving,
-    }})
-  };
-
-  const resetAll = () => {
-    let tempList = [...state.invoices];
-    tempList = tempList.map(x=>({
-      ...x,
-      check:false,
-      receiving:0.00,
-    }));
-    return tempList
-  };
-
-  const autoKnocking = async() => {
-    let val = resetAll();
-    if(state.auto=='0'||state.auto==null){
-      openNotification('Alert', 'Please Enter A Number', 'orange');
-    } else {
-      let newExAmount = 0.00;
-      let oldExAmount = 0.00;
-      let tempAmount = parseFloat(state.auto).toFixed(2);
-      let pendingFund = 0;
-      val.forEach((x) => {
-        pendingFund = parseFloat((parseFloat(x.inVbalance) - parseFloat(x.receiving==null?0:x.receiving)).toFixed(2));
-        if(pendingFund >= tempAmount) {
-          x.receiving = (parseFloat(x.receiving) + parseFloat(tempAmount)).toFixed(2);
-          tempAmount = 0.00;
-        } else if (tempAmount==0.00) {
-          null
-        } else if (pendingFund < tempAmount){
-          x.receiving = pendingFund;
-          tempAmount = tempAmount - pendingFund;
-        }
-        pendingFund = 0.00;
-      })
-      val.forEach((x)=>{
-        newExAmount = parseFloat(newExAmount) + (parseFloat(x.receiving)*parseFloat(state.exRate));
-        oldExAmount = parseFloat(oldExAmount) + (parseFloat(x.receiving)*parseFloat(x.ex_rate));
-      })
-      dispatch({type:'setAll', payload:{
-        gainLossAmount:(newExAmount-oldExAmount).toFixed(2),
-        invoices:val,
-      }})
     }
-    calculateTax();
-    calculateTransactions();
-  };
-
-  const submitPrices = async() => {
-    if(Object.keys(state.payAccountRecord).length==0) {
-      openNotification('Alert', 'Please Select Receiving / Paying Account', 'orange');
-    } else if(state.transaction=="Bank" && (state.checkNo==null || state.checkNo=="" || state.checkNo==undefined)){
-      openNotification('Alert', 'Please Enter Cheque / Transaction #', 'orange');
-    } else if(state.partytype=='agent' && ((state.exRate==1 && state.autoOn) || (state.manualExRate==1 && !state.autoOn) )){
-      openNotification('Alert', 'Please Set Appropriate Exchange-Rate', 'orange');
-    } else if(state.partytype=='agent' && Object.keys(state.gainLossAccountRecord).length==0){
-      openNotification('Alert', 'Please Select Gain / Loss Account', 'orange');
-    } else {
-      let transTwo = [];
-      let removing = 0;
-      let tempInvoices = [];
-      state.invoices.forEach((x)=>{
-        if(x.receiving!=0){
-          tempInvoices.push(x)
-        }
-      })
-      // let tempInvoices = [...state.invoices];
-      let invNarration = "";
-      let gainAndLossAmount = 0
-      tempInvoices.filter(x=>x.receiving).forEach((x)=>{
-        state.checkNo?invNarration = invNarration + `${state.subType} ${state.checkNo}, `:null
-        state.checkDate?invNarration = invNarration + `Date ${state.checkDate.format('YYYY-MM-DD')}, `:null
-        invNarration = invNarration + `Against `
-        x.SE_Job?.Bl?.hbl?invNarration = invNarration + `HBL# ${x.SE_Job.Bl.hbl}, `:null
-        x.SE_Job?.Bl?.mbl?invNarration = invNarration + `MBL# ${x.SE_Job.Bl.mbl}, `:null
-        invNarration = invNarration + `Inv# ${x.invoice_No} for Job# ${x.jobId},`
-      });
-  
-      invNarration = invNarration + ` For ${state.selectedParty.name}`;
-      //Create Account Transactions
-      if((Object.keys(state.payAccountRecord).length!=0) && (state.totalrecieving!=0)){ // <- Checks if The Recieving Account is Selected
-        // Tax Account
-        if((Object.keys(state.taxAccountRecord).length!=0) && (state.finalTax!=0) && (state.finalTax!=null) && (state.totalrecieving!=0)){
-          removing = parseFloat(state.finalTax);
-          transTwo.push({
-            particular:state.taxAccountRecord,
-            tran:{
-              type:'debit',
-              amount:state.finalTax,
-              defaultAmount:parseFloat(state.finalTax)/parseFloat(state.autoOn?state.exRate:state.manualExRate),//0
-              narration:`Tax Paid ${invNarration}`,
-              accountType:'Tax'
-            }
-          })
-        }
-        // Bank Charges Account
-        if((Object.keys(state.bankChargesAccountRecord).length!=0) && (state.bankCharges!=0) && (state.bankCharges!=null) && (state.totalrecieving!=0)){
-          removing = removing + parseFloat(state.bankCharges)*parseFloat(state.autoOn?state.exRate:state.manualExRate);
-          transTwo.push({
-            particular:state.bankChargesAccountRecord,
-            tran:{
-              type:'debit',
-              amount:(parseFloat(state.bankCharges)*parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),
-              defaultAmount:parseFloat(state.bankCharges).toFixed(2),//0
-              narration:`Bank Charges Paid ${invNarration}`,
-              accountType:'BankCharges'
-            }
-          })
-        }
-        let partyAmount = Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
-        let payAmount = state.debitReceiving > state.creditReceiving? 
-          (Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) - removing:
-          (Math.abs(state.totalrecieving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)) + removing; 
-  
-        if(state.partytype=='agent'){
-          // Gain & Loss Account
-          if((Object.keys(state.gainLossAccountRecord).length!=0) && (state.gainLossAmount!=0) && (state.gainLossAmount!=null) && (state.totalrecieving!=0)){
-            gainAndLossAmount = state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount))
-            transTwo.push({
-              particular:state.gainLossAccountRecord,
-              tran:{
-                type:parseFloat(state.gainLossAmount)>0?'credit':'debit',
-                amount:parseFloat(gainAndLossAmount).toFixed(2),//state.gainLossAmount>0?parseFloat(state.gainLossAmount):(-1*parseFloat(state.gainLossAmount)),
-                defaultAmount:(parseFloat(gainAndLossAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-                narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} ${invNarration}`,
-                accountType:'gainLoss'
-              }
-            })
-          }
-          transTwo.push({
-            particular:state.partyAccountRecord,
-            tran:{
-              type:parseFloat(state.gainLossAmount)<0?'credit':'debit',
-              amount:Math.abs(parseFloat(state.gainLossAmount)).toFixed(2),
-              defaultAmount:(Math.abs(parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-              narration:`Ex-Rate ${parseFloat(state.gainLossAmount)<0?'Loss':"Gain"} ${invNarration}`,
-              accountType:'partyAccount'
-            }
-          })
-  
-          let newPartyAmount = 0;
-          let newPayAmount = 0;
-          let TempTotalReceing = Math.abs(state.debitReceiving - state.creditReceiving) * parseFloat(state.autoOn?state.exRate:state.manualExRate)
-          newPartyAmount = ((TempTotalReceing).toFixed(2));
-  
-          if(state.debitReceiving>state.creditReceiving){
-            newPayAmount = (TempTotalReceing - removing )//+ parseFloat(state.gainLossAmount))
-          } else {
-            newPayAmount = (TempTotalReceing + removing )//- parseFloat(state.gainLossAmount))
-          }
-          transTwo.push({
-            particular:state.partyAccountRecord,
-            tran:{
-              type:state.debitReceiving < state.creditReceiving?'debit':'credit',
-              amount:newPartyAmount,
-              defaultAmount:parseFloat(newPartyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate), //- removing
-              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
-              accountType:'partyAccount'
-            }
-          })
-  
-          transTwo.push({
-            particular:state.payAccountRecord,  
-            tran:{ 
-              type:state.debitReceiving < state.creditReceiving?'credit':'debit',
-              amount:parseFloat(newPayAmount).toFixed(2), 
-              defaultAmount:((parseFloat(newPayAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2),//-removing
-              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
-              accountType:'payAccount'
-            }
-          })
-        } else {
-          transTwo.push({
-            particular:state.partyAccountRecord,
-            tran:{
-              type:payType=="Recievable"?'credit':'debit',
-              amount:parseFloat(partyAmount).toFixed(2),
-              defaultAmount:(parseFloat(partyAmount)/parseFloat(state.autoOn?state.exRate:state.manualExRate)).toFixed(2), //- removing
-              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
-              accountType:'partyAccount'
-            }
-          })
-          transTwo.push({
-            particular:state.payAccountRecord,  
-            tran:{ 
-              type:payType=="Recievable"?'debit':'credit',// <-Checks the account type to make Debit or Credit
-              amount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount)).toFixed(2), 
-              defaultAmount:(parseFloat(payAmount)),// + parseFloat(state.gainLossAmount))/parseFloat(state.autoOn?state.exRate:state.manualExRate).toFixed(2),//-removing
-              narration:`${payType=="Payble"?"Paid":"Received"} ${invNarration}`,
-              accountType:'payAccount'
-            }
-          })
-        }
-      };
-      
-      dispatch({type:'setAll', payload:{
-        removing:removing,
-        transactionCreation:transTwo,
-        glVisible:true
-      }})
+    if(state.selectedAccount){
+      fetchInvoices()
     }
-  };
-
-  const getContainers = (data) => {
-    let result = "";
-    data?.SE_Job?.Bl?.Container_Infos &&
-    data?.SE_Job?.Bl?.Container_Infos.forEach((x)=>{
-      result = result + x.no + ', '
-    });
-    return result||'none'
-  };
+    if(state.currency=="PKR"){
+      dispatch(setField({ field: 'exRate', value: 1.0 }))
+    }
+  }, [state.selectedAccount, state.payType])
 
   useEffect(() => {
-    let delayDebounceFn ;
-    if(state.autoOn){
-      delayDebounceFn = setTimeout(() => {
-        autoKnocking()
-      }, 1500)
+    console.log(state.receivingAccounts)
+    const fetchreceivingAccount = async () => {
+      dispatch(setField({ field: 'load', value: true }))
+      try{
+        console.log(state)
+        console.log(companyId)
+        await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION, {
+          headers: {
+            type: state.transactionMode,
+            companyid: companyId,
+          }
+        }).then((x) => {
+          console.log(x.data.result)
+          dispatch(setField({ field: 'receivingAccounts', value: x.data.result }))
+          dispatch(setField({ field: 'load', value: false }))
+        })
+      }catch(e){
+        console.log(e)
+      }
     }
-    return () => clearTimeout(delayDebounceFn)
-  }, [state.auto])
+    fetchreceivingAccount()
+  }, [state.transactionMode])
+
+  useEffect(() => {
+    const fetchreceivingAccount = async () => {
+      dispatch(setField({ field: 'load', value: true }))
+      try{
+        await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION, {
+          headers: {
+            type: "Adjust",
+            companyid: companyId,
+          }
+        }).then((x) => {
+          dispatch(setField({ field: 'adjustAccounts', value: x.data.result }))
+          dispatch(setField({ field: 'load', value: false }))
+        })
+      }catch(e){
+        console.log(e)
+      }
+    }
+    if(firstCall){
+      setFirstCall(false)
+    }
+    fetchreceivingAccount()
+  }, [state.transactionMode])
+
+  useEffect(() => {
+    let temp = 0.0
+    let gainLoss = 0.0
+    state.invoices.forEach((x) => {
+      x.payType=="Recievable"?
+      temp += x.receiving:
+      temp -= x.receiving
+      if(x.currency!="PKR"){
+        const receiving = parseFloat(x.receiving) || 0;
+        const exRate = parseFloat(x.ex_rate) || 0;
+        const stateRate = parseFloat(state.exRate) || 0;
+
+        if (x.payType !== "Payble") {
+          gainLoss += (receiving * stateRate) - (receiving * exRate);
+        } else {
+          gainLoss += (receiving * exRate) - (receiving * stateRate);
+        }
+      }
+    })
+    dispatch(setField({ field: 'totalReceivable', value: temp }))
+    dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
+  },[state.invoices, state.exRate])
+
+  useEffect(() => {
+    let temp = 0.0
+    if(state.percent){
+      state.totalReceivable>0?
+      temp = state.totalReceivable*(state.taxPercent/100):
+      temp = (state.totalReceivable*-1)*(state.taxPercent/100)
+      dispatch(setField({ field: 'taxAmount', value: temp }))
+    }
+  },[state.taxPercent, state.invoices])
+
+  const submitTransaction = async () => {
+    try{
+          await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
+            transactions: state.transactions,
+            invoices: state.invoices,
+            gainLoss: state.gainLossAmount,
+            totalReceiving: state.totalReceivable,
+            partyId: state.selectedAccount,
+            partyName: state.accounts.find((x)=>x.id==state.selectedAccount).name,
+            partyType: state.type,
+            type: state.onAccount,
+            transactionMode: state.transactionMode,
+            payType: state.payType,
+            currency: state.currency,
+            checkNo: state.checkNo,
+            checkDate: state.checkDate,
+            transactionMode: state.transactionMode,
+            subType: state.subType,
+            exRate: state.exRate,
+            date: state.date,
+            companyId: companyId,
+            tranDate: state.date,
+          }).then((x) => {
+            console.log(x)
+          })
+
+          openNotification('Success', `Transaction Saved`, 'green')
+      }catch(e){
+        console.error(e)
+      }
+      dispatch(setField({ field: 'modal', value: false }))
+  }
+
+  const makeTransaction = () => {
+    console.log("Selected Account", state.selectedAccount)
+    console.log("Receiving Amount", state.totalReceivable)
+    console.log("Receiving Account", state.receivingAccount)
+    console.log("Gain Loss Amount", state.gainLossAmount)
+    console.log("Gain Loss Account", state.gainLossAccount)
+    console.log("Bank Charges Amount", state.bankChargesAmount)
+    console.log("Bank Charges Account", state.bankChargesAccount)
+    console.log("Tax Amount", state.taxAmount)
+    console.log("Tax Account", state.taxAccount)
+    if(state.currency!="PKR" && state.exRate<=50){
+      openNotification('Failure', `Select Proper ExChange Rate`, 'red')
+      return
+    }
+    if(state.totalReceivable==0){
+      openNotification('Failure', `No transaction selected`, 'red')
+      return
+    }
+    if(state.receivingAccount==undefined){
+      openNotification('Failure', `Select Receiving Account`, 'red')
+      return
+    }
+    if(state.transactionMode!="Cash"&&state.checkNo==""){
+      openNotification('Failure', `Enter Cheque No.`, 'red')
+      return
+    }
+    if((state.gainLossAmount!=0&&state.gainLossAmount!=undefined) && state.gainLossAccount==undefined){
+      openNotification('Failure', `Select Gain Loss Account`, 'red')
+      return
+    }
+    if(state.bankChargesAmount!=0 && state.bankChargesAccount==undefined){
+      openNotification('Failure', `Select Bank Charges Account`, 'red')
+      return
+    }
+    if((state.taxAmount!=0&&state.taxAmount!=undefined) && state.taxAccount==undefined){
+      openNotification('Failure', `Select Tax Account`, 'red')
+      return
+    }
+
+
+    console.log(state.totalReceivable)
+    let temp = []
+    if(state.totalReceivable!=0){
+      temp.push({
+        partyId: state.selectedAccount,
+        accountType: "partyAccount",
+        accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+        debit: state.totalReceivable<0?state.totalReceivable*-1:0,
+        credit: state.totalReceivable>0?state.totalReceivable:0,
+        type: state.totalReceivable<0?'debit':'credit'
+      })
+    }
+    let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
+    accountAmount -= state.bankChargesAmount
+    accountAmount -= state.taxAmount
+    accountAmount -= state.gainLossAmount/state.exRate
+    console.log(accountAmount)
+    if(state.totalReceivable!=0){
+      temp.push({
+        partyId: state.receivingAccount,
+        accountType: "payAccount",
+        accountName: state.receivingAccounts.find((x) => x.id === state.receivingAccount)?.title || "N/A",
+        debit: state.totalReceivable>0?accountAmount:0,
+        credit: state.totalReceivable<0?accountAmount:0,
+        type: state.totalReceivable>0?'debit':'credit'
+      })
+    }
+    if(state.gainLossAmount!=0){
+      temp.push({
+        partyId: state.gainLossAccount,
+        accountType: "Gain/Loss Account",
+        accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
+        debit: state.payType=="Recievable"?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        credit: state.payType!="Recievable"?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        type: state.payType!="Recievable"?state.gainLossAmount>0?'credit':'debit':state.gainLossAmount<0?'credit':'debit'
+      })
+    }
+    if(state.bankChargesAmount!=0){
+      temp.push({
+        partyId: state.bankChargesAccount,
+        accountType: "Bank Charges Account",
+        accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
+        debit: state.payType=="Recievable"?state.bankChargesAmount:0,
+        credit: state.payType!="Recievable"?state.bankChargesAmount:0,
+        type: state.payType=="Recievable"?'debit':'credit'
+      })
+    }
+    if(state.taxAmount!=0){
+      temp.push({
+        partyId: state.taxAccount,
+        accountType: "Tax Account",
+        accountName: state.adjustAccounts.find((x) => x.id === state.taxAccount)?.title || "N/A",
+        debit: state.payType=="Recievable"?state.taxAmount:0,
+        credit: state.payType!="Recievable"?state.taxAmount:0,
+        type: state.payType=="Recievable"?'debit':'credit'
+      })
+    }
+    let totalDebit = 0.0
+    let totalCredit = 0.0
+    temp.forEach((x)=>{
+      totalDebit+=x.debit
+      totalCredit+=x.credit
+    })
+    temp.push({
+      accountType: "",
+      accountName: "Total",
+      debit: totalDebit,
+      credit: totalCredit
+    })
+    dispatch(setField({ field: 'transactions', value: temp }))
+    dispatch(setField({ field: 'modal', value: true }))
+
+
+    // try{
+    //   axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
+    //     id: state.selectedAccount,
+    //     receivingAmount: state.totalReceivable,
+    //     receivingAccount: state.receivingAccount,
+    //     gainLossAmount: state.gainLossAmount,
+    //     gainLossAccount: state.gainLossAccount,
+    //     bankChargesAmount: state.bankChargesAmount,
+    //     bankChargesAccount: state.bankChargesAccount,
+    //     taxAmount: state.taxAmount,
+    //     taxAccount: state.taxAccount,
+    //     type: state.type,
+    //     payType: state.payType,
+    //     currency: state.currency,
+    //     checkNo: state.checkNo,
+    //     transactionMode: state.transactionMode,
+    //     subType: state.subType,
+    //     exRate: state.exRate,
+    //     checkDate: state.checkDate,
+    //     date: state.date,
+    //     companyId: companyId,
+    //   }).then((x) => {
+        
+    //   })
+    // }catch(e){
+    //   console.error(e)
+    // }
+  }
 
   return (
   <>
   <Row>
+
     <Col md={7}>
-      <TransactionInfo state={state} dispatch={dispatch} />
-    </Col>
-    <Col md={5} className="">
-      <div className="mb-2 pb-2 cur" style={{borderBottom:'1px solid silver'}} 
-        onClick={async()=>{
-          let tempReset = await resetAll();
-          dispatch({type:'setAll', payload:{
-            autoOn:!state.autoOn, invoices:tempReset,
-            exRate:'1', gainLossAmount:0.00, auto:'0'
-          }})
-        }}>
-          <span><Checkbox checked={state.autoOn} style={{position:'relative', bottom:1}} /></span>
-          <span className='mx-2'>Auto Knock Off</span>
-      </div>
       <Row>
         <Col md={5}>
-          <span className='grey-txt'>Amount</span>
-          <InputNumber 
-            size='small'
-            min="0" stringMode 
-            style={{width:'100%', paddingRight:10}} 
-            disabled={!state.autoOn} value={state.auto} 
-            onChange={(e)=>set('auto', e)}
-          />
+          <span style={{marginLeft: '5px'}}>Transaction Mode</span>
+          <Radio.Group style={{display: 'flex', marginLeft: '5px', marginTop: '5px'}} value={state.transactionMode} onChange={(e) => {dispatch(setField({ field: 'transactionMode', value: e.target.value })); e.target.value=="Cash"?dispatch(setField({ field: 'subType', value: "Cash" })):dispatch(setField({ field: 'subType', value: "Cheque" })); dispatch(setField({field: "receivingAccount", value: undefined}))}}>
+            <Radio value={"Cash"}>  Cash  </Radio>
+            <Radio value={"Bank"}>  Bank  </Radio>
+            <Radio value={"Adjust"}>Adjust</Radio>
+          </Radio.Group>
+        </Col>
+        <Col md={2}>
+        <span style={{marginLeft: '5px'}}>Date</span>
+          <DatePicker style={{width: '100%'}} defaultValue={moment()} value={state.date} onChange={(e) => dispatch(setField({ field: 'date', value: e }))}></DatePicker>
+        </Col>
+        <Col md={2}>
+        <span style={{marginLeft: '5px'}}>SubType</span>
+          <Select style={{width: '100%'}} value={state.subType} onChange={(e) => dispatch(setField({ field: 'subType', value: e }))}>
+            <Select.Option value="Cheque">Cheque</Select.Option>
+            <Select.Option value="Credit Cart">Credit Card</Select.Option>
+            <Select.Option value="Online Transfer">Online Transfer</Select.Option>
+            <Select.Option value="Wire Transfer">Wire Transfer</Select.Option>
+            <Select.Option value="Cash">Cash</Select.Option>
+          </Select>
+        </Col>
+      </Row>
+      <Row style={{marginTop: '25px'}}>
+        <Col md={3}>
+          <span style={{marginLeft: '5px'}}>Cheque/Tran #</span>
+          <Input disabled={state.transactionMode=="Cash"} value={state.checkNo} onChange={(e) => dispatch(setField({ field: 'checkNo', value: e.target.value }))}></Input>
+        </Col>
+        <Col md={2}>
+        <span style={{marginLeft: '5px', width: '100%'}}>Cheque Date</span>
+          <DatePicker disabled={state.transactionMode=="Cash"} style={{width: '100%'}} defaultValue={moment()} value={state.checkDate} onChange={(e) => dispatch(setField({ field: 'checkDate', value: e }))}></DatePicker>
         </Col>
         <Col md={4}>
-          <span className='grey-txt'>Ex. Rate</span>
-          <InputNumber size='small'
-            min="0.00" stringMode 
-            style={{width:'100%', paddingRight:20}} 
-            disabled={state.partytype!="agent"?true:!state.autoOn} value={state.exRate} 
-            onChange={(e)=>set('exRate', e)}
-          />
+        <span style={{marginLeft: '5px'}}>{state.payType!="Recievable"?"Paying":"Receiving"} Account*</span>
+        <Select
+          allowClear
+          showSearch
+          style={{ width: '100%' }}
+          placeholder={`Select Account`}
+          value={state.receivingAccount}
+          options={state.receivingAccounts.map((account) => ({
+            label: `(${account.code}) ${account.title}`,
+            value: account.id,
+          }))}
+          filterOption={(input, option) =>
+            option?.label.toLowerCase().includes(input.toLowerCase())
+          }
+          onChange={(e) => {dispatch(setField({ field: 'receivingAccount', value: e }))}}
+        />
         </Col>
         <Col md={3}>
-          <br/>
-          {/* <button className={state.autoOn?'btn-custom':'btn-custom-disabled'}
-            style={{fontSize:10}}
-            disabled={!state.autoOn}
-            onClick={()=>autoKnocking()}
-          >Set</button> */}
+        <span style={{marginLeft: '5px'}}>On Account</span>
+          <Select value={state.onAccount} onChange={(e)=>{dispatch(setField({field: 'onAccount', value: e.target.value}))}} style={{width: '100%'}}>
+            <Select.Option value="client">Client</Select.Option>
+            <Select.Option value="shipper">Shipper</Select.Option>
+            <Select.Option value="importer">Importer</Select.Option>
+            <Select.Option value="clearingAgent">Clearing Agent</Select.Option>
+          </Select>
         </Col>
-        {!state.autoOn &&
-        <Col md={12}>
-          <div style={{maxWidth:100}}>
-          <span className='grey-txt'>Ex. Rate</span>
-            <InputNumber size='small'
-              disabled={state.partytype!="agent"}
-              min="0.00" stringMode 
-              style={{width:'100%', paddingRight:20}} 
-              value={state.partytype!="agent"?'1.00':state.manualExRate} 
-              onChange={(e)=>set('manualExRate', e)} 
-            />
-          </div>
+      </Row>
+      <Row style={{marginTop: '10px'}}>
+        <Col md={8}>
+        <span style={{marginLeft: '5px'}}>Drawn At</span>
+        <Input></Input>
         </Col>
+      </Row>
+      <Row style={{marginTop: '10px'}}>
+        <Col md={3}>
+        <span style={{marginLeft: '5px'}}>Bank Charges</span>
+        <InputNumber
+        disabled={state.bankChargesAccount==undefined}
+        formatter={(value) =>
+          `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
         }
-        <Col md={3} className="mt-3">
-          <div className='grey-txt fs-14'>Tax Amount</div>
-          <InputNumber size='small' value={state.taxAmount} 
-            disabled={state.isPerc?true:false} 
-            onChange={(e)=>set('taxAmount',e)} min="0.0" 
-          />
+        parser={(value) =>
+          value?.replace(/,/g, '') // Remove commas for the actual value
+        }
+        style={{width: '100%'}} value={state.bankChargesAmount} onChange={(e) => dispatch(setField({ field: 'bankChargesAmount', value: e }))}></InputNumber>
         </Col>
-        <Col md={1} className="mt-3">
-          <div className='grey-txt mb-1 fs-14'>%</div>
-          <Checkbox size='small' checked={state.isPerc} 
-            onChange={()=>{
-              set('isPerc',!state.isPerc);
-              dispatch({type:'setAll', payload:{
-                isPerc:!state.isPerc,
-                taxAmount:0,
-                taxPerc:0
-              }})
-            }} 
-          />
-        </Col>
-        <Col md={3} className="mt-3">
-          <div className='grey-txt fs-14'>Tax %</div>
-          <InputNumber size='small' value={state.taxPerc} disabled={!state.isPerc?true:false} onChange={(e)=>set('taxPerc',e)} min="0.0" />
-        </Col>
-        <Col className="mt-3" md={5}>
-          <span className="grey-txt fs-14">Tax Account #</span>
-          <span style={{marginLeft:6, position:'relative', bottom:2}} className='close-btn'>
-            <CloseCircleOutlined 
-              onClick={()=>{
-                set('taxAccountRecord', {});
-              }} 
-            />
-          </span>
-          <div className="custom-select-input-small" 
-            onClick={async()=>{
-              dispatch({type:'setAll', payload:{
-                visible:true,
-                accountsLoader:true
-              }})
-              let resutlVal = await getAccounts('Adjust', companyId);
-              dispatch({type:'setAll', payload:{
-                variable:'taxAccountRecord',
-                accounts:resutlVal,
-                accountsLoader:false
-              }})
-            }}
-          >{
-            Object.keys(state.taxAccountRecord).length==0?
-            <span style={{color:'silver'}}>Select Account</span>:
-            <span style={{color:'black'}}>{state.taxAccountRecord.title}</span>
+        <Col md={6}>
+        <span style={{marginLeft: '5px'}}>Bank Charges Account</span>
+        <Select
+          allowClear
+          showSearch
+          style={{ width: '100%' }}
+          placeholder={`Select Account`}
+          value={state.bankChargesAccount}
+          options={state.adjustAccounts.map((account) => ({
+            label: `(${account.code}) ${account.title}`,
+            value: account.id,
+          }))}
+          filterOption={(input, option) =>
+            option?.label.toLowerCase().includes(input.toLowerCase())
           }
-          </div>
-        </Col>
-        <Col md={4} className="mt-3">
-          <div className='grey-txt fs-14'>
-            {/* 
-            {(state.gainLossAmount>0 && payType!="Recievable") && <span style={{color:'red'}}><b>Loss</b></span>}
-            {(state.gainLossAmount>0 && payType=="Recievable") && <span style={{color:'green'}}><b>Gain</b></span>}*/}
-            {state.gainLossAmount==0.00 && <br/>}
-            {state.gainLossAmount>0 && <span style={{color:'green'}}><b>Gain</b></span>}
-            {state.gainLossAmount<0 && <span style={{color:'red'}}><b>Loss</b></span>} 
-          </div>
-          <div className="custom-select-input-small" >{Math.abs(state.gainLossAmount)}</div>
-          {/* <div className="custom-select-input-small" >{state.gainLossAmount}</div> */}
-        </Col>
-        <Col className="mt-3" md={8}>
-          <span className="grey-txt fs-14">Gain / Loss Account</span>
-          <span style={{marginLeft:7, position:'relative', bottom:2}} className='close-btn'>
-            <CloseCircleOutlined onClick={()=>set('gainLossAccountRecord', {})} />
-          </span>
-          <div className="custom-select-input-small"
-            onClick={async()=>{
-              dispatch({type:'setAll', payload:{
-                accountsLoader:true,
-                visible:true
-              }})
-              let resutlVal = await getAccounts('Adjust', companyId);
-              dispatch({type:'setAll', payload:{
-                variable:'gainLossAccountRecord',
-                accounts:resutlVal,
-                accountsLoader:false
-              }})
-            }}
-          >
-            {
-              Object.keys(state?.gainLossAccountRecord).length==0?
-              <span style={{color:'silver'}}>Select Account</span>:
-              <span style={{color:'black'}}>{state.gainLossAccountRecord.title}</span>
-            }
-          </div>
+          onChange={(e) => {dispatch(setField({ field: 'bankChargesAccount', value: e })); e==undefined?dispatch(setField({ field: 'bankChargesAmount', value: 0.0 })):null}}
+        />
         </Col>
       </Row>
     </Col>
+    
+    <Col md={5} style={{borderLeft: '1px solid #dee2e6', paddingLeft: '10px'}}>
+        {/* <span style={{marginLeft: '5px'}}>Auto KnockOff</span> */}
+        <Row>
+          <Col md={3}>
+            <span style={{marginLeft: '5px', fontWeight: 'bold'}}>Ex. Rate</span>
+            <InputNumber disabled={state.currency=='PKR'} style={{width: '100%'}} value={state.exRate} onChange={(e) => dispatch(setField({ field: 'exRate', value: e }))}></InputNumber>
+          </Col>
+          <Col md={4}>
+          {state.totalReceivable<0?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
+          <span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>
+          </Col>
+          <Col md={5} style={{float: 'right'}}>
+            <button onClick={()=>{makeTransaction()}} style={{ fontSize: 14, marginTop: '20px', width: "65%", display: "flex", justifyContent: "center", alignItems: "center", height: "60%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}>Make Transaction</button>
+          </Col>
+        </Row>
+        <Row style={{marginTop:'10px'}}>
+          <Col md={3}>
+            <Checkbox style={{marginTop: '25px'}} onChange={(e) => {dispatch(setField({ field: 'autoKnockOff', value: e.target.checked }))}} checked={state.autoKnockOff}>Auto KnockOff</Checkbox>
+          </Col>
+          <Col md={6}>
+            <span style={{marginLeft: '5px'}}>Amount</span>
+            <InputNumber disabled={!state.autoKnockOff} style={{width: '100%'}}></InputNumber>
+          </Col>
+        </Row>
+        <Row>
+
+        </Row>
+        <Row style={{display: 'flex', alignItems: 'center'}}>
+          <Col md={3} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px'}}>Tax Amount</span>
+            <InputNumber
+            disabled={state.percent}
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
+            }
+            parser={(value) =>
+              value?.replace(/,/g, '') // Remove commas for the actual value
+            }
+            style={{width: '100%'}} value={state.taxAmount} onChange={(e) => dispatch(setField({ field: 'taxAmount', value: e }))}></InputNumber>
+          </Col>
+          <Col md={1} style={{ paddingTop: '5%'}}>
+            <Checkbox checked={state.percent} onChange={(e) => {dispatch(setField({ field: 'percent', value: e.target.checked })); dispatch(setField({ field: 'taxPercent', value: 0 })); dispatch(setField({ field: 'taxAmount', value: 0 }))}}>%</Checkbox>
+          </Col>
+          <Col md={2} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px'}}>Tax %</span>
+            <InputNumber value={state.taxPercent} onChange={(e) => {
+              dispatch(setField({ field: 'taxPercent', value: e }))
+            }} disabled={!state.percent} style={{width: '100%'}}></InputNumber>
+          </Col>
+          <Col md={6} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px'}}>Tax Account</span>
+            <Select
+              allowClear
+              showSearch
+              style={{ width: '100%' }}
+              placeholder={`Select Account`}
+              value={state.taxAccount}
+              options={state.adjustAccounts.map((account) => ({
+                label: `(${account.code}) ${account.title}`,
+                value: account.id,
+              }))}
+              filterOption={(input, option) =>
+                option?.label.toLowerCase().includes(input.toLowerCase())
+              }
+              onChange={(e) => {dispatch(setField({ field: 'taxAccount', value: e })), e==undefined?dispatch(setField({ field: 'taxAmount', value: 0.0 })):null}}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col md={3} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount > 0 ? 'green' : 'black', fontWeight: state.gainLossAmount > 0 ? 'bold' : 'normal'}}>Gain</span>
+            <span style={{marginLeft: '5px'}}>/</span>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount < 0 ? 'red' : 'black', fontWeight: state.gainLossAmount < 0 ? 'bold' : 'normal'}}>Loss</span>
+            <span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{commas(state.gainLossAmount)}</span>
+            </Col>
+          <Col md={6} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount != 0 && state.gainLossAccount == null ? 'red' : 'black', fontWeight: state.gainLossAmount != 0 ? 'bold' : 'normal'}}>Gain/Loss Account {state.gainLossAmount!=0?"*":null}</span>
+            <Select
+              allowClear
+              showSearch
+              style={{ width: '100%' }}
+              placeholder={`Select Account`}
+              value={state.gainLossAccount}
+              options={state.adjustAccounts.map((account) => ({
+                label: `(${account.code}) ${account.title}`,
+                value: account.id,
+              }))}
+              filterOption={(input, option) =>
+                option?.label.toLowerCase().includes(input.toLowerCase())
+              }
+              onChange={(e) => {dispatch(setField({ field: 'gainLossAccount', value: e }))}}
+            />
+          </Col>
+        </Row>
+        {/* <Row>
+          <Col md={3} style={{marginTop: '10px'}}>
+            <span style={{marginLeft: '5px'}}>Ex. Rate</span>
+            <InputNumber disabled={state.autoKnockOff} style={{width: '100%'}}></InputNumber>
+          </Col>
+        </Row> */}
+    </Col>
   </Row>
-  {!state.load && 
-  <>  
-    {state.invoices.length==0 && <Empty  />}
-    {state.invoices.length>0 &&
-    <div>
-      <div style={{minHeight:300}}>
-      <div className='table-sm-1 mt-3' style={{maxHeight:300, overflowY:'auto'}}>
-      <Table className='tableFixHead' bordered>
-        <thead>
-          <tr className='fs-12'>
-          <th></th>
-          <th>Job #</th>
-          <th>Inv/Bill #</th>
-          <th>HBL</th>
-          <th>MBL</th>
-          <th>Curr</th>
-          <th>Ex.</th>
-          <th>Type</th>
-          <th>Amount </th>
-          <th>{state.payType=="Recievable"? 'Receiving Amount':'Paying Amount'}</th>
-          <th>Balance</th>
-          <th className='text-center'>
-          <input type='checkbox' style={{cursor:'pointer'}} 
-              checked={checked} 
-              disabled={state.autoOn}
-              onChange={() => {
-                let tempState = [...state.invoices];
-                tempState.forEach((x) => {
-                  x.check = !checked
-                  if(state.payType=="Recievable"){
-                    x.receiving = x.check?
-                    (
-                      parseFloat(x.remBalance) + 
-                      parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
-                    ):
-                    0.00
-                  } else {
-                    x.receiving = x.check?
-                    (
-                      parseFloat(x.remBalance) + 
-                      parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
-                    ):
-                    0.00
-                  }
-                })
-                setChecked(!checked)
-                
-                set('invoices', tempState);
-              }}
-            />
-          </th>
-          <th>Container</th>
-          </tr>
-        </thead>
-        <tbody>
-          
-
-        {state.invoices.map((x, index) => {
-        return (
-        <tr key={index} className={`f fs-12 ${x.recieved!=0?'grey-row':''}`}>
-          <td style={{width:30}}>{index + 1}</td>
-          <td style={{width:100, paddingLeft:4, paddingTop:8}} className='row-hov blue-txt' 
-            onClick={()=>{
-              let type = x.operation;
-              if(x?.SE_Job?.jobNo){
-                dispatchNew(incrementTab({
-                "label":type=="SE"?"SE JOB":type=="SI"?"SI JOB":type=="AE"?"AE JOB":"AI JOB",
-                "key":type=="SE"?"4-3":type=="SI"?"4-6":type=="AE"?"7-2":"7-5",
-                "id":x.SE_Job.id
-                }))
-                router.push(type=="SE"?`/seaJobs/export/${x.SE_Job.id}`:type=="SI"?`/seaJobs/import/${x.SE_Job.id}`:
-                  type=="AE"?`/airJobs/export/${x.SE_Job.id}`:`/airJobs/import/${x.SE_Job.id}`
-                )
-              }
-            }
-          }>
-            <b>{x?.SE_Job?.jobNo}</b>
-          </td>
-          <td style={{width:120}} className='row-hov blue-txt' 
-            onClick={()=>{
-              if(x?.SE_Job?.jobNo){
-                dispatchNew(incrementTab({ "label": "Invoice Details", "key": "2-11", "id":`${x.id}`}))
-                router.push(`/reports/invoice/${x.id}`)
-              }
-            }
-          }
-          >
-            <b>{x?.invoice_No}</b>
-          </td>
-          <td>{x?.SE_Job?.Bl?.hbl||'none'}</td>
-          <td>{x?.SE_Job?.Bl?.mbl||'none'}</td>
-          <td style={{width:20}} className='px-0 text-center'>{x.currency}</td>
-          <td style={{width:45}} className='px-0 text-center'>{parseFloat(x.ex_rate).toFixed(2)}</td>
-          <td style={{width:5}} className='blue-txt px-0 text-center'>
-            <b>{x.payType=="Payble"?"CN":"DN"}</b>
-          </td>
-          <td style={{minWidth:140}} className='px-1'>{commas(x.inVbalance)}</td>
-          <td style={{padding:3, width:150}}>
-          <InputNumber
-            style={{ height: 30, width: 140, fontSize: 12 }}
-            value={x.receiving}
-            min="0.00"
-            stringMode
-            disabled={(state.autoOn||x.recieved!=0)&&!state.edit}
-            formatter={value => value.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={value => value.replace(/(,*)/g, '')}
-            onChange={(e) => {
-              let tempState = [...state.invoices];
-              tempState[index].receiving = e;
-              set('invoices', tempState);
-            }}
-          />
-
-          </td>
-          <td className='px-1' style={{width:300}}> {x.currency!="PKR"?(!state.edit?x.receiving!=0&&x.receiving!=null?commas(((x.total/x.ex_rate)-(x.recieved/x.ex_rate))-(x.receiving)):commas((x.total/x.ex_rate)-(x.recieved/x.ex_rate)):x.receiving!=0&&x.receiving!=null?commas((x.total/x.ex_rate)-(x.receiving)):commas(x.total/x.ex_rate)):(!state.edit?x.receiving!=0&&x.receiving!=null?commas((x.total-x.recieved)-x.receiving):commas(x.total-x.recieved):x.receiving!=0&&x.receiving!=null?commas((x.total)-x.receiving):commas(x.total))} </td>
-          <td style={{ width:50}} className='px-3 py-2'>
-            <input type='checkbox' style={{cursor:'pointer'}} 
-              checked={x.check} 
-              disabled={(state.autoOn||x.recieved!=0)&&!state.edit}
-              onChange={() => {
-                let tempState = [...state.invoices];
-                tempState[index].check = !tempState[index].check;
-                if(state.payType=="Recievable"){
-                  tempState[index].receiving = tempState[index].check?
-                  (
-                    parseFloat(x.remBalance) + 
-                    parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
-                  ):
-                  0.00
-                } else {
-                  tempState[index].receiving = tempState[index].check?
-                  (
-                    parseFloat(x.remBalance) + 
-                    parseFloat(state.edit?x.Invoice_Transactions[0].amount:0) /*<-this adds the current tran amoun previously received */ 
-                  ):
-                  0.00
-                }
-                set('invoices', tempState);
-              }}
-            />
-          </td>
-          <td>{getContainers(x)}</td>
-        </tr>
-        )})}
-        </tbody>
-      </Table>
-      </div>
-      </div>
-        <>
-        <div style={{position:'relative', top:20}}>
-          Total {state.totalrecieving>0?"Recievable":"Payable"} Amount:{" "}
-          <div style={{padding:3, border:'1px solid silver', minWidth:100, display:'inline-block', textAlign:'right'}}>
-            {Math.abs(state.totalrecieving).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")}
-          </div>
-        </div>
-        </>
-        <button>
-          {/* Submit */}
-        </button>
-        <div className='text-end'>
-          <button onClick={submitPrices} className='btn-custom mb-2'>Make Transaction</button>
-        </div>
-    </div>
-    }
-  </>
-  }
-  {state.load && <div className='text-center' ><Spinner /></div>}
-  {state.glVisible && <Gl state={state} dispatch={dispatch} companyId={companyId} />}
+    {!state.load&&<Col md={12} style={{marginTop: '25px'}}>
+          <table style={{width: '100%'}}>
+            <thead style={{backgroundColor: '#f3f3f3'}}>
+              <tr>
+                <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>#</th>
+                <th style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Job #</th>
+                <th style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Inv/Bill #</th>
+                <th style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>HBL</th>
+                <th style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>MBL</th>
+                <th style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Curr</th>
+                <th style={{width: '7%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Ex. Rate</th>
+                <th style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Type</th>
+                <th style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Amount</th>
+                <th style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Recieving Amount</th>
+                <th style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>Balance</th>
+                <th style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>-</th>
+                <th style={{width: '10%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', borderRight: '1px solid #dee2e6', padding: '10px 10px'}}>Container</th>
+              </tr>
+            </thead>
+            <tbody>
+              {state.invoices.length>0&&state.invoices.map((invoice, index) => (
+                <tr key={index} style={{borderBottom: '1px solid #dee2e6', padding: '10px 0px'}}>
+                  <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{index + 1}</td>
+                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.SE_Job.jobNo}</b></td>
+                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.invoice_No}</b></td>
+                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job.Bl.hbl}</td>
+                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job.Bl.mbl}</td>
+                  <td style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.currency}</td>
+                  <td style={{width: '7%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.ex_rate}</td>
+                  <td className='blue-txt' style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.payType=="Recievable"?"DN":"CN"}</b></td>
+                  <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{commas(invoice.total)}</td> 
+                  <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{
+                    <InputNumber style={{width: '100%'}} value={invoice.receiving}
+                    formatter={(value) =>
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
+                    }
+                    parser={(value) =>
+                      value?.replace(/,/g, '') // Remove commas for the actual value
+                    }
+                    onChange={(e) => {
+                      e<0?e = e *-1:null
+                      const value = e || 0; // Use 0 if `e` is null
+                      const updatedInvoiceList = [...state.invoices]; // Create a shallow copy of the array
+                      updatedInvoiceList[index] = {
+                        ...updatedInvoiceList[index], // Create a shallow copy of the object
+                        receiving: value, // Update the `receiving` field
+                      };
+                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); // Update the Redux state
+                    }}
+                    ></InputNumber>
+                    }</td>
+                  <td
+                    style={{
+                      width: '12%',
+                      paddingLeft: '5px',
+                      borderLeft: '1px solid #dee2e6',
+                      padding: '10px 10px',
+                      color: invoice.total - invoice.recieved - invoice.receiving > 0 ? 'green' : invoice.total - invoice.recieved - invoice.receiving < 0 ? 'red': 'black',
+                    }}
+                  >
+                    {commas(invoice.total - invoice.recieved - invoice.receiving)}
+                  </td>
+                  <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>-</td>
+                  <td style={{width: '10%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px', borderRight: '1px solid #dee2e6'}}>{invoice.container}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+    </Col>}
+    <Modal title={`Proceed with transaction?`} open={state.modal} onOk={()=>dispatch(setField({ field: 'modal', value: false }))} 
+        onCancel={()=>dispatch(setField({ field: 'modal', value: false }))} footer={false} maskClosable={false} width={'80%'} centered
+      >
+        <table style={{width: '100%'}}>
+          <thead style={{backgroundColor: '#d7d7d7'}}>
+            <tr style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
+              <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>Account Type</th>
+              <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>Account Name</th>
+              <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>Debit</th>
+              <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>Credit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {console.log(state.transactions)}
+            {state.transactions.map((x)=>(
+              <tr key={x.id} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
+                <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountType}</td>
+                <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountName}</td>
+                <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{commas(x.debit)}</td>
+                <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>{commas(x.credit)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <button onClick={()=>{submitTransaction()}} style={{border: '1px solid #1d1d1f', borderRadius: '15px', marginTop: '10px', backgroundColor: '#1d1d1f', color: '#f3f3f3', padding: '2px 10px'}}>Approve & Save</button>
+    </Modal>
   </>
   )
 }
