@@ -1,17 +1,15 @@
-// import React from 'react'
-// import { Col, Row } from 'react-bootstrap'
-// import { setType, setPayType, setOperation, setCurrency, setExRate, setPartyId, setPartyName, setPaid, setRecieved, setRoundOff, setTotal, setPartyType, setNote, setCreatedAt } from '/redux/openingInvoices/openingInvoicesSlice'
-// import { useDispatch, useSelector } from 'react-redux'
-// import { DatePicker, Select } from 'antd'
+import React from 'react'
+import { Col, Row } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import { DatePicker, Select } from 'antd'
 
-// const OpeningInvoice = () => {
-//   const dispatch = useDispatch();
-//   const { type } = useSelector((state) => state.openingInvoice);
-//   const { payType } = useSelector((state) => state.openingInvoice);
-//   const { operation } = useSelector((state) => state.openingInvoice);
-//   const { createdAt } = useSelector((state) => state.openingInvoice);
-//   const { currency } = useSelector((state) => state.openingInvoice);
+const OpeningInvoice = () => {
+  const dispatch = useDispatch();
+//   const state = useSelector((state) => state.openingInvoice);
 
+  return(
+    <></>
+  )
 
 //   return (
 //     <div className='base-page-layout'>
@@ -83,6 +81,6 @@
 //       </Row>
 //     </div>
 //   )
-// }
+}
 
-// export default OpeningInvoice
+export default OpeningInvoice

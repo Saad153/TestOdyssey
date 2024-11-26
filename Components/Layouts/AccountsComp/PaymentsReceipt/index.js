@@ -25,35 +25,39 @@ const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace
 const PaymentsReceipt = ({ id, voucherData, q }) => {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.paymentReciept);
-  useEffect(() => {
-    const fetchOldVouchers = async () => {
-      axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
-        headers: { companyid: Cookies.get('companyId') }
-      }).then((x) => {
-        console.log(x.data.result)
-        const temp = [];
-        temp.push(...x.data.result.map((x) => { // Use spread syntax to flatten the result
-          return {
-            id: x.id,
-            voucherNo: x.voucher_Id,
-            name: x.partyName,
-            party: x.partyType,
-            type: x.vType,
-            data: moment(x.createdAt).format('DD-MM-YYYY'),
-            currency: x.currency,
-            amount: x.Voucher_Heads[0].amount,
-            partyId: x.partyId,
-            x: x
-          };
-        }));
+  const fetchOldVouchers = async () => {
+    await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
+      headers: { companyid: Cookies.get('companyId') }
+    }).then((x) => {
+      console.log(x.data.result)
+      const temp = [];
+      temp.push(x.data.result.map((x) => {
+        console.log(x)
+        return {
+          id: x.id,
+          voucherNo: x.voucher_Id,
+          name: x.partyName,
+          party: x.partyType,
+          type: x.vType,
+          data: moment(x.createdAt).format('DD-MM-YYYY'),
+          currency: x.currency,
+          amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount').amount,
+          partyId: x.partyId,
+          x: x
+        };
+      }));
+      console.log("Temp>",temp)
 
-        dispatch(setField({ field: 'oldVouchers', value: temp }));
-      })
-        
-      }
-    if(state.oldVouchers.length == 0){
+      dispatch(setField({ field: 'oldVouchers', value: temp[0] }));
+    })
+      
+    }
+    const [first, setFirst] = useState(false)
+  useEffect(() => {
+    if(state.oldVouchers.length == 0 && !first){
       // dispatch(setField({ field: 'selectedAccount', value: selectedAccount }));
       fetchOldVouchers();
+      setFirst(true)
     }
   })
 
@@ -62,6 +66,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
         { search: state.searchAccount, type: state.type }
       ).then((x) => {
+        console.log(">>", x.data.result)
         dispatch(setField({ field: 'accounts', value: x.data.result }));
       })
     }
@@ -77,6 +82,45 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     { title: "Currency", dataIndex: "currency", key: "currency" },
     { title: "Amount", dataIndex: "amount", key: "amount" },
   ]
+
+  const back = async () => {
+    dispatch(setField({ field: 'selectedAccount', value: undefined }));
+    dispatch(setField({ field: 'invoices', value: [] }))
+    dispatch(setField({ field: 'edit', value: false }))
+    dispatch(setField({ field: 'bankChargesAccount', value: undefined }))
+    dispatch(setField({ field: 'receivingAccount', value: undefined }))
+    dispatch(setField({ field: 'taxAccount', value: undefined }))
+    dispatch(setField({ field: 'gainLossAccount', value: undefined }))
+    dispatch(setField({ field: 'gainLossAmount', value: 0 }))
+    dispatch(setField({ field: 'taxAmount', value: 0 }))
+    dispatch(setField({ field: 'bankChargesAmount', value: 0 }))
+    dispatch(setField({ field: 'checkNo', value: '' }))
+    dispatch(setField({ field: 'checkDate', value: moment() }))
+    dispatch(setField({ field: 'exRate', value: 1.0 }))
+    dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
+    dispatch(setField({ field: 'subType', value: 'Cheque' }))
+    dispatch(setField({ field: 'currency', value: 'PKR' }))
+    dispatch(setField({ field: 'payType', value: 'Recievable' }))
+    dispatch(setField({ field: 'onAccount', value: 'Cash' }))
+    dispatch(setField({ field: 'type', value: 'client' }))
+    dispatch(setField({ field: 'voucherId', value: undefined }))
+    setFirst(false)
+    fetchOldVouchers();
+  }
+
+  const deleteVoucher = () => {
+    axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_PAY_REC,{
+      id: state.voucherId
+    }).then((x) => {
+      // console.log(x.data.status)
+      if(x.data.status=="success"){
+        back()
+      }
+    })
+    
+  }
+
+  console.log(state)
 
   return (
     <div className='base-page-layout'>
@@ -122,20 +166,70 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         <Col md={6}>
           <Row style={{ display: "flex", justifyContent: "flex-end", height: '30px' }}>
             {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
-              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#921a12", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Delete</span> <MdDeleteForever style={{ fontSize: 16 }}/></button>
+              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#921a12", color: "white", borderRadius: 20 }}
+              onClick={()=>{
+                dispatch(setField({ field: 'delete', value: true }))
+              }}
+              ><span style={{marginRight: 5}}>Delete</span> <MdDeleteForever style={{ fontSize: 16 }}/></button>
             </Col>}
-            {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={3}>
+            {/* {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={3}>
               <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Cheque Return</span> <RollbackOutlined style={{ fontSize: 16 }}/></button>
-            </Col>}
+            </Col>} */}
             {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
-              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Refresh</span> <SyncOutlined style={{ fontSize: 16 }}/></button>
+              <button onClick={async () =>{
+                try{
+                  await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
+                    headers: {
+                      id: state.selectedAccount,
+                      companyid: Cookies.get('companyId'),
+                      invoicecurrency: state.currency,
+                      pay: state.payType,
+                      type: state.type,
+                      edit: true,
+
+                    }
+                  }).then((x) => {
+                    let temp = []
+                    !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+                    // temp = x.data.result
+                    // let temp2  = [...state.invoices]
+                    // temp.forEach((x) => {
+                    //   x.receiving = 0.0;
+                    //   let exists = false
+                    //   temp2.forEach((y, i) => {
+                    //     if(x.id == y.id){
+                    //       exists = true
+                    //     }
+                    //     temp2.push(x)
+                    //   })
+                    // });
+                    temp = x.data.result;
+                    let temp2 = [...state.invoices];
+
+                    // Create a Map to ensure uniqueness based on `id`
+                    const map = new Map();
+
+                    // Add all elements from temp2 to the map
+                    temp2.forEach(item => map.set(item.id, item));
+
+                    // Add all elements from temp to the map, ensuring `receiving` is set
+                    temp.forEach(item => {
+                      item.receiving = 0.0; // Add receiving property
+                      map.set(item.id, item); // This will overwrite if the id already exists
+                    });
+
+                    // Get the union as an array
+                    const union = Array.from(map.values());
+                    console.log(union)
+                    dispatch(setField({ field: 'invoices', value: union }))
+                  })
+                }catch(e){
+                  console.log(e)
+                }
+              }} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Refresh</span> <SyncOutlined style={{ fontSize: 16 }}/></button>
             </Col>}
             {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<Col md={2}>
-              <button onClick={()=>{
-                dispatch(setField({ field: 'selectedAccount', value: undefined }));
-                dispatch(setField({ field: 'invoices', value: [] }))
-                dispatch(setField({ field: 'edit', value: false }))
-                }} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><ArrowLeftOutlined style={{ fontSize: 16 }}/><span style={{marginLeft: 5}}>Back</span></button>
+              <button onClick={()=>{back()}} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><ArrowLeftOutlined style={{ fontSize: 16 }}/><span style={{marginLeft: 5}}>Back</span></button>
             </Col>}
           </Row>
         </Col>
@@ -143,7 +237,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       <Row style={{marginTop: 10}}>
         <Col md={6}>
         <Select
-          allowClear
+          // allowClear
           showSearch
           style={{ width: '90%' }}
           placeholder={`Select ${state.type}`}
@@ -229,12 +323,47 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                 console.log(x);
                 dispatch(setField({ field: 'type', value: x.party }))
                 dispatch(setField({ field: 'edit', value: true }))
-                dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
+                dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
                 dispatch(setField({ field: 'currency', value: x.currency }))
-                if(x.type=='BPV'||x.type=='CPV'){
+                dispatch(setField({ field: 'date', value: moment(x.x.data) }))
+                dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
+                dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
+                dispatch(setField({ field: 'exRate', value: x.x.exRate }))
+                dispatch(setField({ field: 'voucherId', value: x.id }))
+                dispatch(setField({ field: 'invoices', value: x.x.invoice }))
+                x.x.Voucher_Heads.forEach((y) => {
+                  console.log(y)
+                  if(y.accountType=="payAccount"){
+                    dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
+                    dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
+                  }
+                  if(y.accountType=="partyAccount"){
+                    dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
+                    // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
+                  }
+                  if(y.accountType=="Gain/Loss Account"){
+                    dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount) }));
+                    dispatch(setField({ field: 'gainLossAccount', value: y.ChildAccountId }))
+                  }
+                  if(y.accountType.includes('Charges Account')){
+                    dispatch(setField({ field: 'bankChargesAmount', value: parseFloat(y.amount) }));
+                    dispatch(setField({ field: 'bankChargesAccount', value: y.ChildAccountId }))
+                  }
+                  if(y.accountType.includes('Tax Account')){
+                    dispatch(setField({ field: 'taxAmount', value: parseFloat(y.amount) }));
+                    dispatch(setField({ field: 'taxAccount', value: y.ChildAccountId }))
+                  }
+
+                })
+                if(x.type.includes('PV')){
                   dispatch(setField({ field: 'payType', value: 'Payble' }))
                 }else{
                   dispatch(setField({ field: 'payType', value: 'Recievable' }))
+                }
+                if(x.type.includes('C')){
+                  dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
+                }else{
+                  dispatch(setField({ field: 'transactionMode', value: 'Bank' }))
                 }
 
                 }}>
@@ -250,7 +379,26 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           })}
         </tbody>
       </table>}
-      {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<BillComp companyId={Cookies.get('companyId')} state={state} dispatch={dispatch} />}
+      {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<BillComp back={back} companyId={Cookies.get('companyId')} state={state} dispatch={dispatch} />}
+      <Modal 
+        open={state.delete}
+        onOk={()=>dispatch(setField({ field: 'delete', value: false }))}
+        onCancel={()=> dispatch(setField({ field: 'delete', value: false }))}
+        footer={false}
+        maskClosable={false}
+        title={<>Delete Voucher</>}
+      >   
+        <div>
+          <h4>Are you sure?</h4>
+          <div className='flex '>
+            <button className='btn-red' onClick={()=>{
+              deleteVoucher()
+              dispatch(setField({ field: 'delete', value: false }))
+            }}>Confirm</button>
+            <button className='btn-custom mx-2 px-3'  onClick={() => dispatch(setField({ field: 'delete', value: false }))}>Cancel</button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
