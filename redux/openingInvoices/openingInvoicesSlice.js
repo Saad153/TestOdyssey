@@ -16,7 +16,7 @@ import moment from 'moment';
     total: "0",
     partyType: "client",
     note: "",
-    createdAt: moment()
+    // createdAt: moment()
   };
 
   export const openingInvoiceSlice = createSlice({
@@ -62,9 +62,9 @@ import moment from 'moment';
     setNote(state, action) {
       state.note = action.payload;
     },
-    setCreatedAt(state, action) {
-      state.createdAt = action.payload;
-    },
+    // setCreatedAt(state, action) {
+    //   state.createdAt = action.payload;
+    // },
   },
 })
 

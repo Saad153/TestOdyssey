@@ -16,16 +16,16 @@ import { setField } from '/redux/paymentReciept/paymentRecieptSlice';
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
-const BillComp = ({companyId, state, dispatch}) => {
+const BillComp = ({back, companyId, state, dispatch}) => {
   const [firstCall, setFirstCall] = useState(true);
 
   useEffect(() => {
-    console.log("SelectedAccount>>",state.selectedAccount)
+    // console.log("SelectedAccount>>",state.selectedAccount)
     const fetchInvoices = async () => {
       dispatch(setField({ field: 'load', value: true }))
       try{
-        console.log(state)
-        console.log(companyId)
+        // console.log(state)
+        // console.log(companyId)
         await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
           headers: {
             id: state.selectedAccount,
@@ -36,17 +36,17 @@ const BillComp = ({companyId, state, dispatch}) => {
             // edit: false
           }
         }).then((x) => {
-          console.log(x.data.result)
+          // console.log(x.data.result)
           x.data.result.forEach((y)=>{
-            console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
-            console.log(parseFloat(y.total)-parseFloat(y.recieved))
-            console.log(parseFloat(y.total)-parseFloat(y.paid))
+            // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
+            // console.log(parseFloat(y.total)-parseFloat(y.recieved))
+            // console.log(parseFloat(y.total)-parseFloat(y.paid))
 
           })
           let temp = []
           !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
           temp = x.data.result
-          console.log("Invoices>>", temp)
+          // console.log("Invoices>>", temp)
           temp.forEach((x) => {
             x.receiving = 0.0;
           });
@@ -57,7 +57,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         console.log(e)
       }
     }
-    if(state.selectedAccount){
+    if(state.selectedAccount && !state.edit){
       fetchInvoices()
     }
     if(state.currency=="PKR"){
@@ -66,19 +66,19 @@ const BillComp = ({companyId, state, dispatch}) => {
   }, [state.selectedAccount, state.payType])
 
   useEffect(() => {
-    console.log(state.receivingAccounts)
+    // console.log(state.receivingAccounts)
     const fetchreceivingAccount = async () => {
       dispatch(setField({ field: 'load', value: true }))
       try{
-        console.log(state)
-        console.log(companyId)
+        // console.log(state)
+        // console.log(companyId)
         await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION, {
           headers: {
             type: state.transactionMode,
             companyid: companyId,
           }
         }).then((x) => {
-          console.log(x.data.result)
+          // console.log(x.data.result)
           dispatch(setField({ field: 'receivingAccounts', value: x.data.result }))
           dispatch(setField({ field: 'load', value: false }))
         })
@@ -167,11 +167,13 @@ const BillComp = ({companyId, state, dispatch}) => {
             date: state.date,
             companyId: companyId,
             tranDate: state.date,
+            edit: state.edit,
+            voucherId: state.voucherId
           }).then((x) => {
-            console.log(x)
+            back()
+            x.data.status=="success"?openNotification('Success', `Transaction Saved`, 'green'):openNotification('Error', `Error saving transaction`, 'red')
           })
 
-          openNotification('Success', `Transaction Saved`, 'green')
       }catch(e){
         console.error(e)
       }
@@ -179,15 +181,15 @@ const BillComp = ({companyId, state, dispatch}) => {
   }
 
   const makeTransaction = () => {
-    console.log("Selected Account", state.selectedAccount)
-    console.log("Receiving Amount", state.totalReceivable)
-    console.log("Receiving Account", state.receivingAccount)
-    console.log("Gain Loss Amount", state.gainLossAmount)
-    console.log("Gain Loss Account", state.gainLossAccount)
-    console.log("Bank Charges Amount", state.bankChargesAmount)
-    console.log("Bank Charges Account", state.bankChargesAccount)
-    console.log("Tax Amount", state.taxAmount)
-    console.log("Tax Account", state.taxAccount)
+    // console.log("Selected Account", state.selectedAccount)
+    // console.log("Receiving Amount", state.totalReceivable)
+    // console.log("Receiving Account", state.receivingAccount)
+    // console.log("Gain Loss Amount", state.gainLossAmount)
+    // console.log("Gain Loss Account", state.gainLossAccount)
+    // console.log("Bank Charges Amount", state.bankChargesAmount)
+    // console.log("Bank Charges Account", state.bankChargesAccount)
+    // console.log("Tax Amount", state.taxAmount)
+    // console.log("Tax Account", state.taxAccount)
     if(state.currency!="PKR" && state.exRate<=50){
       openNotification('Failure', `Select Proper ExChange Rate`, 'red')
       return
@@ -218,7 +220,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     }
 
 
-    console.log(state.totalReceivable)
+    // console.log(state.totalReceivable)
     let temp = []
     if(state.totalReceivable!=0){
       temp.push({
@@ -234,7 +236,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     accountAmount -= state.bankChargesAmount
     accountAmount -= state.taxAmount
     accountAmount -= state.gainLossAmount/state.exRate
-    console.log(accountAmount)
+    // console.log(accountAmount)
     if(state.totalReceivable!=0){
       temp.push({
         partyId: state.receivingAccount,
@@ -258,7 +260,7 @@ const BillComp = ({companyId, state, dispatch}) => {
     if(state.bankChargesAmount!=0){
       temp.push({
         partyId: state.bankChargesAccount,
-        accountType: "Bank Charges Account",
+        accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
         accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
         debit: state.payType=="Recievable"?state.bankChargesAmount:0,
         credit: state.payType!="Recievable"?state.bankChargesAmount:0,
@@ -320,6 +322,36 @@ const BillComp = ({companyId, state, dispatch}) => {
     // }
   }
 
+  const calculateColor = (invoice) => {
+    if (state.edit === false) {
+      if (invoice.total - invoice.recieved - invoice.receiving > 0) {
+        return 'green';
+      } else if (invoice.total - invoice.recieved - invoice.receiving < 0) {
+        return 'red'
+      } else {
+        return 'black'
+      }
+    } else {
+      if(invoice.receiving == 0){
+        if(invoice.total - invoice.recieved > 0){
+          return 'green';
+        }else if(invoice.total - invoice.recieved < 0){
+          return 'red'
+        }else{
+          return 'black'
+        }
+      }else{
+        if(invoice.total - invoice.receiving > 0){
+          return 'green';
+        }else if(invoice.total - invoice.receiving < 0){
+          return 'red'
+        }else{
+          return 'black'
+        }
+      }
+    }
+  };
+
   return (
   <>
   <Row>
@@ -336,7 +368,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         </Col>
         <Col md={2}>
         <span style={{marginLeft: '5px'}}>Date</span>
-          <DatePicker style={{width: '100%'}} defaultValue={moment()} value={state.date} onChange={(e) => dispatch(setField({ field: 'date', value: e }))}></DatePicker>
+          <DatePicker style={{width: '100%'}} value={state.date} onChange={(e) => dispatch(setField({ field: 'date', value: e }))}></DatePicker>
         </Col>
         <Col md={2}>
         <span style={{marginLeft: '5px'}}>SubType</span>
@@ -356,7 +388,7 @@ const BillComp = ({companyId, state, dispatch}) => {
         </Col>
         <Col md={2}>
         <span style={{marginLeft: '5px', width: '100%'}}>Cheque Date</span>
-          <DatePicker disabled={state.transactionMode=="Cash"} style={{width: '100%'}} defaultValue={moment()} value={state.checkDate} onChange={(e) => dispatch(setField({ field: 'checkDate', value: e }))}></DatePicker>
+          <DatePicker disabled={state.transactionMode=="Cash"} style={{width: '100%'}} value={state.checkDate} onChange={(e) => dispatch(setField({ field: 'checkDate', value: e }))}></DatePicker>
         </Col>
         <Col md={4}>
         <span style={{marginLeft: '5px'}}>{state.payType!="Recievable"?"Paying":"Receiving"} Account*</span>
@@ -561,6 +593,7 @@ const BillComp = ({companyId, state, dispatch}) => {
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{commas(invoice.total)}</td> 
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{
                     <InputNumber style={{width: '100%'}} value={invoice.receiving}
+                    disabled={invoice.total - invoice.recieved == 0}
                     formatter={(value) =>
                       `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
                     }
@@ -585,12 +618,28 @@ const BillComp = ({companyId, state, dispatch}) => {
                       paddingLeft: '5px',
                       borderLeft: '1px solid #dee2e6',
                       padding: '10px 10px',
-                      color: invoice.total - invoice.recieved - invoice.receiving > 0 ? 'green' : invoice.total - invoice.recieved - invoice.receiving < 0 ? 'red': 'black',
+                      color: calculateColor(invoice),
                     }}
                   >
-                    {commas(invoice.total - invoice.recieved - invoice.receiving)}
+                    {state.edit==false?commas(invoice.total - invoice.recieved - invoice.receiving):invoice.receiving==0?commas(invoice.total - invoice.recieved):commas(invoice.total - invoice.receiving)}
                   </td>
-                  <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>-</td>
+                  <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>
+                    <input type="checkbox" checked={invoice.total - invoice.recieved - invoice.receiving == 0} onChange={(e) => {
+                      // console.log(e.target.checked)
+                      let value = 0
+                      if(e.target.checked){
+                        value = invoice.total - invoice.recieved; // Use 0 if `e` is null
+                      }else{
+                        value = 0
+                      }
+                      const updatedInvoiceList = [...state.invoices]; // Create a shallow copy of the array
+                      updatedInvoiceList[index] = {
+                        ...updatedInvoiceList[index], // Create a shallow copy of the object
+                        receiving: value, // Update the `receiving` field
+                      };
+                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); // Update the Redux state
+                    }} />
+                  </td>
                   <td style={{width: '10%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px', borderRight: '1px solid #dee2e6'}}>{invoice.container}</td>
                 </tr>
               ))}
@@ -610,7 +659,7 @@ const BillComp = ({companyId, state, dispatch}) => {
             </tr>
           </thead>
           <tbody>
-            {console.log(state.transactions)}
+            {/* {console.log(state.transactions)} */}
             {state.transactions.map((x)=>(
               <tr key={x.id} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountType}</td>

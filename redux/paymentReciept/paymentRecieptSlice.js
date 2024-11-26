@@ -12,6 +12,7 @@ const initialState = {
   oldVouchersList: [],
   selectedAccount: undefined,
   edit: false,
+  voucherId: undefined,
   invoices: [],
   load: false,
   transactionMode: 'Cash',
@@ -36,6 +37,7 @@ const initialState = {
   modal: false,
   transactions: [],
   onAccount: 'client',
+  delete: false,
   
 };
 
