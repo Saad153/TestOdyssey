@@ -19,46 +19,47 @@ const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace
 const BillComp = ({back, companyId, state, dispatch}) => {
   const [firstCall, setFirstCall] = useState(true);
 
-  useEffect(() => {
-    // console.log("SelectedAccount>>",state.selectedAccount)
-    const fetchInvoices = async () => {
-      dispatch(setField({ field: 'load', value: true }))
-      try{
-        // console.log(state)
-        // console.log(companyId)
-        await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
-          headers: {
-            id: state.selectedAccount,
-            companyid: companyId,
-            invoicecurrency: state.currency,
-            pay: state.payType,
-            type: state.type,
-            // edit: false
-          }
-        }).then((x) => {
-          // console.log(x.data.result)
-          x.data.result.forEach((y)=>{
-            // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
-            // console.log(parseFloat(y.total)-parseFloat(y.recieved))
-            // console.log(parseFloat(y.total)-parseFloat(y.paid))
+  const fetchInvoices = async () => {
+    try{
+      // console.log(state)
+      // console.log(companyId)
+      await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
+        headers: {
+          id: state.selectedAccount,
+          companyid: companyId,
+          invoicecurrency: state.currency,
+          pay: state.payType,
+          type: state.type,
+          // edit: false
+        }
+      }).then((x) => {
+        // console.log(x.data.result)
+        x.data.result.forEach((y)=>{
+          // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
+          // console.log(parseFloat(y.total)-parseFloat(y.recieved))
+          // console.log(parseFloat(y.total)-parseFloat(y.paid))
 
-          })
-          let temp = []
-          !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
-          temp = x.data.result
-          // console.log("Invoices>>", temp)
-          temp.forEach((x) => {
-            x.receiving = 0.0;
-          });
-          dispatch(setField({ field: 'invoices', value: temp }))
-          dispatch(setField({ field: 'load', value: false }))
         })
-      }catch(e){
-        console.log(e)
-      }
+        let temp = []
+        !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+        temp = x.data.result
+        // console.log("Invoices>>", temp)
+        temp.forEach((x) => {
+          x.receiving = 0.0;
+        });
+        dispatch(setField({ field: 'invoices', value: temp }))
+        dispatch(setField({ field: 'load', value: false }))
+      })
+    }catch(e){
+      console.log(e)
     }
-    if(state.selectedAccount && !state.edit){
+  }
+  const [ first, setFirst] = useState(false)
+  useEffect(() => {
+    
+    if(state.selectedAccount && !state.edit && state.invoices.length == 0){
       fetchInvoices()
+      setFirst(true)
     }
     if(state.currency=="PKR"){
       dispatch(setField({ field: 'exRate', value: 1.0 }))
