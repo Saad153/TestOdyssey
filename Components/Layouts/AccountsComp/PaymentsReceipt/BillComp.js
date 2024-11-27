@@ -178,15 +178,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
 
   const makeTransaction = () => {
-    // console.log("Selected Account", state.selectedAccount)
-    // console.log("Receiving Amount", state.totalReceivable)
-    // console.log("Receiving Account", state.receivingAccount)
-    // console.log("Gain Loss Amount", state.gainLossAmount)
-    // console.log("Gain Loss Account", state.gainLossAccount)
-    // console.log("Bank Charges Amount", state.bankChargesAmount)
-    // console.log("Bank Charges Account", state.bankChargesAccount)
-    // console.log("Tax Amount", state.taxAmount)
-    // console.log("Tax Account", state.taxAccount)
     if(state.currency!="PKR" && state.exRate<=50){
       openNotification('Failure', `Select Proper ExChange Rate`, 'red')
       return
@@ -216,34 +207,90 @@ const BillComp = ({back, companyId, state, dispatch}) => {
       return
     }
 
-
     // console.log(state.totalReceivable)
     let temp = []
-    if(state.totalReceivable!=0){
-      temp.push({
-        partyId: state.selectedAccount,
-        accountType: "partyAccount",
-        accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
-        debit: state.totalReceivable<0?state.totalReceivable*-1:0,
-        credit: state.totalReceivable>0?state.totalReceivable:0,
-        type: state.totalReceivable<0?'debit':'credit'
-      })
-    }
-    let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
-    accountAmount -= state.bankChargesAmount
-    accountAmount -= state.taxAmount
-    accountAmount -= state.gainLossAmount/state.exRate
-    // console.log(accountAmount)
-    if(state.totalReceivable!=0){
-      temp.push({
-        partyId: state.receivingAccount,
-        accountType: "payAccount",
-        accountName: state.receivingAccounts.find((x) => x.id === state.receivingAccount)?.title || "N/A",
-        debit: state.totalReceivable>0?accountAmount:0,
-        credit: state.totalReceivable<0?accountAmount:0,
-        type: state.totalReceivable>0?'debit':'credit'
-      })
-    }
+    if(!state.advance){
+      if(state.totalReceivable!=0){
+        temp.push({
+          partyId: state.selectedAccount,
+          accountType: "partyAccount",
+          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          debit: state.totalReceivable<0?state.totalReceivable*-1:0,
+          credit: state.totalReceivable>0?state.totalReceivable:0,
+          type: state.totalReceivable<0?'debit':'credit'
+        })
+      }
+      let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
+      accountAmount -= state.bankChargesAmount
+      accountAmount -= state.taxAmount
+      accountAmount -= state.gainLossAmount/state.exRate
+      // console.log(accountAmount)
+      if(state.totalReceivable!=0){
+        temp.push({
+          partyId: state.receivingAccount,
+          accountType: "payAccount",
+          accountName: state.receivingAccounts.find((x) => x.id === state.receivingAccount)?.title || "N/A",
+          debit: state.totalReceivable>0?accountAmount:0,
+          credit: state.totalReceivable<0?accountAmount:0,
+          type: state.totalReceivable>0?'debit':'credit'
+        })
+      }
+      if(state.gainLossAmount!=0){
+        temp.push({
+          partyId: state.gainLossAccount,
+          accountType: "Gain/Loss Account",
+          accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
+          debit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          type: state.totalReceivable>0?state.gainLossAmount>0?'credit':'debit':state.gainLossAmount<0?'credit':'debit'
+        })
+      }
+      if(state.bankChargesAmount!=0){
+        temp.push({
+          partyId: state.bankChargesAccount,
+          accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
+          accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
+          debit: state.totalReceivable>0?state.bankChargesAmount:0,
+          credit: state.totalReceivable<0?state.bankChargesAmount:0,
+          type: state.totalReceivable>0?'debit':'credit'
+        })
+      }
+      if(state.taxAmount!=0){
+        temp.push({
+          partyId: state.taxAccount,
+          accountType: "Tax Account",
+          accountName: state.adjustAccounts.find((x) => x.id === state.taxAccount)?.title || "N/A",
+          debit: state.totalReceivable>0?state.taxAmount:0,
+          credit: state.totalReceivable<0?state.taxAmount:0,
+          type: state.totalReceivable>0?'debit':'credit'
+        })
+      }
+    }else{
+      if(state.totalReceivable!=0){
+        temp.push({
+          partyId: state.selectedAccount,
+          accountType: "partyAccount",
+          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          debit: state.payType!="Recievable"?state.totalReceivable:0,
+          credit: state.payType=="Recievable"?state.totalReceivable:0,
+          type: state.payType!="Recievable"?'debit':'credit'
+        })
+      }
+      let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
+      accountAmount -= state.bankChargesAmount
+      accountAmount -= state.taxAmount
+      accountAmount -= state.gainLossAmount/state.exRate
+      // console.log(accountAmount)
+      if(state.totalReceivable!=0){
+        temp.push({
+          partyId: state.receivingAccount,
+          accountType: "payAccount",
+          accountName: state.receivingAccounts.find((x) => x.id === state.receivingAccount)?.title || "N/A",
+          debit: state.payType=="Recievable"?accountAmount:0,
+          credit: state.payType!="Recievable"?accountAmount:0,
+          type: state.payType=="Recievable"?'debit':'credit'
+        })
+      }
     if(state.gainLossAmount!=0){
       temp.push({
         partyId: state.gainLossAccount,
@@ -273,6 +320,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         credit: state.payType!="Recievable"?state.taxAmount:0,
         type: state.payType=="Recievable"?'debit':'credit'
       })
+    }
     }
     let totalDebit = 0.0
     let totalCredit = 0.0
@@ -318,10 +366,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     //   console.error(e)
     // }
   }
-
-  useEffect(() => {
-    console.log("state.totalReceivable",state.totalReceivable)
-  },[state.totalReceivable])
 
   const calculateColor = (invoice) => {
     if (state.edit === false) {
@@ -467,7 +511,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             <InputNumber disabled={state.currency=='PKR'} style={{width: '100%'}} value={state.exRate} onChange={(e) => dispatch(setField({ field: 'exRate', value: e }))}></InputNumber>
           </Col>
           <Col md={4}>
-          {state.totalReceivable<0?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
+          {state.totalReceivable<0||(state.advance&&state.payType=='Payble')?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
           {!state.advance&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
           {state.advance&&<InputNumber
           value={state.totalReceivable}
@@ -551,6 +595,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             <Select
               allowClear
               showSearch
+              disabled={state.advance}
               style={{ width: '100%' }}
               placeholder={`Select Account`}
               value={state.gainLossAccount}
@@ -662,6 +707,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     <Modal title={`Proceed with transaction?`} open={state.modal} onOk={()=>dispatch(setField({ field: 'modal', value: false }))} 
         onCancel={()=>dispatch(setField({ field: 'modal', value: false }))} footer={false} maskClosable={false} width={'80%'} centered
       >
+        <span style={{float:'right'}}>Ex Rate: <b>{state.exRate}</b> Currency: <b>{state.currency}</b></span>
         <table style={{width: '100%'}}>
           <thead style={{backgroundColor: '#d7d7d7'}}>
             <tr style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>

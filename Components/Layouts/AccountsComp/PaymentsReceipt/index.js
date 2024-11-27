@@ -161,7 +161,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         </Col>
         <Col md={3}>
           <b>Pay Type</b>
-          <Radio.Group style={{marginLeft: 10}} disabled={state.type == 'agent' ? true : false} value={state.payType} onChange={(e)=>{dispatch(setField({ field: 'payType', value: e.target.value }))}}>
+          <Radio.Group style={{marginLeft: 10}} disabled={state.type == 'agent' && !state.advance ? true : false} value={state.payType} onChange={(e)=>{dispatch(setField({ field: 'payType', value: e.target.value }))}}>
             <Radio value={'Payble'}>Payable</Radio>
             <Radio value={'Recievable'}>Receivable</Radio>
           </Radio.Group>
