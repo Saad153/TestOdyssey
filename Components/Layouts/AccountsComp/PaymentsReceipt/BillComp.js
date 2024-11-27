@@ -21,8 +21,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
 
   const fetchInvoices = async () => {
     try{
-      // console.log(state)
-      // console.log(companyId)
       await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
         headers: {
           id: state.selectedAccount,
@@ -33,11 +31,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           // edit: false
         }
       }).then((x) => {
-        // console.log(x.data.result)
         x.data.result.forEach((y)=>{
-          // console.log(parseFloat(y.total), parseFloat(y.recieved), parseFloat(y.paid))
-          // console.log(parseFloat(y.total)-parseFloat(y.recieved))
-          // console.log(parseFloat(y.total)-parseFloat(y.paid))
 
         })
         let temp = []
@@ -57,7 +51,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   const [ first, setFirst] = useState(false)
   useEffect(() => {
     
-    if(state.selectedAccount && !state.edit && state.invoices.length == 0){
+    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount))){
       fetchInvoices()
       setFirst(true)
     }
@@ -132,8 +126,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         }
       }
     })
-    dispatch(setField({ field: 'totalReceivable', value: temp }))
-    dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
+    if(state.invoices.length>0){
+      dispatch(setField({ field: 'totalReceivable', value: temp }))
+      dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
+    }
   },[state.invoices, state.exRate])
 
   useEffect(() => {
@@ -323,6 +319,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     // }
   }
 
+  useEffect(() => {
+    console.log("state.totalReceivable",state.totalReceivable)
+  },[state.totalReceivable])
+
   const calculateColor = (invoice) => {
     if (state.edit === false) {
       if (invoice.total - invoice.recieved - invoice.receiving > 0) {
@@ -468,7 +468,19 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           </Col>
           <Col md={4}>
           {state.totalReceivable<0?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
-          <span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>
+          {!state.advance&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
+          {state.advance&&<InputNumber
+          value={state.totalReceivable}
+          onChange={(e) => dispatch(setField({ field: 'totalReceivable', value: e }))}
+          style={{width: '100%'}}
+          formatter={(value) =>
+            `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
+          }
+          parser={(value) =>
+            value?.replace(/,/g, '') // Remove commas for the actual value
+          }
+          >
+          </InputNumber>}
           </Col>
           <Col md={5} style={{float: 'right'}}>
             <button onClick={()=>{makeTransaction()}} style={{ fontSize: 14, marginTop: '20px', width: "65%", display: "flex", justifyContent: "center", alignItems: "center", height: "60%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}>Make Transaction</button>
@@ -561,7 +573,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         </Row> */}
     </Col>
   </Row>
-    {!state.load&&<Col md={12} style={{marginTop: '25px'}}>
+    {!state.advance&&<Col md={12} style={{marginTop: '25px'}}>
           <table style={{width: '100%'}}>
             <thead style={{backgroundColor: '#f3f3f3'}}>
               <tr>

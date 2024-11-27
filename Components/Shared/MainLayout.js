@@ -14,6 +14,7 @@ import { SlLogout } from "react-icons/sl";
 import { FaRegBell } from "react-icons/fa";
 import { incrementTab } from '/redux/tabs/tabSlice';
 import Condition from 'yup/lib/Condition';
+import { resetState } from '/redux/paymentReciept/paymentRecieptSlice';
 
 const { Header, Content, Sider } = Layout;
 
@@ -422,7 +423,11 @@ const MainLayout = ({children}) => {
   };
 
   const removeTab = (index) => {
-    
+    console.log(index)
+    if(index == '3-4'){
+      console.log(index)
+      dispatch(resetState())
+    }
     let tempTabs = [...tabItems];
     tempTabs = tempTabs.filter((x)=>{
       return x.key!=index
@@ -433,7 +438,10 @@ const MainLayout = ({children}) => {
       setToggleState(0)
     }
     if(tempTabs.length==0){
-      Router.push('/')
+      Router.push('/') 
+    }else{
+      console.log(tempTabs[tempTabs.length-1].key)
+      toggleTab(tempTabs[tempTabs.length-1])
     }
   };
 

@@ -26,7 +26,7 @@ const initialState = {
   taxPercent: 0.0,
   gainLossAccount: undefined,
   gainLossAmount: 0.0,
-  subType: 'Cheque',
+  subType: 'Cash',
   autoKnockOff: false,
   percent: false,
   checkNo: "",
@@ -38,6 +38,7 @@ const initialState = {
   transactions: [],
   onAccount: 'client',
   delete: false,
+  advance: false,
   
 };
 
@@ -59,9 +60,14 @@ export const paymentRecieptSlice = createSlice({
     setPayType(state, action) {
       state.payType = action.payload;
     },
+    resetState(state, action) {
+      console.log("reset")
+      return initialState;
+      // state = initialState
+    },
   },
 });
 
-export const { setField } = paymentRecieptSlice.actions;
+export const { setField, resetState } = paymentRecieptSlice.actions;
 
 export default paymentRecieptSlice.reducer;

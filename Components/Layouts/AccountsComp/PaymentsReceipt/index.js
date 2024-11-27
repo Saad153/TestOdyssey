@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback, useReducer } from 'react';
-import { SearchOutlined, CloseCircleOutlined, SyncOutlined, PrinterOutlined, RollbackOutlined, PlusCircleOutlined, PlusOutlined, ArrowLeftOutlined } from "@ant-design/icons";
+import { SearchOutlined, CloseCircleOutlined, SyncOutlined, PrinterOutlined, RollbackOutlined, PlusCircleOutlined, PlusOutlined, ArrowLeftOutlined, DollarOutlined } from "@ant-design/icons";
 import { MdDeleteForever, MdHistory } from "react-icons/md";
 import { Input, List, Radio, Modal, Select } from 'antd';
 import { recordsReducer, initialState, getNewInvoices } from './states';
@@ -18,7 +18,7 @@ import Pagination from '../../../Shared/Pagination';
 import openNotification from "../../../Shared/Notification";
 import {checkEditAccess} from "../../../../functions/checkEditAccess";
 import {checkEmployeeAccess} from "../../../../functions/checkEmployeeAccess";
-import { setField } from '/redux/paymentReciept/paymentRecieptSlice';
+import { setField, resetState } from '/redux/paymentReciept/paymentRecieptSlice';
 import Cookies from "js-cookie";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
@@ -61,15 +61,16 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     }
   })
 
+  const fetchAccounts = async () => {
+    const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
+      { search: state.searchAccount, type: state.type }
+    ).then((x) => {
+      console.log(">>", x.data.result)
+      dispatch(setField({ field: 'accounts', value: x.data.result }));
+    })
+  }
+
   useEffect(() => {
-    const fetchAccounts = async () => {
-      const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
-        { search: state.searchAccount, type: state.type }
-      ).then((x) => {
-        console.log(">>", x.data.result)
-        dispatch(setField({ field: 'accounts', value: x.data.result }));
-      })
-    }
     fetchAccounts();
   }, [state.type])
 
@@ -84,28 +85,30 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   ]
 
   const back = async () => {
-    dispatch(setField({ field: 'selectedAccount', value: undefined }));
-    dispatch(setField({ field: 'invoices', value: [] }))
-    dispatch(setField({ field: 'edit', value: false }))
-    dispatch(setField({ field: 'bankChargesAccount', value: undefined }))
-    dispatch(setField({ field: 'receivingAccount', value: undefined }))
-    dispatch(setField({ field: 'taxAccount', value: undefined }))
-    dispatch(setField({ field: 'gainLossAccount', value: undefined }))
-    dispatch(setField({ field: 'gainLossAmount', value: 0 }))
-    dispatch(setField({ field: 'taxAmount', value: 0 }))
-    dispatch(setField({ field: 'bankChargesAmount', value: 0 }))
-    dispatch(setField({ field: 'checkNo', value: '' }))
-    dispatch(setField({ field: 'checkDate', value: moment() }))
-    dispatch(setField({ field: 'exRate', value: 1.0 }))
-    dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
-    dispatch(setField({ field: 'subType', value: 'Cheque' }))
-    dispatch(setField({ field: 'currency', value: 'PKR' }))
-    dispatch(setField({ field: 'payType', value: 'Recievable' }))
-    dispatch(setField({ field: 'onAccount', value: 'Cash' }))
-    dispatch(setField({ field: 'type', value: 'client' }))
-    dispatch(setField({ field: 'voucherId', value: undefined }))
-    setFirst(false)
+    // dispatch(setField({ field: 'selectedAccount', value: undefined }));
+    // dispatch(setField({ field: 'invoices', value: [] }))
+    // dispatch(setField({ field: 'edit', value: false }))
+    // dispatch(setField({ field: 'bankChargesAccount', value: undefined }))
+    // dispatch(setField({ field: 'receivingAccount', value: undefined }))
+    // dispatch(setField({ field: 'taxAccount', value: undefined }))
+    // dispatch(setField({ field: 'gainLossAccount', value: undefined }))
+    // dispatch(setField({ field: 'gainLossAmount', value: 0 }))
+    // dispatch(setField({ field: 'taxAmount', value: 0 }))
+    // dispatch(setField({ field: 'bankChargesAmount', value: 0 }))
+    // dispatch(setField({ field: 'checkNo', value: '' }))
+    // dispatch(setField({ field: 'checkDate', value: moment() }))
+    // dispatch(setField({ field: 'exRate', value: 1.0 }))
+    // dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
+    // dispatch(setField({ field: 'subType', value: 'Cheque' }))
+    // dispatch(setField({ field: 'currency', value: 'PKR' }))
+    // dispatch(setField({ field: 'payType', value: 'Recievable' }))
+    // dispatch(setField({ field: 'onAccount', value: 'Cash' }))
+    // dispatch(setField({ field: 'type', value: 'client' }))
+    // dispatch(setField({ field: 'voucherId', value: undefined }))
+    // setFirst(false)
+    dispatch(resetState())
     fetchOldVouchers();
+    fetchAccounts();
   }
 
   const deleteVoucher = () => {
@@ -172,9 +175,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               }}
               ><span style={{marginRight: 5}}>Delete</span> <MdDeleteForever style={{ fontSize: 16 }}/></button>
             </Col>}
-            {/* {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={3}>
-              <button style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Cheque Return</span> <RollbackOutlined style={{ fontSize: 16 }}/></button>
-            </Col>} */}
+            {((state.selectedAccount!=""&&state.selectedAccount!=undefined)&&!state.edit)&&<Col md={3}>
+              <button onClick={()=>{dispatch(setField({ field: 'advance', value: true }))}} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Advance Tran.</span> <DollarOutlined  style={{ fontSize: 16 }}/></button>
+            </Col>}
             {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
               <button onClick={async () =>{
                 try{
@@ -237,10 +240,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       <Row style={{marginTop: 10}}>
         <Col md={6}>
         <Select
-          // allowClear
+          allowClear
           showSearch
           style={{ width: '90%' }}
-          placeholder={`Select ${state.type}`}
+          placeholder={`Select ${state.type.toUpperCase()}`}
           value={state.selectedAccount}
           options={state.accounts.map((account) => ({
             label: `(${account.code}) ${account.name}`,
@@ -249,7 +252,15 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           filterOption={(input, option) =>
             option?.label.toLowerCase().includes(input.toLowerCase())
           }
-          onChange={(e) => {dispatch(setField({ field: 'selectedAccount', value: e }))}}
+          onChange={(e) => {
+            if(e==undefined){
+              dispatch(resetState()); 
+              fetchOldVouchers();
+              fetchAccounts();
+            }else{
+              dispatch(setField({ field: 'selectedAccount', value: e }))
+            }
+          }}
         />
 
         </Col>
@@ -338,6 +349,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                     dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
                   }
                   if(y.accountType=="partyAccount"){
+                    console.log("party Amount>>", parseFloat(y.amount))
                     dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
                     // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
                   }
@@ -362,8 +374,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                 }
                 if(x.type.includes('C')){
                   dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
+                  dispatch(setField({ field: 'subType', value: 'Cash' }))
                 }else{
                   dispatch(setField({ field: 'transactionMode', value: 'Bank' }))
+                  dispatch(setField({ field: 'subType', value: 'Cheque' }))
                 }
 
                 }}>
