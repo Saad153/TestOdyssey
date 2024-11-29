@@ -56,9 +56,9 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                 </tr>
               </thead>
               <tbody>
-                {console.log(openingVoucher)}
-                {openingVoucher && <tr>
-                  <td>0</td>
+                {console.log("Opening Voucher", openingVoucher)}
+                {Object.keys(openingVoucher).length > 0 && <tr>
+                  <td>1</td>
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
                   <td className="text-center fs-12 grey-txt">{moment(openingVoucher["Voucher.date"]).format("YYYY-MM-DD")}</td>
                   <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
@@ -67,6 +67,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                   <td className="text-end fs-12 blue-txt">{commas(openingVoucher.amount)}</td>
                 </tr>}
                 {ledger.map((x, i) => {
+                  Object.keys(openingVoucher).length > 0?i++:null;
                   return (
                     <tr key={i}>
                       <td>{i+1}</td>

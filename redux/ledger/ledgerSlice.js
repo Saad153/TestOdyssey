@@ -36,9 +36,13 @@ import moment from 'moment';
     setName(state, action) {
       state.name = action.payload;
     },
+    ledgerReset(state, action) {
+      return initialState;
+      // state = initialState
+    },
   },
 })
 
-export const { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount,setName } = ledgerSlice.actions
+export const { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount,setName, ledgerReset } = ledgerSlice.actions
 
 export default ledgerSlice.reducer

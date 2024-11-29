@@ -35,10 +35,19 @@ const InvoiceBalancingReport = ({ result, query }) => {
   const paidReceivedTotal = (list) => {
     let paid = 0.00, Received = 0.00, total = 0.00;
     list.forEach((x) => {
-      if (x.payType == "Payble") {
-        paid = paid + parseFloat(x.paid)/parseFloat(x.ex_rate)
-      } else {
-        Received = Received + parseFloat(x.recieved)/parseFloat(x.ex_rate)
+      if(query.currency!='PKR'){
+        if (x.payType == "Payble") {
+          paid = paid + parseFloat(x.paid)
+        } else {
+          Received = Received + parseFloat(x.recieved)
+        }
+
+      }else{
+        if (x.payType == "Payble") {
+          paid = paid + parseFloat(x.paid)*parseFloat(x.ex_rate)
+        } else {
+          Received = Received + parseFloat(x.recieved)*parseFloat(x.ex_rate)
+        }
       }
     })
     total = Received - paid
@@ -79,43 +88,84 @@ const InvoiceBalancingReport = ({ result, query }) => {
     console.log(value.result)
     if (value.status == "success") {
       let newArray = [...value.result];
-      newArray.forEach((x, i) => {
-        let invAmount = 0;
-        invAmount = parseFloat(x.total);
-        x.index = i + 1
-        x.total = invAmount;
-        x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
-        x.debit = x.payType == "Recievable" ? invAmount : 0
-        x.credit = x.payType != "Recievable" ? invAmount : 0
-        // x.total = x.payType == "Recievable" ? commas(invAmount) : `(${commas(invAmount)})`
-        x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved)/parseFloat(x.ex_rate) : parseFloat(x.paid)/parseFloat(x.ex_rate);
-        x.balance = x.payType == "Recievable" ? commas(invAmount - x.paidRec) : `(${commas(invAmount - x.paidRec)})`
-        x.age = getAge(x.createdAt);
-        x.blHbl = x.SE_Job?.Bl?.hbl
-        x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
-        x.fd = x.SE_Job?.fd
-        x.ppcc = x.Charge_Heads[0]?.pp_cc
-        x.subType = x.SE_Job?.subType
-        x.shipper = x.SE_Job?.shipper?.name
-        x.salesRep = x.SE_Job?.sales_representator?.name
-        x.wt = x.SE_Job?.weight
-        x.vol = x.SE_Job?.vol
-        x.dnCn = x.SE_Job?.payType == "Recievable"? "DN" : "CN"
-        x.op = x.SE_Job?.operation
-        x.company = x.companyId == "1" ? "SEA NET SHIPPING & LOGISTICS" : x.companyId == "2" ? "AIR CARGO SERVICES" : "Invalid"
-        x.fileNo = x.SE_Job?.fileNo
-        x.customerRef = x.SE_Job?.customerRef
-        x.containers = x.SE_Job?.SE_Equipments?x.SE_Job.SE_Equipments.map((x) => x.size).join(","):"-"
-        x.jobClient = x.SE_Job?.Client?.name?x.SE_Job?.Client?.name:"-"
-        x.clientRecievable = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
-        x.clientRecieved = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
-        x.clientOutstanding = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
-        x.arrivalDate = x.SE_Job?.arrivalDate?x.SE_Job?.arrivalDate:"-"
-        x.sailingDate = x.SE_Job?.shipDate?x.SE_Job?.shipDate:"-"
-        x.vessel = x.SE_Job?.vessel?.name?x.SE_Job?.vessel?.name:"-"
-        x.voyage = x.SE_Job?.Voyage?.voyage?x.SE_Job?.Voyage?.voyage:"-"
+      if(query.currency!='PKR'){
 
-      })
+        newArray.forEach((x, i) => {
+          let invAmount = 0;
+          invAmount = parseFloat(x.total);
+          x.index = i + 1
+          x.total = invAmount;
+          x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
+          x.debit = x.payType == "Recievable" ? invAmount : 0
+          x.credit = x.payType != "Recievable" ? invAmount : 0
+          // x.total = x.payType == "Recievable" ? commas(invAmount) : `(${commas(invAmount)})`
+          x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved) : parseFloat(x.paid);
+          x.balance = x.payType == "Recievable" ? commas(invAmount - x.paidRec) : `(${commas(invAmount - x.paidRec)})`
+          x.age = getAge(x.createdAt);
+          x.blHbl = x.SE_Job?.Bl?.hbl
+          x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
+          x.fd = x.SE_Job?.fd
+          x.ppcc = x.Charge_Heads[0]?.pp_cc
+          x.subType = x.SE_Job?.subType
+          x.shipper = x.SE_Job?.shipper?.name
+          x.salesRep = x.SE_Job?.sales_representator?.name
+          x.wt = x.SE_Job?.weight
+          x.vol = x.SE_Job?.vol
+          x.dnCn = x.SE_Job?.payType == "Recievable"? "DN" : "CN"
+          x.op = x.SE_Job?.operation
+          x.company = x.companyId == "1" ? "SEA NET SHIPPING & LOGISTICS" : x.companyId == "2" ? "AIR CARGO SERVICES" : "Invalid"
+          x.fileNo = x.SE_Job?.fileNo
+          x.customerRef = x.SE_Job?.customerRef
+          x.containers = x.SE_Job?.SE_Equipments?x.SE_Job.SE_Equipments.map((x) => x.size).join(","):"-"
+          x.jobClient = x.SE_Job?.Client?.name?x.SE_Job?.Client?.name:"-"
+          x.clientRecievable = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.clientRecieved = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.clientOutstanding = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.arrivalDate = x.SE_Job?.arrivalDate?x.SE_Job?.arrivalDate:"-"
+          x.sailingDate = x.SE_Job?.shipDate?x.SE_Job?.shipDate:"-"
+          x.vessel = x.SE_Job?.vessel?.name?x.SE_Job?.vessel?.name:"-"
+          x.voyage = x.SE_Job?.Voyage?.voyage?x.SE_Job?.Voyage?.voyage:"-"
+  
+        })
+      }else{
+        newArray.forEach((x, i) => {
+          let invAmount = 0;
+          invAmount = parseFloat(x.total)*parseFloat(x.ex_rate);
+          x.index = i + 1
+          x.total = invAmount;
+          x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
+          x.debit = x.payType == "Recievable" ? invAmount : 0
+          x.credit = x.payType != "Recievable" ? invAmount : 0
+          // x.total = x.payType == "Recievable" ? commas(invAmount) : `(${commas(invAmount)})`
+          x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved)*parseFloat(x.ex_rate) : parseFloat(x.paid)*parseFloat(x.ex_rate);
+          x.balance = x.payType == "Recievable" ? commas(invAmount - x.paidRec) : `(${commas(invAmount - x.paidRec)})`
+          x.age = getAge(x.createdAt);
+          x.blHbl = x.SE_Job?.Bl?.hbl
+          x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
+          x.fd = x.SE_Job?.fd
+          x.ppcc = x.Charge_Heads[0]?.pp_cc
+          x.subType = x.SE_Job?.subType
+          x.shipper = x.SE_Job?.shipper?.name
+          x.salesRep = x.SE_Job?.sales_representator?.name
+          x.wt = x.SE_Job?.weight
+          x.vol = x.SE_Job?.vol
+          x.dnCn = x.SE_Job?.payType == "Recievable"? "DN" : "CN"
+          x.op = x.SE_Job?.operation
+          x.company = x.companyId == "1" ? "SEA NET SHIPPING & LOGISTICS" : x.companyId == "2" ? "AIR CARGO SERVICES" : "Invalid"
+          x.fileNo = x.SE_Job?.fileNo
+          x.customerRef = x.SE_Job?.customerRef
+          x.containers = x.SE_Job?.SE_Equipments?x.SE_Job.SE_Equipments.map((x) => x.size).join(","):"-"
+          x.jobClient = x.SE_Job?.Client?.name?x.SE_Job?.Client?.name:"-"
+          x.clientRecievable = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.clientRecieved = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.clientOutstanding = x.SE_Job?.client?.name?x.SE_Job?.client?.name:"-"
+          x.arrivalDate = x.SE_Job?.arrivalDate?x.SE_Job?.arrivalDate:"-"
+          x.sailingDate = x.SE_Job?.shipDate?x.SE_Job?.shipDate:"-"
+          x.vessel = x.SE_Job?.vessel?.name?x.SE_Job?.vessel?.name:"-"
+          x.voyage = x.SE_Job?.Voyage?.voyage?x.SE_Job?.Voyage?.voyage:"-"
+  
+        })
+      }
       setRecords(newArray);
     }
     setLoad(false)

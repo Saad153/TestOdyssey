@@ -35,6 +35,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
         }}
       })
     }
+    chargeList?.length>0?calculate1():null
   }, [chargeList]);
 
   const calculate  = () => {
@@ -58,6 +59,28 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
     dispatch({type:'set', payload:{...tempChargeHeadsArray}})
     reset({ chargeList: tempChargeList });
+  };
+  const calculate1  = () => {
+    let tempChargeList = [...chargeList];
+    for(let i = 0; i<tempChargeList.length; i++){
+      let amount = tempChargeList[i].amount*tempChargeList[i].rate_charge - tempChargeList[i].discount;
+      let tax = 0.00;
+      if(tempChargeList[i].tax_apply==true){
+        tax = (amount/100.00) * tempChargeList[i].taxPerc;
+        tempChargeList[i].tax_amount = tax;
+        tempChargeList[i].net_amount =( amount + tax ) * parseFloat(tempChargeList[i].qty);
+      } else {
+        tempChargeList[i].net_amount = (amount * parseFloat(tempChargeList[i].qty)).toFixed(2);
+      }
+      if(tempChargeList[i].currency=="PKR"){
+        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*1.00).toFixed(2);
+      } else {
+        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*tempChargeList[i].ex_rate).toFixed(2);
+      }
+    }
+    let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+    dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+    // reset({ chargeList: tempChargeList });
   };
     
   const saveCharges = async () => {

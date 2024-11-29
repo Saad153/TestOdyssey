@@ -29,8 +29,8 @@ const OpeningBalance = ({id, voucherData}) => {
     }else if(voucherAccounts.length==0){
       setCompanyId(parseInt(Cookies.get("companyId")))
       let tempAccounts = [...voucherAccounts];
-      tempAccounts.push({ defaultAmount:1, amount:0.00, type:"debit", narration:"", ChildAccountId:"" });
-      tempAccounts.push({ defaultAmount:1, amount:0.00, type:"credit", narration:"", ChildAccountId:"" });
+      tempAccounts.push({ defaultAmount:0.0, amount:0.00, type:"debit", narration:"", ChildAccountId:"" });
+      tempAccounts.push({ defaultAmount:0.0, amount:0.00, type:"credit", narration:"", ChildAccountId:"" });
       setVoucherAccounts(tempAccounts);
     }
   }, [])
@@ -50,15 +50,17 @@ const OpeningBalance = ({id, voucherData}) => {
   const setVouchers = (e, i, name, condition)=> {
     
     let tempState = [...voucherAccounts];
-    console.log(tempState)
+    console.log("TempState",tempState)
     if(name!="ChildAccountId"){
       tempState.forEach((x, index)=>{
         tempState[index][name] = e;
-        condition?tempState[index].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+        // condition?tempState[index][defaultAmount] = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+        condition?tempState[index].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
       })
     }else{
       tempState[i][name] = e;
-      condition?tempState[i].amount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+      // condition?tempState[i][defaultAmount] = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+      condition?tempState[i].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
 
     }
     setVoucherAccounts(tempState);
@@ -71,7 +73,7 @@ const OpeningBalance = ({id, voucherData}) => {
     if(id=="new"){
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_OPENING_BALANCE, {
         exRate, currency, companyId, vType:"OP", costCenter:"KHI", 
-        type:"Opeing Balance", Voucher_Heads:voucherAccounts
+        type:"Opening Balance", Voucher_Heads:voucherAccounts
       }).then((x) => {
         if(x.data.status=="success"){
           Router.push(`/accounts/openingBalance/${x.data.result.id}`)
@@ -81,7 +83,7 @@ const OpeningBalance = ({id, voucherData}) => {
       axios.post(process.env.NEXT_PUBLIC_CLIMAX_UPDATE_VOUCEHR, {        
         id:voucherData,id, exRate, currency,
         companyId, vType:"OP", costCenter:"KHI", 
-        type:"Opeing Balance", Voucher_Heads:voucherAccounts
+        type:"Opening Balance", Voucher_Heads:voucherAccounts
       }).then((x)=>{
         if(x.data.status=="success"){
           openNotification("Success", `Opening Balance Updated Successfully!`, "green")
@@ -196,10 +198,10 @@ const OpeningBalance = ({id, voucherData}) => {
                 <p style={{textAlign:"center", padding:"0px", margin:"0px", fontSize:"14px"}}>{x.type}</p>
               </td>
               {currency!="PKR" &&<td className='p-1'>
-                <InputNumber style={{width:"100%"}} value={x.defaultAmount} onChange={(e)=>setVouchers(e,i,'defaultAmount',true)} min={"0.0"} />
+                <InputNumber style={{width:"100%"}} value={x.amount} onChange={(e)=>setVouchers(e,i,'amount',true)} min={"0.0"} />
               </td>}
               <td className='p-1'>
-                <InputNumber style={{width:"100%"}} value={x.amount} onChange={(e)=>setVouchers(e,i,'amount')} min={"0.0"} disabled={currency!="PKR"} />
+                <InputNumber style={{width:"100%"}} value={x.amount} onChange={(e)=>setVouchers(e,i,'amount', true)} min={"0.0"} disabled={currency!="PKR"} />
               </td>
               <td className='p-1'>
                 <Input style={{width:"100%"}} value={x.narration} onChange={(e)=>setVouchers(e.target.value,i,'narration')} />

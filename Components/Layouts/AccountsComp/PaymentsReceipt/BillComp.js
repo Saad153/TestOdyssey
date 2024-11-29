@@ -242,7 +242,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
           debit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
           credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-          type: state.totalReceivable>0?state.gainLossAmount>0?'credit':'debit':state.gainLossAmount<0?'credit':'debit'
+          type: state.totalReceivable>0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
         })
       }
       if(state.bankChargesAmount!=0){
@@ -337,34 +337,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     dispatch(setField({ field: 'transactions', value: temp }))
     dispatch(setField({ field: 'modal', value: true }))
 
-
-    // try{
-    //   axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
-    //     id: state.selectedAccount,
-    //     receivingAmount: state.totalReceivable,
-    //     receivingAccount: state.receivingAccount,
-    //     gainLossAmount: state.gainLossAmount,
-    //     gainLossAccount: state.gainLossAccount,
-    //     bankChargesAmount: state.bankChargesAmount,
-    //     bankChargesAccount: state.bankChargesAccount,
-    //     taxAmount: state.taxAmount,
-    //     taxAccount: state.taxAccount,
-    //     type: state.type,
-    //     payType: state.payType,
-    //     currency: state.currency,
-    //     checkNo: state.checkNo,
-    //     transactionMode: state.transactionMode,
-    //     subType: state.subType,
-    //     exRate: state.exRate,
-    //     checkDate: state.checkDate,
-    //     date: state.date,
-    //     companyId: companyId,
-    //   }).then((x) => {
-        
-    //   })
-    // }catch(e){
-    //   console.error(e)
-    // }
   }
 
   const calculateColor = (invoice) => {
@@ -610,12 +582,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             />
           </Col>
         </Row>
-        {/* <Row>
-          <Col md={3} style={{marginTop: '10px'}}>
-            <span style={{marginLeft: '5px'}}>Ex. Rate</span>
-            <InputNumber disabled={state.autoKnockOff} style={{width: '100%'}}></InputNumber>
-          </Col>
-        </Row> */}
     </Col>
   </Row>
     {!state.advance&&<Col md={12} style={{marginTop: '25px'}}>
@@ -653,20 +619,20 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                     <InputNumber style={{width: '100%'}} value={invoice.receiving}
                     disabled={invoice.total - invoice.recieved == 0}
                     formatter={(value) =>
-                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
+                      `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
                     }
                     parser={(value) =>
-                      value?.replace(/,/g, '') // Remove commas for the actual value
+                      value?.replace(/,/g, '')
                     }
                     onChange={(e) => {
                       e<0?e = e *-1:null
-                      const value = e || 0; // Use 0 if `e` is null
-                      const updatedInvoiceList = [...state.invoices]; // Create a shallow copy of the array
+                      const value = e || 0; 
+                      const updatedInvoiceList = [...state.invoices]; 
                       updatedInvoiceList[index] = {
-                        ...updatedInvoiceList[index], // Create a shallow copy of the object
-                        receiving: value, // Update the `receiving` field
+                        ...updatedInvoiceList[index], 
+                        receiving: value, 
                       };
-                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); // Update the Redux state
+                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); 
                     }}
                     ></InputNumber>
                     }</td>
@@ -683,19 +649,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   </td>
                   <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>
                     <input type="checkbox" checked={invoice.total - invoice.recieved - invoice.receiving == 0} onChange={(e) => {
-                      // console.log(e.target.checked)
                       let value = 0
                       if(e.target.checked){
-                        value = invoice.total - invoice.recieved; // Use 0 if `e` is null
+                        value = invoice.total - invoice.recieved;
                       }else{
                         value = 0
                       }
-                      const updatedInvoiceList = [...state.invoices]; // Create a shallow copy of the array
+                      const updatedInvoiceList = [...state.invoices];
                       updatedInvoiceList[index] = {
-                        ...updatedInvoiceList[index], // Create a shallow copy of the object
-                        receiving: value, // Update the `receiving` field
+                        ...updatedInvoiceList[index],
+                        receiving: value, 
                       };
-                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); // Update the Redux state
+                      dispatch(setField({ field: 'invoices', value: updatedInvoiceList }));
                     }} />
                   </td>
                   <td style={{width: '10%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px', borderRight: '1px solid #dee2e6'}}>{invoice.container}</td>
@@ -715,16 +680,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
               <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>Account Name</th>
               <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>Debit</th>
               <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>Credit</th>
+              <th style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>Type</th>
             </tr>
           </thead>
           <tbody>
-            {/* {console.log(state.transactions)} */}
+            {console.log(state.transactions)}
             {state.transactions.map((x)=>(
-              <tr key={x.id} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
+              <tr key={x.partyId} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountType}</td>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountName}</td>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{commas(x.debit)}</td>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>{commas(x.credit)}</td>
+                <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', borderRight: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.type}</td>
               </tr>
             ))}
           </tbody>

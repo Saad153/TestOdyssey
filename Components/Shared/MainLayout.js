@@ -15,6 +15,7 @@ import { FaRegBell } from "react-icons/fa";
 import { incrementTab } from '/redux/tabs/tabSlice';
 import Condition from 'yup/lib/Condition';
 import { resetState } from '/redux/paymentReciept/paymentRecieptSlice';
+import { ledgerReset } from '../../redux/ledger/ledgerSlice';
 
 const { Header, Content, Sider } = Layout;
 
@@ -423,10 +424,13 @@ const MainLayout = ({children}) => {
   };
 
   const removeTab = (index) => {
-    console.log(index)
+    console.log("Remove Tab>>", index)
     if(index == '3-4'){
-      console.log(index)
       dispatch(resetState())
+    }
+    if(index == '5-5'){
+      dispatch(ledgerReset())
+
     }
     let tempTabs = [...tabItems];
     tempTabs = tempTabs.filter((x)=>{

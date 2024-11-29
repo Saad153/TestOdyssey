@@ -143,6 +143,15 @@ const narration = (e) =>{
       })
   }
 
+  useEffect(() => {
+    let tempRecords = [...allValues.Voucher_Heads];
+    tempRecords.forEach((x, index) => {
+      // tempRecords[index].defaultAmount = e;
+      tempRecords[index].amount = tempRecords[index].defaultAmount ? (parseFloat(tempRecords[index].defaultAmount) * parseFloat(allValues.exRate)).toFixed(2) : tempRecords[index].amount;
+    })
+    reset({ ...allValues, Voucher_Heads: tempRecords });
+  }, [allValues.exRate]);
+
   const getAccounts = async () => {
     let y = "";
     switch (allValues.vType) {
@@ -481,7 +490,7 @@ const narration = (e) =>{
                     />
                   </td>}
                 <td style={{ padding: 3, width: 90 }}>
-                  <InputNumComp name={`Voucher_Heads.${index}.amount`} register={register} control={control} width={"100%"} />
+                  <InputNumComp readOnly={allValues.currency != "PKR"} name={`Voucher_Heads.${index}.amount`} register={register} control={control} width={"100%"} />
                 </td>
                 <td style={{ padding: 3 }}>
                   <InputComp type="text" name={`Voucher_Heads.${index}.narration`} placeholder="Narration" control={control} register={register} />
