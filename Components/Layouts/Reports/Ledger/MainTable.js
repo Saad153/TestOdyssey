@@ -17,7 +17,6 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
   const dispatch = useDispatch();
   const [username, setUserName] = useState("");
   const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
-  console.log(ledger)
   const TableComponent = ({overFlow}) => {
     return (
       <div className="">
@@ -62,9 +61,9 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
                   <td className="text-center fs-12 grey-txt">{moment(openingVoucher["Voucher.date"]).format("YYYY-MM-DD")}</td>
                   <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
-                  <td className="text-end fs-12">{openingVoucher.type == "debit" && commas(openingVoucher.amount)}</td>
-                  <td className="text-end fs-12">{openingVoucher.type == "credit" && commas(openingVoucher.amount)}</td>
-                  <td className="text-end fs-12 blue-txt">{commas(openingVoucher.amount)}</td>
+                  <td className="text-end fs-12">{openingVoucher.type == "debit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
+                  <td className="text-end fs-12">{openingVoucher.type == "credit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
+                  <td className="text-end fs-12 blue-txt">{(currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
                 </tr>}
                 {ledger.map((x, i) => {
                   Object.keys(openingVoucher).length > 0?i++:null;
@@ -86,6 +85,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                           }
                         }}
                       >{x.voucher}</td>
+                      {console.log(x)}
                       <td className="text-center fs-12 grey-txt">{x.date.slice(0, 10)}</td>
                       <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{x.narration}</td>
                       <td className="text-end fs-12">{x.type == "debit" && commas(x.amount)}</td>

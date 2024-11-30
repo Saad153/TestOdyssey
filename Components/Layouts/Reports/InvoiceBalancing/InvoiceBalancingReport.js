@@ -57,13 +57,17 @@ const InvoiceBalancingReport = ({ result, query }) => {
   const balanceTotal = (list) => {
     let balance = 0.00;
     list.forEach((x) => {
-      let temp = x.balance.slice(1, -1);
-      console.log(x.balance.slice(1, -1))
+      let temp = 0.0
+      x.balance!="0.0"?temp = x.balance.slice(1, -1):null;
+      console.log(x.balance)
+      console.log(parseFloat(temp))
       if (x.payType == "Payble") {
         balance = balance - parseFloat(temp)
       } else {
         balance = balance + parseFloat(temp)
       }
+      console.log(balance)
+
     })
     return balance >= 0 ? commas(balance) : `(${commas(balance * -1)})`;
   }

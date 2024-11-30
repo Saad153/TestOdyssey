@@ -645,7 +645,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                       color: calculateColor(invoice),
                     }}
                   >
-                    {state.edit==false?commas(invoice.total - invoice.recieved - invoice.receiving):invoice.receiving==0?commas(invoice.total - invoice.recieved):commas(invoice.total - invoice.receiving)}
+                    {console.log("Invoice>>>",invoice)}
+                    {invoice.payType=="Recievable"?(state.edit==false?
+                    commas(invoice.total - invoice.recieved - invoice.receiving):
+                    invoice.receiving==0?
+                    commas(invoice.total - invoice.recieved):
+                    commas(invoice.total - invoice.receiving)):
+                    (state.edit==false?
+                      commas(invoice.total - invoice.paid - invoice.receiving):
+                      invoice.receiving==0?
+                      commas(invoice.total - invoice.paid):
+                      commas(invoice.total - invoice.receiving))
+                    }
                   </td>
                   <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>
                     <input type="checkbox" checked={invoice.total - invoice.recieved - invoice.receiving == 0} onChange={(e) => {

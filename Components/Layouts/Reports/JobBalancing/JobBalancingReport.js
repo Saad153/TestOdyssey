@@ -738,8 +738,8 @@ const JobBalancingReport = ({ result, query }) => {
                 <th className='text-center'>Currency</th>
                 <th className='text-center' style={{ minWidth: 100 }}>Receivable</th>
                 <th className='text-center'style={{ minWidth: 100 }}>Payable</th>
-                <th className='text-center'style={{ minWidth: 100 }}>Recieved</th>
-                <th className='text-center'style={{ minWidth: 100 }}>Paid</th>
+                <th className='text-center'style={{ minWidth: 100 }}>Paid/Recieved</th>
+                {/* <th className='text-center'style={{ minWidth: 100 }}>Paid</th> */}
                 <th className='text-center'style={{ minWidth: 100 }}>Balance</th>
                 <th className='text-center'>Age</th>
               </tr>
@@ -871,9 +871,10 @@ const JobBalancingReport = ({ result, query }) => {
                   <td></td>
                   <td></td>
                   <td colSpan={8} style={{ textAlign: 'right' }}><b>Total</b></td>
+                  {console.log(getTotal("Recievable", result.result), getTotal("Payble", result.result))}
                   <td style={{ textAlign: 'right' }}>{getTotal("Recievable", result.result)}</td>
                   <td style={{ textAlign: 'right' }}>{getTotal("Payble", result.result)}</td>
-                  <td style={{ textAlign: 'right' }}>{paidReceivedTotal(result.result)}</td>
+                  {/* <td style={{ textAlign: 'right' }}>{paidReceivedTotal(result.result)}</td> */}
                   <td style={{ textAlign: 'right' }}>{paidReceivedTotal(result.result)}</td>
                   <td style={{ textAlign: 'right' }}>{balanceTotal(result.result)}</td>
                   <td style={{ textAlign: 'center' }}>-</td>
