@@ -188,8 +188,8 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="tasks/riders/riderAssign/"){
       setToggleState('6-2');
     }
-    console.log("pathname:",newRouter.pathname)
-    console.log("toggleState",toggleState)
+    // console.log("pathname:",newRouter.pathname)
+    // console.log("toggleState",toggleState)
   }, [newRouter])
 
   const [toggleState, setToggleState] = useState(0);
@@ -424,7 +424,7 @@ const MainLayout = ({children}) => {
   };
 
   const removeTab = (index) => {
-    console.log("Remove Tab>>", index)
+    // console.log("Remove Tab>>", index)
     if(index == '3-4'){
       dispatch(resetState())
     }
@@ -436,7 +436,7 @@ const MainLayout = ({children}) => {
     tempTabs = tempTabs.filter((x)=>{
       return x.key!=index
     })
-    console.log("MainLayout>>",tempTabs)
+    // console.log("MainLayout>>",tempTabs)
     dispatch(setTab(tempTabs))
     if(toggleState==index){
       setToggleState(0)
@@ -444,7 +444,7 @@ const MainLayout = ({children}) => {
     if(tempTabs.length==0){
       Router.push('/') 
     }else{
-      console.log(tempTabs[tempTabs.length-1].key)
+      // console.log(tempTabs[tempTabs.length-1].key)
       toggleTab(tempTabs[tempTabs.length-1])
     }
   };

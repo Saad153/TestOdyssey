@@ -25,7 +25,7 @@ import { FaPrint } from "react-icons/fa6";
 import { FaHistory } from "react-icons/fa";
 import { CiBoxList } from "react-icons/ci";
 
-const Vouchers = ({ register, control, errors, CompanyId, child, settlement, reset, voucherData, setSettlement, setChild, id }) => {
+const Vouchers = ({ register, control, errors, CompanyId, child, settlement, reset, voucherData, setSettlement, setChild, id, setValue, defaultValues }) => {
   let inputRef = useRef(null);
   const queryClient = useQueryClient();
   const dispatch = useDispatch();
@@ -101,36 +101,85 @@ const narration = (e) =>{
 }
 
 
-  async function getValues() {
-    const { chequeNo, payTo, vType, type, exRate, currency,voucherNarration } = voucherData;
-    let iD = "";
-    let settleId = "";
-    let ChildAccountId = "";
-    let createdAt = voucherData.createdAt ? moment(voucherData.createdAt) : moment().format("YYYY-MM-DD");
-    let chequeDate = voucherData.chequeDate ? moment(voucherData.chequeDate) : moment().format("YYYY-MM-DD");
-    let Voucher_Heads = voucherData.Voucher_Heads?.filter((x) => x.settlement !== "1");
-    voucherData?.Voucher_Heads?.filter((x) => {
-      if (x.settlement === "1") {
-        ChildAccountId = x.ChildAccountId;
-        settleId = x.id;
-        iD = voucherData.id
-      }
-    });
-    reset({
-      CompanyId, vType, chequeDate, chequeNo, voucherNarration,payTo, type, createdAt,
-      Voucher_Heads, exRate, currency: currency == undefined ? "PKR" : currency,
-      ChildAccountId, settleId, id: iD, voucher_Id:voucherData.voucher_Id
-    });
-    
-    await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHILD_ACCOUNTS, {
-      headers: {
-        CompanyId: CompanyId
-      }
-    }).then((x) => {
-      setChild(x.data.result);
+async function getValues() {
+  const { chequeNo, payTo, vType, type, exRate, currency, voucherNarration } = voucherData;
 
-    })
+  let iD = "";
+  let settleId = "";
+  let ChildAccountId = "";
+  let createdAt = voucherData.createdAt
+    ? moment(voucherData.createdAt).format("YYYY-MM-DD")
+    : moment().format("YYYY-MM-DD");
+  let chequeDate = voucherData.chequeDate
+    ? moment(voucherData.chequeDate).format("YYYY-MM-DD")
+    : moment().format("YYYY-MM-DD");
+  let Voucher_Heads = voucherData.Voucher_Heads?.filter((x) => x.settlement !== "1");
+
+  voucherData?.Voucher_Heads?.forEach((x) => {
+    if (x.settlement === "1") {
+      ChildAccountId = x.ChildAccountId;
+      settleId = x.id;
+      iD = voucherData.id;
+    }
+  });
+
+  const resetData = {
+    CompanyId,
+    currency: currency === undefined ? "PKR" : currency,
+    exRate,
+    chequeDate,
+    chequeNo,
+    costCenter: "KHI",
+    payTo,
+    voucherNarration: voucherNarration ? voucherNarration : "",
+    type,
+    vType,
+    Voucher_Heads,
+    ChildAccountId,
+    settleId,
+    id: iD,
+    voucher_Id: voucherData.voucher_Id,
+  };
+  reset(resetData);
+
+  // Perform the reset
+  // reset({
+  //   ...defaultValues, // Start with default values
+  //   CompanyId,
+  //   currency: currency === undefined ? "PKR" : currency,
+  //   exRate,
+  //   chequeDate,
+  //   chequeNo,
+  //   costCenter: "KHI",
+  //   payTo,
+  //   voucherNarration: voucherNarration ? voucherNarration : "",
+  //   type,
+  //   vType,
+  //   Voucher_Heads,
+  //   ChildAccountId,
+  //   settleId,
+  //   id: iD,
+  //   voucher_Id: voucherData.voucher_Id,
+  // });
+
+  // Fetch child accounts
+  try {
+    const response = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHILD_ACCOUNTS, {
+      headers: {
+        CompanyId: CompanyId,
+      },
+    });
+
+    setChild(response.data.result);
+  } catch (error) {
+    console.error("Error fetching child accounts:", error);
   }
+}
+
+useEffect(() => {
+  getValues();
+},[voucherData])
+
 
   async function handleDelete() {
     PopConfirm("Confirmation", "Are You Sure To Remove This Charge?",
@@ -244,11 +293,11 @@ const narration = (e) =>{
       let difference = debit - credit
       await newHeads.push({
         ChildAccountId: voucher.ChildAccountId,
-        amount: difference > 0 ? difference : -1 * (difference),
+        defaultAmount: difference > 0 ? difference : -1 * (difference),
         type: difference > 0 ? 'credit' : 'debit',
         settlement: "1",
         narration: voucher.payTo,
-        defaultAmount: voucher.currency == "PKR" ? 0 : parseFloat(difference) / parseFloat(voucher.exRate)
+        amount: voucher.currency == "PKR" ? difference > 0 ? difference : -1 * (difference) : parseFloat(difference) / parseFloat(voucher.exRate)
       })
       voucher.Voucher_Heads = await newHeads
     }
@@ -258,8 +307,7 @@ const narration = (e) =>{
       voucher.voucher_Id = data.voucher_Id
     }
     queryClient.setQueryData(['voucherData', {id}], (x)=>voucher)
-  };
-   
+  };   
   return (
     <>
     <Row>
@@ -480,17 +528,17 @@ const narration = (e) =>{
                 </td>
                 {allValues.currency != "PKR" &&
                   <td style={{ padding: 3, width: 90 }}>
-                    <InputNumber value={field.defaultAmount} style={{ width: '100%' }}
+                    <InputNumber value={field.amount} style={{ width: '100%' }}
                       onChange={(e) => {
                         let tempRecords = [...allValues.Voucher_Heads];
-                        tempRecords[index].defaultAmount = e;
-                        tempRecords[index].amount = e ? (parseFloat(e) * parseFloat(allValues.exRate)).toFixed(2) : tempRecords[index].amount;
+                        tempRecords[index].amount = e;
+                        tempRecords[index].defaultAmount = e ? (parseFloat(e) * parseFloat(allValues.exRate)).toFixed(2) : tempRecords[index].amount;
                         reset({ ...allValues, Voucher_Heads: tempRecords });
                       }}
                     />
                   </td>}
                 <td style={{ padding: 3, width: 90 }}>
-                  <InputNumComp readOnly={allValues.currency != "PKR"} name={`Voucher_Heads.${index}.amount`} register={register} control={control} width={"100%"} />
+                  <InputNumComp readOnly={allValues.currency != "PKR"} name={`Voucher_Heads.${index}.defaultAmount`} register={register} control={control} width={"100%"} />
                 </td>
                 <td style={{ padding: 3 }}>
                   <InputComp type="text" name={`Voucher_Heads.${index}.narration`} placeholder="Narration" control={control} register={register} />

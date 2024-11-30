@@ -27,14 +27,45 @@ const Voucher = ({ id }) => {
   const employeeId = Cookies.get("loginId");
   const employeeName = Cookies.get("username");
 
-  const { data:newData, isSuccess, refetch } = useQuery({
-    queryKey:["voucherData", {id}], queryFn: () => getVoucherById({id}),
-  });
+  // const { data:newData, isSuccess, refetch } = useQuery({
+  //   queryKey:["voucherData", {id}], queryFn: () => getVoucherById({id}),
+  // });
 
-  const { register, handleSubmit, control, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, reset, setValue, formState: { errors } } = useForm({
     resolver: yupResolver(validationSchema),
     defaultValues: defaultValues
   });
+
+
+
+  const [newData, setNewData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!id) return; // Ensure `id` is available before making the request
+
+    const fetchVoucherData = async () => {
+      setIsLoading(true);
+      setIsError(false);
+      setIsSuccess(false);
+
+      try {
+        console.log("Fetching voucher data with ID:", id);
+        const data = await getVoucherById({ id });
+        setNewData(data);
+        setIsSuccess(true);
+      } catch (error) {
+        console.error("Error fetching voucher data:", error);
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchVoucherData();
+  }, [id]);
 
   //funtion responsible for creating and updating voucher history
   async function createHistory (id,mode){
@@ -118,7 +149,7 @@ const Voucher = ({ id }) => {
         type: difference > 0 ? 'credit' : 'debit',
         settlement: "1",
         narration:!data.payTo? voucher.payTo : data.payTo,
-        defaultAmount: voucher.currency === "PKR" ? 0 : parseFloat(difference) / parseFloat(voucher.exRate),
+        defaultAmount: voucher.currency === "PKR" ? Math.abs(difference) : parseFloat(difference) * parseFloat(voucher.exRate),
       });
       voucher.Voucher_Heads = newHeads;
     }
@@ -172,13 +203,13 @@ const Voucher = ({ id }) => {
     <div className="base-page-layout fs-11">
       <form onSubmit={handleSubmit(onSubmit)}>
         {isSuccess && <Vouchers register={register} control={control}
-          child={child} voucherData={newData} setChild={setChild} id={id}
-          reset={reset} setSettlement={setSettlement} errors={errors} settlement={settlement} CompanyId={CompanyId}
+          child={child} voucherData={newData} setChild={setChild} setValue={setValue} id={id}
+          reset={reset} defaultValues={defaultValues} setSettlement={setSettlement} errors={errors} settlement={settlement} CompanyId={CompanyId}
         />}
         { !isSuccess && <Spinner size="sm" className="mx-3" /> }
         <button className="btn-custom" disabled={load ? true : false} type="submit"
         >{load ? <Spinner size="sm" className="mx-3" /> : "Save"}
-        </button>
+        </button> 
       </form>
     </div>
   );

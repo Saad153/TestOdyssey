@@ -31,7 +31,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     }).then((x) => {
       console.log(x.data.result)
       const temp = [];
-      temp.push(x.data.result.map((x) => {
+      x.data.result.length>0?temp.push(x.data.result.map((x) => {
         console.log(x)
         return {
           id: x.id,
@@ -45,10 +45,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           partyId: x.partyId,
           x: x
         };
-      }));
+      })):null
       console.log("Temp>",temp)
 
-      dispatch(setField({ field: 'oldVouchers', value: temp[0] }));
+      temp.length>0?dispatch(setField({ field: 'oldVouchers', value: temp[0] })):null
     })
       
     }
@@ -107,6 +107,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     // dispatch(setField({ field: 'voucherId', value: undefined }))
     // setFirst(false)
     dispatch(resetState())
+    Router.push(`/accounts/paymentReceipt/undefined`);
     fetchOldVouchers();
     fetchAccounts();
   }
@@ -122,6 +123,61 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     })
     
   }
+
+  const openOldVouchers = (x) => {
+    console.log(x);
+    dispatch(setField({ field: 'type', value: x.party }))
+    dispatch(setField({ field: 'edit', value: true }))
+    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
+    dispatch(setField({ field: 'currency', value: x.currency }))
+    dispatch(setField({ field: 'date', value: moment(x.x.data) }))
+    dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
+    dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
+    dispatch(setField({ field: 'exRate', value: x.x.exRate }))
+    dispatch(setField({ field: 'voucherId', value: x.id }))
+    dispatch(setField({ field: 'invoices', value: x.x.invoice }))
+    x.x.Voucher_Heads.forEach((y) => {
+      console.log(y)
+      if(y.accountType=="payAccount"){
+        dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
+        dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
+      }
+      if(y.accountType=="partyAccount"){
+        console.log("party Amount>>", parseFloat(y.amount))
+        dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
+        // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
+      }
+      if(y.accountType=="Gain/Loss Account"){
+        dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount) }));
+        dispatch(setField({ field: 'gainLossAccount', value: y.ChildAccountId }))
+      }
+      if(y.accountType.includes('Charges Account')){
+        dispatch(setField({ field: 'bankChargesAmount', value: parseFloat(y.amount) }));
+        dispatch(setField({ field: 'bankChargesAccount', value: y.ChildAccountId }))
+      }
+      if(y.accountType.includes('Tax Account')){
+        dispatch(setField({ field: 'taxAmount', value: parseFloat(y.amount) }));
+        dispatch(setField({ field: 'taxAccount', value: y.ChildAccountId }))
+      }
+
+    })
+    if(x.type.includes('PV')){
+      dispatch(setField({ field: 'payType', value: 'Payble' }))
+    }else{
+      dispatch(setField({ field: 'payType', value: 'Recievable' }))
+    }
+    if(x.type.includes('C')){
+      dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
+      dispatch(setField({ field: 'subType', value: 'Cash' }))
+    }else{
+      dispatch(setField({ field: 'transactionMode', value: 'Bank' }))
+      dispatch(setField({ field: 'subType', value: 'Cheque' }))
+    }
+  }
+
+  useEffect(() => {
+    id!=undefined&&state.selectedAccount==undefined?state.oldVouchers.find((x) => x.id == id)?openOldVouchers(state.oldVouchers.find((x) => x.id == id)):null:null
+  })
 
   console.log(state)
 
@@ -305,7 +361,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           </tr>
         </thead>
         <tbody>
-          {state.oldVouchers.filter((x) => {
+          {state.oldVouchers.length > 0 && state.oldVouchers.filter((x) => {
             if(state.search.length > 0){
               if(x.name.toLowerCase().includes(state.search.toLowerCase())){
                 return x
@@ -331,54 +387,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           }).map((x, i) => {
             return (
               <tr key={i} style={{borderBottom: '1px solid #d7d7d7', cursor: 'pointer'}} onClick={()=>{
-                console.log(x);
-                dispatch(setField({ field: 'type', value: x.party }))
-                dispatch(setField({ field: 'edit', value: true }))
-                dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
-                dispatch(setField({ field: 'currency', value: x.currency }))
-                dispatch(setField({ field: 'date', value: moment(x.x.data) }))
-                dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
-                dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
-                dispatch(setField({ field: 'exRate', value: x.x.exRate }))
-                dispatch(setField({ field: 'voucherId', value: x.id }))
-                dispatch(setField({ field: 'invoices', value: x.x.invoice }))
-                x.x.Voucher_Heads.forEach((y) => {
-                  console.log(y)
-                  if(y.accountType=="payAccount"){
-                    dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
-                    dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
-                  }
-                  if(y.accountType=="partyAccount"){
-                    console.log("party Amount>>", parseFloat(y.amount))
-                    dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
-                    // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
-                  }
-                  if(y.accountType=="Gain/Loss Account"){
-                    dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount) }));
-                    dispatch(setField({ field: 'gainLossAccount', value: y.ChildAccountId }))
-                  }
-                  if(y.accountType.includes('Charges Account')){
-                    dispatch(setField({ field: 'bankChargesAmount', value: parseFloat(y.amount) }));
-                    dispatch(setField({ field: 'bankChargesAccount', value: y.ChildAccountId }))
-                  }
-                  if(y.accountType.includes('Tax Account')){
-                    dispatch(setField({ field: 'taxAmount', value: parseFloat(y.amount) }));
-                    dispatch(setField({ field: 'taxAccount', value: y.ChildAccountId }))
-                  }
-
-                })
-                if(x.type.includes('PV')){
-                  dispatch(setField({ field: 'payType', value: 'Payble' }))
-                }else{
-                  dispatch(setField({ field: 'payType', value: 'Recievable' }))
-                }
-                if(x.type.includes('C')){
-                  dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
-                  dispatch(setField({ field: 'subType', value: 'Cash' }))
-                }else{
-                  dispatch(setField({ field: 'transactionMode', value: 'Bank' }))
-                  dispatch(setField({ field: 'subType', value: 'Cheque' }))
-                }
+                openOldVouchers(x)
 
                 }}>
                 <td className='blue-txt fw-6 fs-12' style={{ padding: 10 }}>{x.voucherNo}</td>

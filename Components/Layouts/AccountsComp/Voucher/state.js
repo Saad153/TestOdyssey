@@ -1,7 +1,7 @@
 import * as yup from "yup"; 
 
 export const defaultValues = {
-  ComapnyId:1,
+  CompanyId:1,
   currency:"PKR",
   exRate:"1.00",
   chequeDate:"",
