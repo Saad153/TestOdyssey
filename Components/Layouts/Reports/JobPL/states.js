@@ -76,21 +76,42 @@ const initialState = {
           y.gainLoss = 0.00;
           y.after = 0.00;
           y.Invoices.forEach((z) => {
-            if(z.payType=="Recievable") {
-              y.revenue = y.revenue + parseFloat(z.total);  //total will not be multiplied by Ex.Rate
-              y.actual = y.actual + parseFloat(z.recieved);  //This will be multiplied by Ex.Rate
-              if(z.Invoice_Transactions?.length>0) {
-                z.Invoice_Transactions.forEach((i) => {
-                  y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
-                })
+            console.log(z)
+            if(z.currency=='PKR'){
+              if(z.payType=="Recievable") {
+                y.revenue = y.revenue + parseFloat(z.total);  //total will not be multiplied by Ex.Rate
+                y.actual = y.actual + parseFloat(z.recieved);  //This will be multiplied by Ex.Rate
+                if(z.Invoice_Transactions?.length>0) {
+                  z.Invoice_Transactions.forEach((i) => {
+                    y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
+                  })
+                }
+              } else {
+                y.cost = y.cost + parseFloat(z.total);  //total will not be multiplied by Ex.Rate
+                y.actual = y.actual - parseFloat(z.paid)  //This will be multiplied by Ex.Rate
+                if(z.Invoice_Transactions?.length>0){
+                  z.Invoice_Transactions.forEach((i)=>{
+                    y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
+                  })
+                }
               }
-            } else {
-              y.cost = y.cost + parseFloat(z.total);  //total will not be multiplied by Ex.Rate
-              y.actual = y.actual - parseFloat(z.paid)  //This will be multiplied by Ex.Rate
-              if(z.Invoice_Transactions?.length>0){
-                z.Invoice_Transactions.forEach((i)=>{
-                  y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
-                })
+            }else{
+              if(z.payType=="Recievable") {
+                y.revenue = y.revenue + parseFloat(z.total)*parseFloat(z.ex_rate);  //total will not be multiplied by Ex.Rate
+                y.actual = y.actual + parseFloat(z.recieved)*parseFloat(z.ex_rate);  //This will be multiplied by Ex.Rate
+                if(z.Invoice_Transactions?.length>0) {
+                  z.Invoice_Transactions.forEach((i) => {
+                    y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
+                  })
+                }
+              } else {
+                y.cost = y.cost + parseFloat(z.total)*parseFloat(z.ex_rate);  //total will not be multiplied by Ex.Rate
+                y.actual = y.actual - parseFloat(z.paid)*parseFloat(z.ex_rate)  //This will be multiplied by Ex.Rate
+                if(z.Invoice_Transactions?.length>0){
+                  z.Invoice_Transactions.forEach((i)=>{
+                    y.gainLoss = y.gainLoss + parseFloat(i.gainLoss)
+                  })
+                }
               }
             }
           })

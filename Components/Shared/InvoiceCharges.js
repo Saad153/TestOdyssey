@@ -590,7 +590,7 @@ return (
                   <td>{x.tax_amount}</td>
                   <td>{x.net_amount}</td>
                   <td>{x.currency=="PKR"?"1.00":x.ex_rate}</td>
-                  <td>{x.local_amount}</td>
+                  <td>{commas(x.local_amount)}</td>
                 </tr>
                 )})}
                 </>
@@ -674,12 +674,12 @@ return (
             {invoice.payType=="Recievable" &&<span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
-              {commas((parseFloat(invoice?.recieved)/parseFloat(invoice?.ex_rate)).toFixed(2))}
+              {commas((parseFloat(invoice?.recieved)).toFixed(2))}
             </span>}
             {invoice.payType=="Payble" &&<span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
-              {commas((parseFloat(invoice?.paid)/parseFloat(invoice?.ex_rate)).toFixed(2))}
+              {commas((parseFloat(invoice?.paid)).toFixed(2))}
             </span>}
           </Col>
         </Row>
