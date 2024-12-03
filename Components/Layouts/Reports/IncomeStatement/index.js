@@ -21,7 +21,7 @@ const IncomeStatement = () => {
   const [accountLevel, setAccountLevel] = useState("6");
   const [revenue, selectRevenue] = useState();
   const [expense, selectExpense] = useState();
-  const [reportType, setReportType ] = useState("TC");
+  const [reportType, setReportType ] = useState("pnl");
 
   let isRevenue = false;
   let isExpense = false;

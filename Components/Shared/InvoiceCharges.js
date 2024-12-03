@@ -666,7 +666,7 @@ return (
             <span className='inv-value charges-box'> 
               {" "}
               {/* {commas(((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)) + parseFloat(invoice?.roundOff)).toFixed(2))} */}
-              {commas((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2))}
+              {invoice.currency!='PKR'?commas((parseFloat(invoice?.total)*parseFloat(invoice?.ex_rate)).toFixed(2)):commas(parseFloat(invoice?.total).toFixed(2))}
             </span>
           </Col>
           <Col md={2}>

@@ -8,12 +8,16 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import moment from 'moment';
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import openNotification from '/Components/Shared/Notification';
+import { setField, resetState } from '../../../../redux/openingInvoices/openingInvoicesSlice'
+import { delay } from '../../../../functions/delay';
 
 const List = () => {
 
   const dispatch = useDispatch();
   const [ type, setType ] = useState("OI");
   const [records, setRecords] = React.useState([]);
+  const state = useSelector((state) => state.openingInvoice);
   const getInvoices = async () => {
     try{
         const result = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/getOpeningInvoices`, {
@@ -36,6 +40,9 @@ const List = () => {
           headers: {id: id}
         }
       )
+      openNotification('Success', `Invoice ${id} deleted`, 'green')
+      await delay(1000);
+      await getInvoices()
     }catch(e){
       console.log(e)
     }
@@ -43,6 +50,12 @@ const List = () => {
 
   useEffect(() => {
     getInvoices();
+    if(state.payType=="Recievable"){
+      setType("OI")
+    }else{
+      setType("OB")
+    }
+    dispatch(resetState())
   }, [type])
 
   return (

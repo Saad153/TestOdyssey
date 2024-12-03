@@ -29,7 +29,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
         result = result + parseFloat(x.total)
       }
     })
-    return commas(result);
+    if(query.balance=="exclude0"){
+      return 0.0;
+    }else{
+      return commas(result);
+    }
   }
 
   const paidReceivedTotal = (list) => {
@@ -51,7 +55,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
       }
     })
     total = Received - paid
-    return total >= 0 ? commas(total) : `(${commas(total * -1)})`;
+    if(query.balance=="exclude0"){
+      return 0.0;
+    }else{
+      return total >= 0 ? commas(total) : `(${commas(total * -1)})`;
+    }
   }
 
   const balanceTotal = (list) => {
@@ -63,7 +71,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
         balance = balance + parseFloat(x.total-x.recieved)
       }
     })
-    return balance >= 0 ? commas(balance) : `(${commas(balance * -1)})`;
+    if(query.balance=="exclude0"){
+      return 0.0;
+    }else{
+      return balance >= 0 ? commas(balance) : `(${commas(balance * -1)})`;
+    }
   }
 
   const getAge = (date) => {
@@ -103,7 +115,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.blHbl = x.SE_Job?.Bl?.hbl
           x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
           x.fd = x.SE_Job?.fd
-          x.ppcc = x.Charge_Heads[0]?.pp_cc
+          x.ppcc = x.Charge_Heads>0?x.Charge_Heads[0]?.pp_cc:null
           x.subType = x.SE_Job?.subType
           x.shipper = x.SE_Job?.shipper?.name
           x.salesRep = x.SE_Job?.sales_representator?.name
@@ -141,7 +153,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.blHbl = x.SE_Job?.Bl?.hbl
           x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
           x.fd = x.SE_Job?.fd
-          x.ppcc = x.Charge_Heads[0]?.pp_cc
+          x.ppcc = x.Charge_Heads.length>0?x.Charge_Heads[0]?.pp_cc:null
           x.subType = x.SE_Job?.subType
           x.shipper = x.SE_Job?.shipper?.name
           x.salesRep = x.SE_Job?.sales_representator?.name
@@ -245,7 +257,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
         party_Name: x.party_Name,
         fd: x.SE_Job?.fd,
         jt: x.SE_Job?.subType,
-        ft: x.Charge_Heads[0].pp_cc,
+        ft: x.Charge_Heads.length>0?x.Charge_Heads[0].pp_cc:null,
         container: x.containers,
         weight: x.SE_Job?.weight,
         vol: x.SE_Job?.vol,
@@ -712,8 +724,9 @@ const InvoiceBalancingReport = ({ result, query }) => {
                   </thead>
                   <tbody>
                     {currentRecords.filter((x)=>{
-                      return query.balance=="exclude0"?Math.floor(x.balance)!=0:x
+                      return query.balance=="exclude0"?x.balance!="0.0"&&x.balance!="(0.0)":x
                     }).map((x, i) => {
+                      console.log(x)
                     return (
                       <tr key={i}>
                         <td>{i + 1}</td>
@@ -749,7 +762,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                         <td>{x.party_Name}</td>
                         <td>{x.SE_Job?.fd}</td>
                         <td>{x.SE_Job?.subType}</td>
-                        <td>{x.Charge_Heads[0].pp_cc}</td>
+                        <td>{x.Charge_Heads.length>0&&x.Charge_Heads[0].pp_cc}</td>
                         <td>{x.SE_Job?.container}</td>
                         <td>{x.SE_Job?.weight}</td>
                         <td>{x.SE_Job?.vol}</td>
