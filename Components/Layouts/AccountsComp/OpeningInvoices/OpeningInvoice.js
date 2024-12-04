@@ -14,8 +14,8 @@ const OpeningInvoice = (id) => {
   console.log("ID>>",id.id.id)
 
   const fetchAccounts = async () => {
-    const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
-      { search: '', type: state.accountType }
+    const accounts = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/misc/parties/getPartiesbyType`,
+      { headers:{companyId: Cookies.get('companyId'), type: state.accountType} }
     ).then((x) => {
       console.log(">>", x.data.result)
       dispatch(setField({ field: 'accounts', value: x.data.result }));
@@ -109,6 +109,7 @@ const OpeningInvoice = (id) => {
     console.log(result)
     if (result.data.status == 'success') {
       Router.push('/accounts/openingInvoices/list')
+      dispatch(resetState())
     }
   }
 
@@ -188,10 +189,10 @@ const OpeningInvoice = (id) => {
             </Select>
           </Row>
         </Col>
-        <Col style={{ padding: 0}} md={3}>
+        <Col style={{ padding: 0}} md={4}>
           <Row className='' style={{width:"100%", margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
             <div style={{width:"25%"}}>
-              Sub Type
+              Settlement Account
             </div>
             <Select
               allowClear

@@ -50,14 +50,22 @@ const List = () => {
 
   useEffect(() => {
     getInvoices();
+    // if(state.payType=="Recievable"){
+    //   setType("OI")
+    // }else{
+    //   setType("OB")
+    // }
+    // dispatch(resetState())
+  }, [type])
+
+  useEffect(() => {
     if(state.payType=="Recievable"){
       setType("OI")
     }else{
       setType("OB")
     }
-    dispatch(resetState())
-  }, [type])
-
+  }, [state.payType])
+  
   return (
     <div className='base-page-layout'>
       <Row>

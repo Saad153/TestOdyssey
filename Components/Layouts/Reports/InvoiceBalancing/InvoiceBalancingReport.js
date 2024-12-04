@@ -29,11 +29,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
         result = result + parseFloat(x.total)
       }
     })
-    if(query.balance=="exclude0"){
-      return 0.0;
-    }else{
-      return commas(result);
-    }
+    // if(query.balance=="exclude0"){
+    //   return 0.0;
+    // }else{
+    // }
+    return commas(result);
   }
 
   const paidReceivedTotal = (list) => {
@@ -55,11 +55,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
       }
     })
     total = Received - paid
-    if(query.balance=="exclude0"){
-      return 0.0;
-    }else{
-      return total >= 0 ? commas(total) : `(${commas(total * -1)})`;
-    }
+    // if(query.balance=="exclude0"){
+    //   return 0.0;
+    // }else{
+    // }
+    return total >= 0 ? commas(total) : `(${commas(total * -1)})`;
   }
 
   const balanceTotal = (list) => {
@@ -71,11 +71,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
         balance = balance + parseFloat(x.total-x.recieved)
       }
     })
-    if(query.balance=="exclude0"){
-      return 0.0;
-    }else{
-      return balance >= 0 ? commas(balance) : `(${commas(balance * -1)})`;
-    }
+    // if(query.balance=="exclude0"){
+    //   return 0.0;
+    // }else{
+    // }
+    return balance >= 0 ? commas(balance) : `(${commas(balance * -1)})`;
   }
 
   const getAge = (date) => {
