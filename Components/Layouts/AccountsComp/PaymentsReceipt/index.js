@@ -85,27 +85,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   ]
 
   const back = async () => {
-    // dispatch(setField({ field: 'selectedAccount', value: undefined }));
-    // dispatch(setField({ field: 'invoices', value: [] }))
-    // dispatch(setField({ field: 'edit', value: false }))
-    // dispatch(setField({ field: 'bankChargesAccount', value: undefined }))
-    // dispatch(setField({ field: 'receivingAccount', value: undefined }))
-    // dispatch(setField({ field: 'taxAccount', value: undefined }))
-    // dispatch(setField({ field: 'gainLossAccount', value: undefined }))
-    // dispatch(setField({ field: 'gainLossAmount', value: 0 }))
-    // dispatch(setField({ field: 'taxAmount', value: 0 }))
-    // dispatch(setField({ field: 'bankChargesAmount', value: 0 }))
-    // dispatch(setField({ field: 'checkNo', value: '' }))
-    // dispatch(setField({ field: 'checkDate', value: moment() }))
-    // dispatch(setField({ field: 'exRate', value: 1.0 }))
-    // dispatch(setField({ field: 'transactionMode', value: 'Cash' }))
-    // dispatch(setField({ field: 'subType', value: 'Cheque' }))
-    // dispatch(setField({ field: 'currency', value: 'PKR' }))
-    // dispatch(setField({ field: 'payType', value: 'Recievable' }))
-    // dispatch(setField({ field: 'onAccount', value: 'Cash' }))
-    // dispatch(setField({ field: 'type', value: 'client' }))
-    // dispatch(setField({ field: 'voucherId', value: undefined }))
-    // setFirst(false)
     dispatch(resetState())
     Router.push(`/accounts/paymentReceipt/undefined`);
     fetchOldVouchers();
@@ -250,31 +229,13 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                   }).then((x) => {
                     let temp = []
                     !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
-                    // temp = x.data.result
-                    // let temp2  = [...state.invoices]
-                    // temp.forEach((x) => {
-                    //   x.receiving = 0.0;
-                    //   let exists = false
-                    //   temp2.forEach((y, i) => {
-                    //     if(x.id == y.id){
-                    //       exists = true
-                    //     }
-                    //     temp2.push(x)
-                    //   })
-                    // });
                     temp = x.data.result;
                     let temp2 = [...state.invoices];
-
-                    // Create a Map to ensure uniqueness based on `id`
                     const map = new Map();
-
-                    // Add all elements from temp2 to the map
                     temp2.forEach(item => map.set(item.id, item));
-
-                    // Add all elements from temp to the map, ensuring `receiving` is set
                     temp.forEach(item => {
-                      item.receiving = 0.0; // Add receiving property
-                      map.set(item.id, item); // This will overwrite if the id already exists
+                      item.receiving = 0.0;
+                      map.set(item.id, item);
                     });
 
                     // Get the union as an array

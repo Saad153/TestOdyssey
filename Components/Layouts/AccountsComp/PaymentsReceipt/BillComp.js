@@ -107,6 +107,8 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     fetchreceivingAccount()
   }, [state.transactionMode])
 
+  const [ virgin, setVirgin ] = useState(false)
+
   useEffect(() => {
     let temp = 0.0
     let gainLoss = 0.0
@@ -127,7 +129,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
       }
     })
     if(state.invoices.length>0){
-      dispatch(setField({ field: 'totalReceivable', value: temp }))
+      if(!state.edit && virgin){
+        dispatch(setField({ field: 'totalReceivable', value: temp }))
+        setVirgin(true)
+      }
       dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
     }
   },[state.invoices, state.exRate])
@@ -340,34 +345,27 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
 
   const calculateColor = (invoice) => {
-    if (state.edit === false) {
-      if (invoice.total - invoice.recieved - invoice.receiving > 0) {
-        return 'green';
-      } else if (invoice.total - invoice.recieved - invoice.receiving < 0) {
-        return 'red'
-      } else {
-        return 'black'
-      }
+    const amountDue = invoice.payType === "Recievable"
+      ? (state.edit === false
+          ? invoice.total - invoice.recieved - invoice.receiving
+          : invoice.receiving === 0
+            ? invoice.total - invoice.recieved
+            : invoice.total - invoice.receiving)
+      : (state.edit === false
+          ? invoice.total - invoice.paid - invoice.receiving
+          : invoice.receiving === 0
+            ? invoice.total - invoice.paid
+            : invoice.total - invoice.receiving);
+  
+    if (amountDue > 0) {
+      return 'green';
+    } else if (amountDue < 0) {
+      return 'red';
     } else {
-      if(invoice.receiving == 0){
-        if(invoice.total - invoice.recieved > 0){
-          return 'green';
-        }else if(invoice.total - invoice.recieved < 0){
-          return 'red'
-        }else{
-          return 'black'
-        }
-      }else{
-        if(invoice.total - invoice.receiving > 0){
-          return 'green';
-        }else if(invoice.total - invoice.receiving < 0){
-          return 'red'
-        }else{
-          return 'black'
-        }
-      }
+      return 'black';
     }
   };
+  
 
   return (
   <>
@@ -617,7 +615,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{commas(invoice.total)}</td> 
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{
                     <InputNumber style={{width: '100%'}} value={invoice.receiving}
-                    disabled={invoice.total - invoice.recieved == 0}
+                    disabled={invoice.payType=="Payble"?invoice.total - invoice.paid == 0:invoice.total - invoice.recieved == 0}
                     formatter={(value) =>
                       `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
                     }
@@ -659,10 +657,14 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                     }
                   </td>
                   <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>
-                    <input type="checkbox" checked={invoice.total - invoice.recieved - invoice.receiving == 0} onChange={(e) => {
+                    <input type="checkbox" checked={invoice.payType=="Payble"?invoice.total - invoice.paid - invoice.receiving == 0:invoice.total - invoice.recieved - invoice.receiving == 0} onChange={(e) => {
                       let value = 0
                       if(e.target.checked){
-                        value = invoice.total - invoice.recieved;
+                        if(state.edit){
+                          value = invoice.total
+                        }else{
+                          value = invoice.total - invoice.recieved;
+                        }
                       }else{
                         value = 0
                       }

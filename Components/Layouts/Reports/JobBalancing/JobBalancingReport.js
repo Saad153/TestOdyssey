@@ -144,7 +144,7 @@ const JobBalancingReport = ({ result, query }) => {
         // vessel: x?.SE_Job?.vessel?.name,
         finalDestination: x.SE_Job?.fd,
         jType: x.SE_Job?.subType,
-        fType: x.Charge_Heads[0].pp_cc,
+        fType: x.Charge_Heads.length>0?x.Charge_Heads[0].pp_cc:"-",
         containers: x.SE_Job?.SE_Equipments?x.SE_Job.SE_Equipments.map((x) => x.size).join(","):"-",
         weight: x.SE_Job?.weight,
         volume: x.SE_Job?.vol,
@@ -664,7 +664,7 @@ const JobBalancingReport = ({ result, query }) => {
       y.fd = y?.SE_Job?.fd;
       y.createdAt = moment(y.createdAt).format("DD-MMM-YY")
       y.hbl = y?.SE_Job?.Bl?.hbl
-      y.ppcc = y.Charge_Heads[0].pp_cc?y.Charge_Heads[0].pp_cc:"-"
+      y.ppcc = y.Charge_Heads.length>0?y.Charge_Heads[0].pp_cc?y.Charge_Heads[0].pp_cc:"-":"-"
       y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
       y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
       y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;

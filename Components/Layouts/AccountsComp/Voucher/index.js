@@ -89,7 +89,7 @@ const Voucher = ({ id }) => {
 
    
   const onSubmit = async (data) => {
-  
+    console.log(data)
     // Check if payTo is empty
     if (data.payTo == "") {
       const { ChildAccountId, Voucher_Heads } = data;
@@ -151,6 +151,7 @@ const Voucher = ({ id }) => {
         narration:!data.payTo? voucher.payTo : data.payTo,
         defaultAmount: voucher.currency === "PKR" ? Math.abs(difference) : parseFloat(difference) * parseFloat(voucher.exRate),
       });
+      console.log("Within Index", newHeads);
       voucher.Voucher_Heads = newHeads;
     }
   

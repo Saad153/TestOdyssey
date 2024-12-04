@@ -99,7 +99,7 @@ const List = () => {
                 <tr key={index}>
                   <td style={{paddingLeft: '1%', width: '5%', borderRight: '1px solid #d7d7d7', borderLeft: '1px solid #d7d7d7'}}>{index+1}</td>
                   <td style={{paddingLeft: '1%', width: '15%', borderRight: '1px solid #d7d7d7'}}>{record.invoice_No}</td>
-                  <td style={{paddingLeft: '1%', width: '15%', borderRight: '1px solid #d7d7d7'}}>{moment(record.date).format('DD-MM-YYYY')}</td>
+                  <td style={{paddingLeft: '1%', width: '15%', borderRight: '1px solid #d7d7d7'}}>{moment(record.createdAt).format('DD-MM-YYYY')}</td>
                   <td style={{paddingLeft: '1%', width: '25%', borderRight: '1px solid #d7d7d7'}}>{record.party_Name}</td>
                   <td style={{paddingLeft: '1%', width: '15%', borderRight: '1px solid #d7d7d7'}}>{record.total}</td>  
                   <td style={{paddingLeft: '1%', width: '15%', borderRight: '1px solid #d7d7d7'}}>{record.payType=="Payble"?record.paid:record.recieved}</td>

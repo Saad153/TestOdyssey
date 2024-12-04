@@ -9,11 +9,14 @@ import moment from 'moment';
     currency: "PKR",
     ex_rate: 1.0,
     total: 0,
-    createdAt: moment(),
+    createdAt: moment().month() < 3 
+  ? moment().subtract(1, 'year').startOf('year').month(5).endOf('month')
+  : moment().startOf('year').month(5).endOf('month'),
     accounts: [],
     account: undefined,
     accountType: "client",
-    subType: 'FCL',
+    creditAccount: undefined,
+    creditAccounts: [],
   };
 
   export const openingInvoiceSlice = createSlice({

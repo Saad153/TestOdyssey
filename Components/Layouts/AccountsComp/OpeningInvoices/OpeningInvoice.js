@@ -20,6 +20,14 @@ const OpeningInvoice = (id) => {
       console.log(">>", x.data.result)
       dispatch(setField({ field: 'accounts', value: x.data.result }));
     })
+    await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION, {
+      headers: {
+        type: "Adjust",
+        companyid: Cookies.get('companyId'),
+      }
+    }).then((x) => {
+      dispatch(setField({ field: 'creditAccounts', value: x.data.result }));
+    })
   }
 
   const deleteInvoice = async (id) => {
@@ -43,7 +51,7 @@ const OpeningInvoice = (id) => {
           id: id.id.id
         }
       })
-      console.log(result.data.result.voucher.Voucher_Heads)
+      console.log("Voucher Heads",result.data.result.voucher.Voucher_Heads)
       dispatch(setField({ field: 'accountType', value: result.data.result.result.partyType }));
       dispatch(setField({ field: 'payType', value: result.data.result.result.payType }));
       result.data.result.result.payType=="Payble"?
@@ -52,35 +60,16 @@ const OpeningInvoice = (id) => {
       dispatch(setField({ field: 'operation', value: result.data.result.result.operation }));
       dispatch(setField({ field: 'currency', value: result.data.result.result.currency }));
       dispatch(setField({ field: 'ex_rate', value: result.data.result.result.ex_rate }));
-      dispatch(setField({ field: 'account', value: parseInt(result.data.result.result.party_Id) }));
-      dispatch(setField({ field: 'total', value: parseInt(result.data.result.result.total) }));
-      let subTypeId
-      if(result.data.result.result.payType=="Payble"){
-        result.data.result.voucher.Voucher_Heads.forEach((x)=>{
-          if(x.type!="credit"){
-            subTypeId = x.ChildAccountId
-          }
-        })
-      }else{
-        result.data.result.voucher.Voucher_Heads.forEach((x)=>{
-          if(x.type!="debit"){
-            subTypeId = x.ChildAccountId
-          }
-        })
-      }
-      const subTypeAccount = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT,{
-        headers:{id: subTypeId}
-      }).then((x)=>{
-        console.log(x)
-        if(x.date.result.title.includes("FCL")){
-          dispatch(setField({ field: 'subType', value: "FCL" }));
-        }else if(x.data.result.title.includes("LCL")){
-          dispatch(setField({ field: 'subType', value: "LCL" }));
-        }else if(x.data.result.title.includes("AIR")){
-          dispatch(setField({ field: 'subType', value: "AIR" }));
+      result.data.result.voucher.Voucher_Heads.forEach((x)=>{
+        if(x.accountType=="payAccount"){
+          dispatch(setField({ field: 'creditAccount', value: x.ChildAccountId }));
         }
-        // dispatch(setField({ field: 'subType', value: x.data.result.title }));
       })
+      dispatch(setField({ field: 'account', value: parseInt(result.data.result.result.party_Id) }));
+      // dispatch(setField({ field: 'creditAccount', value: parseInt(result.data.result.result.party_Id) }));
+      dispatch(setField({ field: 'total', value: parseInt(result.data.result.result.total) }));
+      
+      
       
     }catch(e){
       console.log(e)
@@ -111,7 +100,7 @@ const OpeningInvoice = (id) => {
       amount: state.total,
       currency: state.currency,
       payType: state.payType,
-      subType: state.subType,
+      creditAccount: state.creditAccount,
       exRate: state.ex_rate,
       operation: state.operation,
       partyType: state.accountType,
@@ -199,16 +188,26 @@ const OpeningInvoice = (id) => {
             </Select>
           </Row>
         </Col>
-        <Col style={{ padding: 0}} md={2}>
+        <Col style={{ padding: 0}} md={3}>
           <Row className='' style={{width:"100%", margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
-            <div style={{width:"45%"}}>
+            <div style={{width:"25%"}}>
               Sub Type
             </div>
-            <Select style={{ width: '54%', marginLeft: '0.5%' }} value={state.subType} onChange={(e) => {dispatch(setField({ field: 'subType', value: e })); e==="Recievable"?dispatch(setField({ field: 'type', value: "OI" })):dispatch(setField({ field: 'type', value: "OB" }))}}>
-              <Select.Option value="FCL">FCL</Select.Option>
-              <Select.Option value="LCL">LCL</Select.Option>
-              <Select.Option value="AIR">Air</Select.Option>
-            </Select>
+            <Select
+              allowClear
+              showSearch
+              style={{ width: '70%' }}
+              placeholder={`Select Account`}
+              value={state.creditAccount}
+              options={state.creditAccounts.map((account) => ({
+                label: `(${account.code}) ${account.title}`,
+                value: account.id,
+              }))}
+              filterOption={(input, option) =>
+                option?.label.toLowerCase().includes(input.toLowerCase())
+              }
+              onChange={(e) => {dispatch(setField({ field: 'creditAccount', value: e }))}}
+            />
           </Row>
         </Col>
         

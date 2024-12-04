@@ -72,6 +72,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                       <td>{i+1}</td>
                       <td className="row-hov blue-txt text-center fs-12"
                         onClick={async () => {
+                          console.log(x)
                           if (x.voucherType == 'Job Reciept' || x.voucherType == 'Job Payment') {
                             Router.push({ pathname: `/accounts/paymentReceipt/${x.voucherId}` });
                             dispatch(incrementTab({
@@ -79,13 +80,15 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                               "key": "3-4",
                               "id": `${x.voucherId}`
                             }));
+                          }else if(x.voucherType == "Opening Reciept" || x.voucherType == "Opening Payment"){
+                            dispatch(incrementTab({ "label": "Opening Invoice", "key": "3-6", "id": `${x.voucherId}` }));
+                            Router.push(`/accounts/openingInvoices/${x.voucherId}`);
                           } else {
                             dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": `${x.voucherId}` }));
                             Router.push(`/accounts/vouchers/${x.voucherId}`);
                           }
                         }}
                       >{x.voucher}</td>
-                      {console.log(x)}
                       <td className="text-center fs-12 grey-txt">{x.date.slice(0, 10)}</td>
                       <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{x.narration}</td>
                       <td className="text-end fs-12">{x.type == "debit" && commas(x.amount)}</td>

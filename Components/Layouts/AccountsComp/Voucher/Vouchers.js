@@ -293,12 +293,13 @@ useEffect(() => {
       let difference = debit - credit
       await newHeads.push({
         ChildAccountId: voucher.ChildAccountId,
-        defaultAmount: difference > 0 ? difference : -1 * (difference),
+        amount: difference > 0 ? difference : -1 * (difference),
         type: difference > 0 ? 'credit' : 'debit',
         settlement: "1",
         narration: voucher.payTo,
-        amount: voucher.currency == "PKR" ? difference > 0 ? difference : -1 * (difference) : parseFloat(difference) / parseFloat(voucher.exRate)
+        defaultAmount: voucher.currency == "PKR" ? difference > 0 ? difference : -1 * (difference) : parseFloat(difference) * parseFloat(voucher.exRate)
       })
+      console.log("Within vouchers", newHeads)
       voucher.Voucher_Heads = await newHeads
     }
     voucher.CompanyId = await CompanyId ? CompanyId : 1;
@@ -308,6 +309,16 @@ useEffect(() => {
     }
     queryClient.setQueryData(['voucherData', {id}], (x)=>voucher)
   };   
+
+  const updateVoucherHeads = async (e, index) => {
+    console.log("Updating", e)
+    let temp = allValues.Voucher_Heads;
+    temp[index].amount = e*allValues.exRate;
+    temp[index].defaultAmount = e;
+    console.log(temp)
+    reset({ ...allValues, Voucher_Heads: temp });
+  }
+
   return (
     <>
     <Row>
@@ -531,6 +542,7 @@ useEffect(() => {
                     <InputNumber value={field.amount} style={{ width: '100%' }}
                       onChange={(e) => {
                         let tempRecords = [...allValues.Voucher_Heads];
+                        console.log("tempRecords", tempRecords)
                         tempRecords[index].amount = e;
                         tempRecords[index].defaultAmount = e ? (parseFloat(e) * parseFloat(allValues.exRate)).toFixed(2) : tempRecords[index].amount;
                         reset({ ...allValues, Voucher_Heads: tempRecords });
@@ -538,7 +550,7 @@ useEffect(() => {
                     />
                   </td>}
                 <td style={{ padding: 3, width: 90 }}>
-                  <InputNumComp readOnly={allValues.currency != "PKR"} name={`Voucher_Heads.${index}.defaultAmount`} register={register} control={control} width={"100%"} />
+                  <InputNumber value={field.defaultAmount} readOnly={allValues.currency != "PKR"} onChange={(e) => {updateVoucherHeads(e, index)}} width={"100%"} />
                 </td>
                 <td style={{ padding: 3 }}>
                   <InputComp type="text" name={`Voucher_Heads.${index}.narration`} placeholder="Narration" control={control} register={register} />
