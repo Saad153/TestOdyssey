@@ -62,10 +62,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   })
 
   const fetchAccounts = async () => {
-    const accounts = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_MISC_GET_PARTIES_BY_SEARCH,
-      { search: state.searchAccount, type: state.type }
+    const accounts = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/misc/parties/getPartiesbyType`,
+      { headers:{companyid: Cookies.get('companyId'), type: state.type} }
     ).then((x) => {
-      console.log(">>", x.data.result)
+      console.log(">>>>>>>>>>>.", x.data.result)
       dispatch(setField({ field: 'accounts', value: x.data.result }));
     })
   }
@@ -107,7 +107,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     console.log(x);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
+    dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
     dispatch(setField({ field: 'currency', value: x.currency }))
     dispatch(setField({ field: 'date', value: moment(x.x.data) }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
@@ -228,7 +228,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                     }
                   }).then((x) => {
                     let temp = []
-                    !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+                    state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
                     temp = x.data.result;
                     let temp2 = [...state.invoices];
                     const map = new Map();

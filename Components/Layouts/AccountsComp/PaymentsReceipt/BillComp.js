@@ -107,9 +107,11 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     fetchreceivingAccount()
   }, [state.transactionMode])
 
-  const [ virgin, setVirgin ] = useState(false)
-
+  const [ total, setTotal ] = useState(0.0)
   useEffect(() => {
+    if(state.edit){
+      setTotal(state.totalReceivable)
+    }
     let temp = 0.0
     let gainLoss = 0.0
     state.invoices.forEach((x) => {
@@ -128,10 +130,12 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         }
       }
     })
+    if(state.edit && temp == 0){
+      temp = total
+    }
     if(state.invoices.length>0){
-      if(!state.edit && virgin){
+      if(!state.edit){
         dispatch(setField({ field: 'totalReceivable', value: temp }))
-        setVirgin(true)
       }
       dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
     }
