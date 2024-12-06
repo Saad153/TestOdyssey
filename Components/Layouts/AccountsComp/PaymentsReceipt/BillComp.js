@@ -101,9 +101,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         console.log(e)
       }
     }
-    if(firstCall){
-      setFirstCall(false)
-    }
     fetchreceivingAccount()
   }, [state.transactionMode])
 
@@ -611,8 +608,8 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{index + 1}</td>
                   <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.SE_Job?.jobNo}</b></td>
                   <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.invoice_No}</b></td>
-                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl.hbl}</td>
-                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl.mbl}</td>
+                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl?.hbl}</td>
+                  <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl?.mbl}</td>
                   <td style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.currency}</td>
                   <td style={{width: '7%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.ex_rate}</td>
                   <td className='blue-txt' style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.payType=="Recievable"?"DN":"CN"}</b></td>

@@ -362,14 +362,9 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
 }
 
 const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
-  // console.log("make invoice")
-  list.forEach((x)=>{
-    console.log(x)
-  })
   let tempList1 = list.filter((x)=>x.check && x.partyType.includes("client"));
   let tempList2 = list.filter((x)=>x.check && x.partyType.includes("vendor"));
   tempList1.forEach((x)=>{
-    // console.log(x.invoiceType)
     if(x.description && x.invoiceType.includes("Invoice")){
       if(x.type == "Payble"){
         x.amount = parseFloat(x.amount) * -1

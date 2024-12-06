@@ -76,6 +76,7 @@ const MainLayout = ({children}) => {
   };
 
   useEffect(() => {
+    console.log("Router Path", newRouter.pathname)
     // When visiting pages inside folders the initial path in url confilts, so to this is mandatory for resolving it
     if(newRouter.pathname==="/reports/jobBalancing/[id]"){
       setToggleState('5-1-1');
@@ -158,7 +159,7 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/seaJobs/export/bl/[id]"){
       setToggleState('4-4');
     }
-    if(newRouter.pathname==="accounts/vouchers/[id]" || newRouter.pathname==="accounts/vouchers/new"){
+    if(newRouter.pathname==="/accounts/vouchers/[id]" || newRouter.pathname==="/accounts/vouchers/new"){
       setToggleState('3-5');
     }
     if(newRouter.pathname==="/accounts/voucherList"){

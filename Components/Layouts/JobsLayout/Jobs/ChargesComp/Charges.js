@@ -144,6 +144,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   
 
   const generateInvoice = async () => {
+    calculate()
     console.log("Generate function called")
     if (!state.chargeLoad) {
       dispatch({ type: 'toggle', fieldName: 'chargeLoad', payload: true });
@@ -161,8 +162,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           }
         }
       });
-      console.log(abc)
-      console.log(charges.length)
       // Check if `charges` contains items and `abc` is true
       if (charges.length > 0 && abc) {
         console.log("Making Invoices");

@@ -51,7 +51,7 @@ export const paymentRecieptSlice = createSlice({
         if (field in state) {
           state[field] = value;
         } else {
-          console.warn(`Field "${field}" does not exist in the state.`);
+          console.warn(`P/R Field "${field}" does not exist in the state.`);
         }
       },
     setType(state, action) {

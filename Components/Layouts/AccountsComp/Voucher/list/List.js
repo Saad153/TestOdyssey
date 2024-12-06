@@ -11,6 +11,7 @@ import axios from 'axios';
 import { Input } from 'antd';
 import { checkEmployeeAccess } from '../../../../../functions/checkEmployeeAccess';
 import { checkEditAccess } from '../../../../../functions/checkEditAccess';
+import { resetState } from '/redux/vouchers/voucherSlice';
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")
 
 const ListData = ({ voucherData }) => {
@@ -72,8 +73,9 @@ const ListData = ({ voucherData }) => {
         <Col md="2">
           <button className='btn-custom left'
             onClick={async () => {
-              await Router.push(`/accounts/vouchers/new`)
               dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": "new" }))
+              dispatch(resetState())
+              await Router.push(`/accounts/vouchers/new`)
             }}
           > Create </button>
         </Col>
