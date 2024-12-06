@@ -275,7 +275,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           }
           </td>
           <td style={{ padding: 3, minWidth: 100 }}> {/* charge selection */}
-            <Select className='table-dropdown' showSearch value={x.charge} style={{ paddingLeft: 0 }}
+            <Select className='table-dropdown' showSearch value={parseInt(x.charge)} style={{ paddingLeft: 0 }}
               disabled={permissionAssign(permissions, x)}
               onChange={(e) => {
                 let tempChargeList = [...chargeList];
