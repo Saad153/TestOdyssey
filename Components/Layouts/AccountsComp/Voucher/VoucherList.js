@@ -20,7 +20,7 @@ const VoucherList = ({ voucherData }) => {
 
   const FirstCatVouchers = voucherData?.result?.filter((x) => ["CPV", "CRV", "BPV", "BRV", "JV", "TV"].includes(x.vType)) || [];
   const secondCatVouchers = voucherData?.result?.filter((x) => ["SI", "PI"].includes(x.vType)) || [];
-  const thirdCatVouchers = voucherData?.result?.filter((x) => ["OP"].includes(x.vType)) || [];
+  const thirdCatVouchers = voucherData?.result?.filter((x) => ["OP", "OB", "OI"].includes(x.vType)) || [];
 
   return (
   <div className='base-page-layout'>
