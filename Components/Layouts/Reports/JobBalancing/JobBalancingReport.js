@@ -653,7 +653,8 @@ const JobBalancingReport = ({ result, query }) => {
     let newArray = [...value.result];
     await newArray.forEach((y, i) => {
       y.no = i + 1;
-      y.balance = y.total!="0"?y.payType == "Recievable" ?
+      console.log(y)
+      y.balance = y.total!="0"?parseFloat(y.recieved)!=0 ?
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
       y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
@@ -810,8 +811,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td style={{width:20}}>{x.currency}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.total):'-'}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total):'-'}</td>
-                  <td style={{ textAlign: 'right' }} >{commas(x.recieved)}</td>
-                  <td style={{ textAlign: 'right' }} >{x.paid}</td>
+                  <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.recieved):commas(x.paid)}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total-x.paid):commas(x.total-x.recieved)}</td>
                   <td style={{ width: 1 }}>{getAge(x.createdAt)+1}</td>
                 </tr>
