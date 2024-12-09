@@ -50,15 +50,20 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
   const [ first, setFirst] = useState(false)
   useEffect(() => {
-    
-    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount))){
+    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount) || (state.invoices.length > 0 && state.invoices[0].currency != state.currency))){
       fetchInvoices()
       setFirst(true)
     }
     if(state.currency=="PKR"){
       dispatch(setField({ field: 'exRate', value: 1.0 }))
     }
-  }, [state.selectedAccount, state.payType])
+  }, [state.selectedAccount, state.payType, state.currency])
+
+  // useEffect(()=>{
+  //   if(state.selectedAccount && !state.edit && state.invoices.length>0 && state.currency != state.invocies[0].currency){
+  //     fetchInvoices()
+  //   }
+  // },[state.currency])
 
   useEffect(() => {
     // console.log(state.receivingAccounts)
@@ -105,6 +110,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }, [state.transactionMode])
 
   const [ total, setTotal ] = useState(0.0)
+
   useEffect(() => {
     if(state.edit){
       setTotal(state.totalReceivable)
@@ -132,9 +138,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     }
     if(state.invoices.length>0){
       if(!state.edit){
+        dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
         dispatch(setField({ field: 'totalReceivable', value: temp }))
+        dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
       }
-      dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
     }
   },[state.invoices, state.exRate])
 
@@ -171,9 +178,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             companyId: companyId,
             tranDate: state.date,
             edit: state.edit,
-            voucherId: state.voucherId
+            voucherId: state.voucherId,
+            narration: state.voucherNarration
           }).then((x) => {
-            back()
+            x.data.status=="success"?back():null
             x.data.status=="success"?openNotification('Success', `Transaction Saved`, 'green'):openNotification('Error', `Error saving transaction`, 'red')
           })
 
@@ -182,6 +190,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
       }
       dispatch(setField({ field: 'modal', value: false }))
   }
+
+  useEffect(()=>{
+    console.log("Change in GainLoss", state.gainLossAmount)
+  },[state.gainLossAmount])
 
   const makeTransaction = () => {
     if(state.currency!="PKR" && state.exRate<=50){
@@ -227,10 +239,13 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         })
       }
       let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
-      accountAmount -= state.bankChargesAmount
-      accountAmount -= state.taxAmount
-      accountAmount -= state.gainLossAmount/state.exRate
-      // console.log(accountAmount)
+      console.log("Account Amount 1>>", accountAmount)
+      accountAmount = state.totalReceivable>0?accountAmount-state.bankChargesAmount:accountAmount+state.bankChargesAmount
+      console.log("Account Amount 2>>", accountAmount)
+      accountAmount = state.totalReceivable>0?accountAmount-state.taxAmount:accountAmount+state.taxAmount
+      console.log("Account Amount 3>>", accountAmount)
+      // accountAmount -= state.gainLossAmount/state.exRate
+      // console.log("Account Amount 4>>", accountAmount)
       if(state.totalReceivable!=0){
         temp.push({
           partyId: state.receivingAccount,
@@ -250,16 +265,43 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
           type: state.totalReceivable>0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
         })
+        temp.push({
+          partyId: state.selectedAccount,
+          accountType: "Gain/Loss Account",
+          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          debit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          credit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          type: state.totalReceivable<0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
+        })
       }
+      // if(x.accountType=="Gain/Loss Account"){
+      //   await Voucher_Heads.create({
+      //     amount: amount,
+      //     defaultAmount: x.currency=="PKR"?amount:amount*req.body.exRate,
+      //     type: x.type=="debit"?"credit":"debit",
+      //     accountType: x.accounType,
+      //     VoucherId: vID,
+      //     ChildAccountId: account.ChildAccountId,
+      //     narration: req.body.narration==""?narration:req.body.narration
+      //   })
+      // }
       if(state.bankChargesAmount!=0){
         temp.push({
           partyId: state.bankChargesAccount,
           accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
           accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
-          debit: state.totalReceivable>0?state.bankChargesAmount:0,
-          credit: state.totalReceivable<0?state.bankChargesAmount:0,
-          type: state.totalReceivable>0?'debit':'credit'
+          debit: state.bankChargesAmount,
+          credit: 0,
+          type: 'debit'
         })
+        // temp.push({
+        //   partyId: state.bankChargesAccount,
+        //   accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
+        //   accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
+        //   debit: state.totalReceivable<0?state.bankChargesAmount:0,
+        //   credit: state.totalReceivable>0?state.bankChargesAmount:0,
+        //   type: state.totalReceivable<0?'debit':'credit'
+        // })
       }
       if(state.taxAmount!=0){
         temp.push({
@@ -302,9 +344,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         partyId: state.gainLossAccount,
         accountType: "Gain/Loss Account",
         accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
-        debit: state.payType=="Recievable"?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        credit: state.payType!="Recievable"?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        type: state.payType!="Recievable"?state.gainLossAmount>0?'credit':'debit':state.gainLossAmount<0?'credit':'debit'
+        debit: state.payType=="Recievable"?state.gainLossAmount>0.0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        credit: state.payType!="Recievable"?state.gainLossAmount>0.0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        type: state.payType!="Recievable"?state.gainLossAmount>0.0?'credit':'debit':state.gainLossAmount<0?'credit':'debit'
       })
     }
     if(state.bankChargesAmount!=0){
@@ -436,8 +478,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
       </Row>
       <Row style={{marginTop: '10px'}}>
         <Col md={8}>
-        <span style={{marginLeft: '5px'}}>Drawn At</span>
-        <Input></Input>
+        <span style={{marginLeft: '5px'}}>Narration</span>
+        <Input value={state.voucherNarration} onChange={(e)=>{
+          dispatch(setField({ field: 'voucherNarration', value: e.target.value }))
+        }}/>
         </Col>
       </Row>
       <Row style={{marginTop: '10px'}}>
@@ -556,13 +600,13 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         </Row>
         <Row>
           <Col md={3} style={{marginTop: '10px'}}>
-            <span style={{marginLeft: '5px', color: state.gainLossAmount > 0 ? 'green' : 'black', fontWeight: state.gainLossAmount > 0 ? 'bold' : 'normal'}}>Gain</span>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount > 0.00 ? 'green' : 'black', fontWeight: state.gainLossAmount > 0.00 ? 'bold' : 'normal'}}>Gain</span>
             <span style={{marginLeft: '5px'}}>/</span>
-            <span style={{marginLeft: '5px', color: state.gainLossAmount < 0 ? 'red' : 'black', fontWeight: state.gainLossAmount < 0 ? 'bold' : 'normal'}}>Loss</span>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount < 0.00 ? 'red' : 'black', fontWeight: state.gainLossAmount < 0.00 ? 'bold' : 'normal'}}>Loss</span>
             <span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{commas(state.gainLossAmount)}</span>
             </Col>
           <Col md={6} style={{marginTop: '10px'}}>
-            <span style={{marginLeft: '5px', color: state.gainLossAmount != 0 && state.gainLossAccount == null ? 'red' : 'black', fontWeight: state.gainLossAmount != 0 ? 'bold' : 'normal'}}>Gain/Loss Account {state.gainLossAmount!=0?"*":null}</span>
+            <span style={{marginLeft: '5px', color: state.gainLossAmount != 0.00 && state.gainLossAccount == null ? 'red' : 'black', fontWeight: state.gainLossAmount != 0.00 ? 'bold' : 'normal'}}>Gain/Loss Account {state.gainLossAmount!=0.00?"*":null}</span>
             <Select
               allowClear
               showSearch

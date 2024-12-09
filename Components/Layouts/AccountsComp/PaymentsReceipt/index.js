@@ -26,6 +26,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   const dispatch = useDispatch();
   const state = useSelector((state) => state.paymentReciept);
   const fetchOldVouchers = async () => {
+    console.log("Getting Old Vouchers")
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
       headers: { companyid: Cookies.get('companyId') }
     }).then((x) => {
@@ -41,7 +42,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           type: x.vType,
           data: moment(x.createdAt).format('DD-MM-YYYY'),
           currency: x.currency,
-          amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount').amount,
+          amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount')?x.Voucher_Heads.find((y) => y.accountType=='partyAccount').amount:0.0,
           partyId: x.partyId,
           x: x
         };
@@ -104,7 +105,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   }
 
   const openOldVouchers = (x) => {
-    console.log(x);
+    console.log("<><><", x);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
     dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
@@ -127,7 +128,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
       }
       if(y.accountType=="Gain/Loss Account"){
-        dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount) }));
+        console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
+        dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) }));
         dispatch(setField({ field: 'gainLossAccount', value: y.ChildAccountId }))
       }
       if(y.accountType.includes('Charges Account')){
@@ -155,10 +157,11 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   }
 
   useEffect(() => {
-    id!=undefined&&state.selectedAccount==undefined?state.oldVouchers.find((x) => x.id == id)?openOldVouchers(state.oldVouchers.find((x) => x.id == id)):null:null
+    // console.log(id, state.voucherId)
+    (id!=undefined&&state.selectedAccount==undefined)||id!=state.voucherId?state.oldVouchers.find((x) => x.id == id)?openOldVouchers(state.oldVouchers.find((x) => x.id == id)):null:null
   })
 
-  console.log(state)
+  console.log("State>", state)
 
   return (
     <div className='base-page-layout'>

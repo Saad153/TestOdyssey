@@ -404,6 +404,7 @@ const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
       chargeList:tempList1, companyId, type:type
     }).then(async(x)=>{
       if(x.data.status=="success"){
+        console.log(x.data.result)
         approve(x.data.result)
         await delay(500)
         await getHeadsNew(state.selectedRecord.id, dispatch, reset)

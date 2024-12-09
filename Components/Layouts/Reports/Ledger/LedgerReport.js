@@ -11,8 +11,14 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
   useEffect(() => {
     // console.log(voucherData)
     if (name && voucherData.status == "success") {
+      let result = voucherData.result
+      if(currency!="PKR"){
+        console.log("Voucher Data:", voucherData.result)
+        result = voucherData.result.filter((x)=>x.accountType!="Gain/Loss Account")
+        console.log("Result Data:", result)
+      }
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
-      voucherData.result.forEach((y) => {
+      result.forEach((y) => {
         let exRate = parseFloat(y["Voucher.exRate"])>0?parseFloat(y["Voucher.exRate"]):1;
         const createdAtDate = moment(y.createdAt);
         if (

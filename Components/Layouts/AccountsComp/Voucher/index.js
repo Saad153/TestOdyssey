@@ -27,7 +27,7 @@ const Voucher = ({ id }) => {
       dispatch(setField({ field: 'edit', value: true }))
       dispatch(setField({ field: 'voucher_id', value: x.data.result.voucher_Id }))
       dispatch(setField({ field: 'voucher_No', value: x.data.result.voucher_No }))
-      dispatch(setField({ field: 'chequeDate', value: moment(x.data.result.chequeDate.toString()) }))
+      x.data.result.chequeDate?dispatch(setField({ field: 'chequeDate', value: moment(x.data.result.chequeDate.toString()) })):null
       dispatch(setField({ field: 'date', value: moment(x.data.result.createdAt.toString()) }))
       dispatch(setField({ field: 'vType', value: x.data.result.vType }))
       setCompanyId(x.data.result.CompanyId)

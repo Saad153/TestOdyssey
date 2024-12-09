@@ -23,25 +23,47 @@ const JobBalancingReport = ({ result, query }) => {
   const [aging, setAging] = useState(true)
   const dispatch = useDispatch();
   const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.0';
-  console.log(result)
+  //console.log(result)
   const getTotal = (type, list) => {
-    console.log(list)
+    //console.log(list)
     let values = 0.00;
-    list.forEach((x) => {
-      console.log(x)
-      console.log(type, x.payType)
+    list.filter((x) => {
+      //console.log("X..", x)
+      //console.log("QUERY..", query)
+        if (query.options == 'exclude0') {
+          //console.log("ASD")
+          //console.log(x.total, x.paid, x.recieved)
+          //console.log(x.total - x.paid, x.total - x.recieved)
+          // const balance = x.payType !== "Recievable" ? (x.total - x.paid) : (x.total - x.recieved);
+          return x.total -  x.paid != 0 && x.total - x.recieved != 0; // Directly check if balance is not zero
+        }
+        return true; // Keep all items if `query.options` is not 'exclude0'
+      }).forEach((x) => {
+      //console.log(x)
+      //console.log(type, x.payType)
       if (type.trim() == x.payType.trim()) {
-        console.log(x.total)
+        //console.log(x.total)
         values = values + parseFloat(x.total)
       }
     })
-    console.log(values)
+    //console.log(values)
     return commas(values);
   }
 
   const paidReceivedTotal = (list) => {
     let paid = 0.00, Received = 0.00, total = 0.00;
-    list.forEach((x) => {
+    list.filter((x) => {
+      //console.log("X..", x)
+      //console.log("QUERY..", query)
+        if (query.options == 'exclude0') {
+          //console.log("ASD")
+          //console.log(x.total, x.paid, x.recieved)
+          //console.log(x.total - x.paid, x.total - x.recieved)
+          // const balance = x.payType !== "Recievable" ? (x.total - x.paid) : (x.total - x.recieved);
+          return x.total -  x.paid != 0 && x.total - x.recieved != 0; // Directly check if balance is not zero
+        }
+        return true; // Keep all items if `query.options` is not 'exclude0'
+      }).forEach((x) => {
         if (x.payType == "Payble") {
             paid = paid + parseFloat(x.paid)
         } else {
@@ -119,10 +141,17 @@ const JobBalancingReport = ({ result, query }) => {
         vertical: 'middle'
       };
     });
-    console.log(result.result)
+    //console.log(result.result)
     const data = result.result
-      .filter((x) => (query.balance === 'exclude0' ? Math.floor(x.payType != "Recievable" ?(x.total-x.paid):(x.total-x.recieved)) !== 0 : x))
-      .map((x, i) => ({
+    .filter((x) => {
+      //console.log("Paid:", parseFloat(x.total) - parseFloat(x.paid))
+      //console.log("Received: ", parseFloat(x.total) - parseFloat(x.recieved))
+      if (query.options === 'exclude0') {
+        const balance = x.payType !== "Recievable" ? (parseFloat(x.total) - parseFloat(x.paid)) : (parseFloat(x.total) - parseFloat(x.recieved));
+        return balance !== 0; // Directly check if balance is not zero
+      }
+      return true; // Keep all items if `query.options` is not 'exclude0'
+    }).map((x, i) => ({
         index: i + 1,
         jobNo: x.SE_Job?.jobNo,
         // jobDate: moment(x.SE_Job?.createdAt).format('DD-MM-YYYY'),
@@ -295,9 +324,9 @@ const JobBalancingReport = ({ result, query }) => {
       let balance3 = 0.0;
       let balance4 = 0.0;
       let balance5 = 0.0;
-      result.result.filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance.slice(1, -1)) !== 0 : x)).forEach((x)=>{
-        console.log("Total>>",x.total)
-        console.log("payType>>",x.payType)
+      result.result.filter((x) => (query.options === 'exclude0' ? Math.floor(x.balance.slice(1, -1)) !== 0 : x)).forEach((x)=>{
+        //console.log("Total>>",x.total)
+        //console.log("payType>>",x.payType)
         if((getAge(x.createdAt)+1)>=0 && (getAge(x.createdAt)+1) <=30){
           x.payType == "Recievable"?
           balance1 += x.payType != "Recievable" ?parseFloat(x.total-x.paid):parseFloat(x.total-x.recieved):
@@ -393,7 +422,7 @@ const JobBalancingReport = ({ result, query }) => {
         link.click();
         window.URL.revokeObjectURL(url);
       }catch(e){
-        console.log(e)
+        //console.log(e)
         console.error(e)
       }
   
@@ -403,7 +432,7 @@ const JobBalancingReport = ({ result, query }) => {
     const exportToExcelGrid = async () => {
       const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Invoice Report');
-      // console.log(columnDefs)
+      // //console.log(columnDefs)
 
     worksheet.columns = columnDefs.map((col) => ({
       header: col.headerName,
@@ -478,7 +507,7 @@ const JobBalancingReport = ({ result, query }) => {
       };
     });
 
-    console.log(flattenedData)
+    //console.log(flattenedData)
   
 
       worksheet.addRows(flattenedData);
@@ -610,22 +639,33 @@ const JobBalancingReport = ({ result, query }) => {
         link.click();
         window.URL.revokeObjectURL(url);
       }catch(e){
-        console.log(e)
+        //console.log(e)
         console.error(e)
       }
     }
 
   const balanceTotal = (list) => {
     let balance = 0.00;
-    console.log(list)
-    list.forEach((x) => {
-      console.log(x)
+    //console.log(list)
+    list.filter((x) => {
+      //console.log("X..", x)
+      //console.log("QUERY..", query)
+        if (query.options == 'exclude0') {
+          //console.log("ASD")
+          //console.log(x.total, x.paid, x.recieved)
+          //console.log(x.total - x.paid, x.total - x.recieved)
+          // const balance = x.payType !== "Recievable" ? (x.total - x.paid) : (x.total - x.recieved);
+          return x.total -  x.paid != 0 && x.total - x.recieved != 0; // Directly check if balance is not zero
+        }
+        return true; // Keep all items if `query.options` is not 'exclude0'
+      }).forEach((x) => {
+      //console.log(x)
       if (x.payType == "Payble") {
         balance = balance - parseFloat(x.total-x.paid)
       } else {
         balance = balance + parseFloat(x.total-x.recieved)
       }
-      console.log(balance)
+      //console.log(balance)
     })
     return balance >= 0 ? commas(balance) : (`(${commas(balance * -1)})`);
   }
@@ -653,7 +693,7 @@ const JobBalancingReport = ({ result, query }) => {
     let newArray = [...value.result];
     await newArray.forEach((y, i) => {
       y.no = i + 1;
-      console.log(y)
+      //console.log(y)
       y.balance = y.total!="0"?parseFloat(y.recieved)!=0 ?
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
         (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
@@ -669,7 +709,7 @@ const JobBalancingReport = ({ result, query }) => {
       y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
       y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
       y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;
-      // console.log(y.balanced, y.recieved, commas(y.recieved))
+      // //console.log(y.balanced, y.recieved, commas(y.recieved))
       y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
       y.containers = y?.SE_Job?.SE_Equipments.map((x) => x.size).join(", ")
       y.company = y.companyId == "1"? "Sea Net Shipping & Logistics Ltd.": y.companyId == "2"? "Acs Shipping & Logistics Ltd.": "Invalid"
@@ -680,14 +720,14 @@ const JobBalancingReport = ({ result, query }) => {
       // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
     })
     if(query.options!="showall"){
-      // console.log(newArray)
+      // //console.log(newArray)
       newArray = await newArray.filter((x)=>{
         return x.balance!=0
       })
-      // console.log(newArray)
+      // //console.log(newArray)
 
     }
-    console.log("Successful")
+    //console.log("Successful")
     setRecords(newArray);
     } else {}
   }
@@ -747,7 +787,18 @@ const JobBalancingReport = ({ result, query }) => {
             </thead>
             <tbody>
               {/* without print  */}
-              {overflow ? result.result.map((x,i)=>{
+              {overflow ? result.result.filter((x) => {
+                //console.log("X..", x)
+                //console.log("QUERY..", query)
+                  if (query.options == 'exclude0') {
+                    //console.log("ASD")
+                    //console.log(x.total, x.paid, x.recieved)
+                    //console.log(x.total - x.paid, x.total - x.recieved)
+                    // const balance = x.payType !== "Recievable" ? (x.total - x.paid) : (x.total - x.recieved);
+                    return x.total -  x.paid != 0 && x.total - x.recieved != 0; // Directly check if balance is not zero
+                  }
+                  return true; // Keep all items if `query.options` is not 'exclude0'
+                }).map((x,i)=>{
                 const date = x.SE_Job?.jobDate;
                 const formattedDate = moment(date).format('DD-MMM-YYYY');
                 const sailDate = x.SE_Job?.shipDate;
@@ -853,7 +904,7 @@ const JobBalancingReport = ({ result, query }) => {
                 </tr>
               )}
               {/* showing total in the last page  */}
-              {console.log(overflow, currentPage, noOfPages)}
+              {/* {//console.log(overflow, currentPage, noOfPages)} */}
               {overflow && currentPage === noOfPages && (
                 <tr>
                   <td></td>
@@ -871,7 +922,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td></td>
                   <td></td>
                   <td colSpan={8} style={{ textAlign: 'right' }}><b>Total</b></td>
-                  {console.log(getTotal("Recievable", result.result), getTotal("Payble", result.result))}
+                  {/* {//console.log(getTotal("Recievable", result.result), getTotal("Payble", result.result))} */}
                   <td style={{ textAlign: 'right' }}>{getTotal("Recievable", result.result)}</td>
                   <td style={{ textAlign: 'right' }}>{getTotal("Payble", result.result)}</td>
                   {/* <td style={{ textAlign: 'right' }}>{paidReceivedTotal(result.result)}</td> */}
@@ -1011,7 +1062,7 @@ const JobBalancingReport = ({ result, query }) => {
     {/* <---- list View only with filteration ----> */}
     {query.report != "viewer" &&
     <div className="ag-theme-alpine" style={{ width: "100%", height: '72vh' }}>
-      {console.log(records)}
+      {/* {//console.log(records)} */}
       <AgGridReact
         ref={gridRef} // Ref for accessing Grid's API
         rowData={records} // Row Data for Rows

@@ -48,15 +48,26 @@ const accountlevel = query.accountLevel;
   const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
   const makeTransaction = (data) => {
+    console.log("Data", data)
     let transactions  = {
       debit:0,
       credit:0,
     }
+    let gainLoss = false
     data.forEach((x)=>{
       x.type=="debit"?
-        transactions.debit += parseFloat(x.amount):
-        transactions.credit += parseFloat(x.amount)
+        transactions.debit += parseFloat(x.defaultAmount):
+        transactions.credit += parseFloat(x.defaultAmount)
+      if(x.accountType=="Gain/Loss Account"){
+        gainLoss = true
+      }
     });
+
+    if(gainLoss){
+      transactions.debit = transactions.debit-transactions.credit
+      transactions.credit = 0
+
+    }
     
     // let amount = transactions.debit - transactions.credit
     // amount>0?
@@ -75,18 +86,13 @@ const accountlevel = query.accountLevel;
     let tempArray = [result.result[0], result.result[1]]
     tempArray.forEach((x)=>{
       let i = 0
-      // console.log("x",x.title)
-      // console.log(query.expense)
-      // console.log(query.revenue)
       if(query.expense != null && x.title == query.expense){
         temp.push({
           title:x.title, type:'parent'
         });
         x.Parent_Accounts.forEach((y)=>{
-          // console.log("y",y)
           if(y.Child_Accounts?.length>0){
             y.Child_Accounts.forEach((z)=>{
-              // console.log("Expense",z)
               i = i + 1
               if(query.expense != null){
                 temp.push({
@@ -128,7 +134,7 @@ const accountlevel = query.accountLevel;
         // console.log("temp", temp)
         const idsToFilter = [
           "FCL FREIGHT EXPENSE",
-          "LCL FREIGHT EXP",
+          "LCL FREIGHT EXPENSE",
           "IMPORT EXPENSES",
           "AIR FREIGHT EXPENSE"
         ];
@@ -208,10 +214,6 @@ const accountlevel = query.accountLevel;
                  let tempFilter =[];
                  tempFilter=  temp.filter(item => item.type !== 'parent');
                  setfilteredTempData(tempFilter)
-
-             
-             
-
               }
             })
           }

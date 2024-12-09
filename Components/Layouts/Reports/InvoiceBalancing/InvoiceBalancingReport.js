@@ -24,7 +24,23 @@ const InvoiceBalancingReport = ({ result, query }) => {
 
   const getTotal = (type, list) => {
     let result = 0.00;
-    list.forEach((x) => {
+    list.filter((x)=>{
+      console.log(`Balance: -${x.balance}-`)
+      console.log(`Query: -${query.balance}-`)
+      if(query.balance=="exclude0"){
+        console.log("Exclude Zero")
+        if(x.balance!='0.0' && x.balance!='(0.0)'){
+          console.log("Balance Zero")
+          return x
+        }else{
+          console.log("Balance Not Zero")
+        }
+      }else{
+        console.log("Show All")
+        return x
+      }
+      // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
+    }).forEach((x) => {
       if (type == x.payType) {
         result = result + parseFloat(x.total)
       }
@@ -38,7 +54,23 @@ const InvoiceBalancingReport = ({ result, query }) => {
 
   const paidReceivedTotal = (list) => {
     let paid = 0.00, Received = 0.00, total = 0.00;
-    list.forEach((x) => {
+    list.filter((x)=>{
+      console.log(`Balance: -${x.balance}-`)
+      console.log(`Query: -${query.balance}-`)
+      if(query.balance=="exclude0"){
+        console.log("Exclude Zero")
+        if(x.balance!='0.0' && x.balance!='(0.0)'){
+          console.log("Balance Zero")
+          return x
+        }else{
+          console.log("Balance Not Zero")
+        }
+      }else{
+        console.log("Show All")
+        return x
+      }
+      // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
+    }).forEach((x) => {
       if(query.currency!='PKR'){
         if (x.payType == "Payble") {
           paid = paid + parseFloat(x.paid)
@@ -64,7 +96,23 @@ const InvoiceBalancingReport = ({ result, query }) => {
 
   const balanceTotal = (list) => {
     let balance = 0.00;
-    list.forEach((x) => {
+    list.filter((x)=>{
+      console.log(`Balance: -${x.balance}-`)
+      console.log(`Query: -${query.balance}-`)
+      if(query.balance=="exclude0"){
+        console.log("Exclude Zero")
+        if(x.balance!='0.0' && x.balance!='(0.0)'){
+          console.log("Balance Zero")
+          return x
+        }else{
+          console.log("Balance Not Zero")
+        }
+      }else{
+        console.log("Show All")
+        return x
+      }
+      // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
+    }).forEach((x) => {
       if(x.payType == "Payble"){
         balance = balance - parseFloat(x.total-x.paid)
       }else{
@@ -724,7 +772,21 @@ const InvoiceBalancingReport = ({ result, query }) => {
                   </thead>
                   <tbody>
                     {currentRecords.filter((x)=>{
-                      return query.balance=="exclude0"?x.balance!="0.0"&&x.balance!="(0.0)":x
+                      console.log(`Balance: -${x.balance}-`)
+                      console.log(`Query: -${query.balance}-`)
+                      if(query.balance=="exclude0"){
+                        console.log("Exclude Zero")
+                        if(x.balance!='0.0' && x.balance!='(0.0)'){
+                          console.log("Balance Zero")
+                          return x
+                        }else{
+                          console.log("Balance Not Zero")
+                        }
+                      }else{
+                        console.log("Show All")
+                        return x
+                      }
+                      // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
                     }).map((x, i) => {
                       console.log(x)
                     return (

@@ -150,8 +150,14 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/seaJobs/export/[id]"){
       setToggleState('4-3');
     }
-    if(newRouter.pathname==="/accounts/openingInvoices/[id]" && !newRouter.pathname===("/accounts/openingInvoices/list")){
+    if(newRouter.pathname==="/accounts/openingInvoices/list"){
+      setToggleState('3-11');
+    }
+    if(newRouter.pathname==="/accounts/openingInvoices/[id]" || newRouter.pathname===("/accounts/openingInvoices/new")){
       setToggleState('3-12');
+    }
+    if(newRouter.pathname==="/accounts/paymentReceipt/[id]" || newRouter.pathname===("/accounts/paymentReceipt/new")){
+      setToggleState('3-4');
     }
     if(newRouter.pathname==="/seaJobs/seJobList"){
       setToggleState('4-1');
@@ -371,7 +377,7 @@ const MainLayout = ({children}) => {
     else if(x.key=='3-2'){ Router.push('/accounts/accountActivity') }
     else if(x.key=='3-3'){ Router.push('/accounts/invoiceAndBills') }
     else if(x.key=='3-4'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
-    else if(x.key=='3-13'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
+    // else if(x.key=='3-13'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
     else if(x.key=='3-5'){ 
       //console.log(x);
       if(x.id){

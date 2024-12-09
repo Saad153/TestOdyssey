@@ -18,7 +18,7 @@ const JobBalancing = () => {
   const [ party, setParty ] = useState("");
   const [ overseasAgent, setOverseasAgent ] = useState("");
   const [ reportType, setReportType ] = useState("viewer");
-  const [ options, setOptions ] = useState("exclude");
+  const [ options, setOptions ] = useState("exclude0");
   const [ representator, setRepresentator ] = useState("");
   const [ currency, setCurrency ] = useState("");
   const [ jobTypes, setJobTypes ] = useState([]);
@@ -244,7 +244,7 @@ const JobBalancing = () => {
           <Col md={4} style={{border:'1px solid silver', marginLeft:12}} className='py-1'>
             Options
             <Radio.Group onChange={(e)=>setOptions(e.target.value)} value={options}>
-                <Radio value={"exclude"}>Exclude 0 Balance</Radio>
+                <Radio value={"exclude0"}>Exclude 0 Balance</Radio>
                 <Radio value={"showall"}>Show All</Radio>
             </Radio.Group>
           </Col>

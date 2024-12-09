@@ -5,6 +5,7 @@ import { DatePicker, InputNumber, Radio, Select } from 'antd'
 import { setField, resetState } from '../../../../redux/openingInvoices/openingInvoicesSlice'
 import axios from 'axios'
 import Router from 'next/router'
+import openNotification from "/Components/Shared/Notification";
 import Cookies from 'js-cookie'
 
 const OpeningInvoice = (id) => {
@@ -64,6 +65,9 @@ const OpeningInvoice = (id) => {
         if(x.accountType=="payAccount"){
           dispatch(setField({ field: 'creditAccount', value: x.ChildAccountId }));
         }
+        if(x.accountType=="partyAccount"){
+          // dispatch(setField({ field: 'account', value: x.ChildAccountId }));
+        }
       })
       dispatch(setField({ field: 'account', value: parseInt(result.data.result.result.party_Id) }));
       // dispatch(setField({ field: 'creditAccount', value: parseInt(result.data.result.result.party_Id) }));
@@ -91,27 +95,33 @@ const OpeningInvoice = (id) => {
     if(id.id.id != "new"){
       await deleteInvoice(id.id.id)
     }
-    console.log(state)
-    const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/openingInvoice`, {
-      party_Id: state.account,
-      party_Name: state.accounts.find((x) => x.id == state.account).name,
-      type: state.type,
-      date: state.createdAt,
-      amount: state.total,
-      currency: state.currency,
-      payType: state.payType,
-      creditAccount: state.creditAccount,
-      exRate: state.ex_rate,
-      operation: state.operation,
-      partyType: state.accountType,
-      companyId: Cookies.get('companyId'),
-    })
-    console.log(result)
-    if (result.data.status == 'success') {
-      Router.push('/accounts/openingInvoices/list')
-      dispatch(resetState())
+    if(state.currency!="PKR" && state.ex_rate<=100){
+      openNotification("Error", `Invalid Exchange Rate`, "red")
+    }else{
+      const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/openingInvoice`, {
+        party_Id: state.account,
+        party_Name: state.accounts.find((x) => x.id == state.account).name,
+        type: state.type,
+        date: state.createdAt,
+        amount: state.total,
+        currency: state.currency,
+        payType: state.payType,
+        creditAccount: state.creditAccount,
+        exRate: state.ex_rate,
+        operation: state.operation,
+        partyType: state.accountType,
+        companyId: Cookies.get('companyId'),
+      })
+      console.log(result)
+      if (result.data.status == 'success') {
+        Router.push('/accounts/openingInvoices/list')
+        dispatch(resetState())
+      }
     }
   }
+
+  console.log(state)
+
 
   return (
     <div className='base-page-layout'>
@@ -249,7 +259,11 @@ const OpeningInvoice = (id) => {
               <Select.Option value="PKR">PKR</Select.Option>
               <Select.Option value="USD">USD</Select.Option>
               <Select.Option value="EUR">EUR</Select.Option>
-              <Select.Option value="GPB">GPB</Select.Option>
+              <Select.Option value="GBP">GBP</Select.Option>
+              <Select.Option value="AED">AED</Select.Option>
+              <Select.Option value="OMR">OMR</Select.Option>
+              <Select.Option value="BDT">BDT</Select.Option>
+              <Select.Option value="CHF">CHF</Select.Option>
             </Select>
           </Row>
         </Col>
@@ -282,7 +296,7 @@ const OpeningInvoice = (id) => {
               value={state.account}
               options={state.accounts.map((account) => ({
                 label: `(${account.code}) ${account.name}`,
-                value: account.id,
+                value: parseInt(account.id),
               }))}
               filterOption={(input, option) =>
                 option?.label.toLowerCase().includes(input.toLowerCase())

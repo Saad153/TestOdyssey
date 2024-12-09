@@ -81,7 +81,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                               "id": `${x.voucherId}`
                             }));
                           }else if(x.voucherType == "Opening Reciept" || x.voucherType == "Opening Payment"){
-                            dispatch(incrementTab({ "label": "Opening Invoice", "key": "3-6", "id": `${x.voucherId}` }));
+                            dispatch(incrementTab({ "label": "Opening Invoice", "key": "3-12", "id": `${x.voucherId}` }));
                             Router.push(`/accounts/openingInvoices/${x.voucherId}`);
                           } else {
                             dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": `${x.voucherId}` }));

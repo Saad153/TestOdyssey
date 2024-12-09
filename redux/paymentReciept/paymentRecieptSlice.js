@@ -11,6 +11,7 @@ const initialState = {
   oldVouchers: [],
   oldVouchersList: [],
   selectedAccount: undefined,
+  voucherNarration: "",
   edit: false,
   voucherId: undefined,
   invoices: [],
