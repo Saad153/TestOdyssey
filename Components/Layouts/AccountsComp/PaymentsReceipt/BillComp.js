@@ -50,7 +50,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
   const [ first, setFirst] = useState(false)
   useEffect(() => {
-    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount) || (state.invoices.length > 0 && state.invoices[0].currency != state.currency))){
+    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount) || (state.invoices.length > 0 && state.invoices[0].currency != state.currency) || (state.invoices.length > 0 && state.invoices[0].payType != state.payType))){
       fetchInvoices()
       setFirst(true)
     }
@@ -138,7 +138,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     }
     if(state.invoices.length>0){
       if(!state.edit){
-        dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
+        // dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
         dispatch(setField({ field: 'totalReceivable', value: temp }))
         dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
       }

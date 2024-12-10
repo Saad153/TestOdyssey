@@ -36,9 +36,15 @@ import moment from 'moment';
       return initialState;
       // state = initialState
     },
+    resetOpeningInvoice(state, action) {
+      console.log("reset")
+      return initialState;
+      // state = initialState
+    },
+    
   },
 })
 
-export const { setField, resetState } = openingInvoiceSlice.actions
+export const { setField, resetState, resetOpeningInvoice } = openingInvoiceSlice.actions
 
 export default openingInvoiceSlice.reducer
