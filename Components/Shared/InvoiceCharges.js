@@ -426,19 +426,18 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
   }
 
   const routeToPayRec = () => {
+    console.log("Invoice>>",invoice)
     dispatchNew(incrementTab({
       "label": "Payment / Receipt",
       "key": "3-4",
-      "id":`new?name=${data.resultOne.party_Name}&partyid=${data.resultOne.party_Id}&type=${data.resultOne.partyType}&paytype=${data.resultOne.payType}&currency=${data.resultOne.currency}`
+      "id":`new?partyId=${invoice.party_Id}&partyType=${invoice.partyType}&payType=${invoice.payType}`
     }))
     Router.push({
       pathname:"/accounts/paymentReceipt/new", 
       query:{
-        name:data.resultOne.party_Name,
-        partyid:data.resultOne.party_Id,
-        type:data.resultOne.partyType,
-        paytype:data.resultOne.payType,
-        currency:data.resultOne.currency,
+        partyId: invoice.party_Id,
+        partyType: invoice.partyType,
+        payType: invoice.payType,
       }}, 
       undefined,
       {shallow:true}
@@ -464,7 +463,7 @@ return (
             </button>
             <InvoiceEditor data={data} reload={reload} />
           </div>
-          <div className='btn-custom-green px-2 py-2 h-screen flex items-center justify-evenly' onClick={routeToPayRec}> 
+          <div className='btn-custom-green px-2 py-2 h-screen flex items-center justify-evenly' style={{cursor:'pointer'}} onClick={routeToPayRec}> 
           <b style={{marginTop:1, paddingRight:2}}>Go to Payment/Receipt</b><RightOutlined style={{fontSize:14}}/>
           </div>
         </div>

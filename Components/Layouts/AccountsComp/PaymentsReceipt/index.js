@@ -23,6 +23,7 @@ import Cookies from "js-cookie";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 const PaymentsReceipt = ({ id, voucherData, q }) => {
+  console.log("Query: ", q)
   const dispatch = useDispatch();
   const state = useSelector((state) => state.paymentReciept);
   const fetchOldVouchers = async () => {
@@ -160,6 +161,19 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     // console.log(id, state.voucherId)
     (id!=undefined&&state.selectedAccount==undefined)||id!=state.voucherId?state.oldVouchers.find((x) => x.id == id)?openOldVouchers(state.oldVouchers.find((x) => x.id == id)):null:null
   })
+
+  useEffect(() => {
+    if(q.partyId){
+      console.log(q.partyId)
+      console.log(q.payType)
+      console.log(q.partyType)
+      dispatch(setField({ field: 'type', value: q.partyType }));
+      dispatch(setField({ field: 'payType', value: q.payType }));
+      dispatch(setField({ field: 'selectedAccount', value: parseInt(q.partyId) }));
+    }else{
+      console.log("No query")
+    }
+  }, [q])
 
   console.log("State>", state)
 
