@@ -13,6 +13,7 @@ import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew, approve
 import { v4 as uuidv4 } from 'uuid';
 import openNotification from '/Components/Shared/Notification';
 import { checkEditAccess } from "../../../../../functions/checkEditAccess";
+import InputNumberComp from "../../../../Shared/Form/InputNumberComp";
 
 
 
@@ -379,7 +380,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           }
           <td style={{ padding: 3 }}>{/* QTY */}
           <div style={{border:chargeList[index]?.qty==0?'2px solid red':'silver'}}>
-          <InputNumComp register={register} name={`chargeList.${index}.qty`} control={control} label='' width={20} 
+          <InputNumberComp register={register} name={`chargeList.${index}.qty`} control={control} label='' width={20} 
             disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
               let tempChargeList = [...chargeList];
               tempChargeList[index].qty = e;
@@ -405,7 +406,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </div>
           </td> 
           {(operationType=="AI"||operationType=="AE") &&<td style={{ padding: 3 }}>{/* rate_charge */}
-          <InputNumComp register={register} name={`chargeList.${index}.rate_charge`} control={control} label='' width={20} 
+          <InputNumberComp register={register} name={`chargeList.${index}.rate_charge`} control={control} label='' width={20} 
             disabled={!(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
               let tempChargeList = [...chargeList];
               tempChargeList[index].rate_charge = e;
@@ -445,7 +446,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           />
           </td>
           <td style={{ padding: 3 }}> {/* Amount */}
-          <InputNumComp register={register} name={`chargeList.${index}.amount`} control={control} label='' width={20} 
+          <InputNumberComp register={register} name={`chargeList.${index}.amount`} control={control} label='' width={20} 
             disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
               let tempChargeList = [...chargeList];
               tempChargeList[index].amount = e;
@@ -470,7 +471,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           />
           </td>
           <td style={{ padding: 3 }}>  {/* Discount */}
-          <InputNumComp register={register} name={`chargeList.${index}.discount`} control={control} width={30} font={13} 
+          <InputNumberComp register={register} name={`chargeList.${index}.discount`} control={control} width={30} font={13} 
             disabled={permissionAssign(permissions, x)} onChange={(e)=>{
               let tempChargeList = [...chargeList];
               tempChargeList[index].discount = e;
@@ -503,7 +504,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           <td>{commas(x.net_amount)}</td>
           <td style={{ padding: 3 }}> {/* Ex. Rate */}
           {chargeList[index]?.currency!="PKR" && 
-            <InputNumComp register={register} name={`chargeList.${index}.ex_rate`}  control={control} label='' width={10} 
+            <InputNumberComp register={register} name={`chargeList.${index}.ex_rate`}  control={control} label='' width={10} 
             disabled={permissionAssign(permissions, x)}  onChange={(e)=>{
                 let tempChargeList = [...chargeList];
                 tempChargeList[index].ex_rate = e;

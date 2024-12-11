@@ -2,11 +2,11 @@ import { InputNumber } from "antd";
 import { useController } from "react-hook-form";
 import React from 'react';
 
-const NumComp = (props) => {
-  // const { control, name, state, readOnly, onChange } = props;
-  // const { field:{ onBlur, value, name: fieldName, ref} } = useController({ control, name });
-  const { control, name, state, readOnly } = props;
-  const { field:{onChange, onBlur, value, name: fieldName, ref} } = useController({ control, name });
+const NumberComp = (props) => {
+  const { control, name, state, readOnly, onChange } = props;
+  const { field:{ onBlur, value, name: fieldName, ref} } = useController({ control, name });
+//   const { control, name, state, readOnly } = props;
+//   const { field:{onChange, onBlur, value, name: fieldName, ref} } = useController({ control, name });
   return (
     <>
       <div>{props.label}</div>
@@ -19,4 +19,4 @@ const NumComp = (props) => {
   )
 }
 
-export default React.memo(NumComp)
+export default React.memo(NumberComp)
