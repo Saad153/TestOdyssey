@@ -52,26 +52,29 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
     <Table className='tableFixHead' bordered>
       <thead>
         <tr>
-          <th>#</th>
-          <th>Voucher Id</th>
-          <th>Cost Center</th>
-          <th>Currency</th>
-          <th>Ex. Rate</th>
-          <th>Date</th>
-          <th>Delete</th>
+          <th style={{width: '2.5%'}}>#</th>
+          <th style={{width: '15%'}}>Voucher Id</th>
+          <th>Account</th>
+          <th style={{width: '5%'}}>Currency</th>
+          <th style={{width: '5%'}}>Ex.Rate</th>
+          <th style={{width: '15%'}}>Amount</th>
+          <th style={{width: '15%'}}>Date</th>
+          <th style={{width: '2.5%'}}>Delete</th>
         </tr>
       </thead>
       <tbody>
       {records?.map((x, index) => {
+        console.log("X>>>", x)
       return (
       <tr key={index} className='f table-row-center-singleLine row-hov'
         
       >
         <td>{x?.voucher_No}</td>
         <td onClick={()=>Router.push(`/accounts/openingBalance/${x.id}`)}>{x?.voucher_Id}</td>
-        <td>{x?.costCenter}</td>
+        <td>{x?.Voucher_Heads[0].Child_Account.title}</td>
         <td>{x?.currency}</td>
         <td>{x.exRate}</td>
+        <td>{x.Voucher_Heads[0].amount}</td>
         <td>{moment(x?.createdAt).format("YYYY-MM-DD")}</td>
         <td><DeleteOutlined onClick={(e) => { e.stopPropagation(); handleDelete(x.id) }} /></td>
       </tr>

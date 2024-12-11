@@ -380,9 +380,22 @@ const Voucher = ({ id }) => {
                     ...state.settleVoucherHead,
                     type: Type === "debit" ? "credit" : "debit",
                   };
-                  
-                  dispatch(setField({ field: 'settleVoucherHead', value: updatedVoucherHead }))
-                  dispatch(setField({ field: 'Voucher_Heads', value: updatedInvoiceList })); 
+                  dispatch(setField({ field: 'settlementAccount', value: undefined }))
+                  dispatch(setField({ field: 'chequeNo', value: "" }))
+                  dispatch(setField({ field: 'chequeDate', value: moment() }))
+                  dispatch(setField({ field: 'currency', value: "PKR" }))
+                  dispatch(setField({ field: 'exRate', value: "1.00" }))
+                  dispatch(setField({ field: 'voucherNarration', value: "" }))
+                  dispatch(setField({ field: 'settleVoucherHead', value: {
+                    defaultAmount: 0.0,
+                    amount: 0.0,
+                    type: "",
+                    narration: "",
+                    settlement: "",
+                    accountType: "payAccount",
+                    createdAt: moment()
+                  } }))
+                  dispatch(setField({ field: 'Voucher_Heads', value: [] })); 
                   dispatch(setField({ field: 'settlementAccount', value: undefined }))
                 }} style={{width: '100%'}}>
                 <Select.Option value="CRV">CRV</Select.Option>
@@ -477,10 +490,10 @@ const Voucher = ({ id }) => {
         </Col>
       </Row>
       <Col md={12} style={{marginTop: '15px'}}>
-        <button onClick={()=>{
+        {/* <button onClick={()=>{
           let temp = [...state.Voucher_Heads]
           let Type = ""
-          Type = state.vType=="CPV"||state.vType=="BPV"?"debit":state.vType=="CRV"||state.vType=="BRV"?"credit":""
+          Type = state.vType=="CPV"||state.vType=="BPV"?"debit":state.vType=="CRV"||state.vType=="BRV"?"credit":"credit"
           temp.push({
             defaultAmount: 0.0,
             amount: 0.0,
@@ -492,7 +505,7 @@ const Voucher = ({ id }) => {
             createdAt: moment()
           })
           dispatch(setField({ field: 'Voucher_Heads', value: temp }))
-        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Add Row</button>
+        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Add Row</button> */}
         <table style={{width: '100%'}}>
           <thead style={{backgroundColor: '#d7d7d7'}}>
             <tr>

@@ -13,6 +13,7 @@ const initialState = {
   selectedAccount: undefined,
   voucherNarration: "",
   edit: false,
+  editing: false,
   voucherId: undefined,
   invoices: [],
   load: false,

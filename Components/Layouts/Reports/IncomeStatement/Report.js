@@ -64,7 +64,7 @@ const accountlevel = query.accountLevel;
     });
 
     if(gainLoss){
-      transactions.debit = transactions.debit-transactions.credit
+      transactions.debit = transactions.credit-transactions.debit
       transactions.credit = 0
 
     }

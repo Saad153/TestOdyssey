@@ -108,7 +108,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     console.log("<><><", x);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
+    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
     dispatch(setField({ field: 'currency', value: x.currency }))
     dispatch(setField({ field: 'date', value: moment(x.x.data) }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
@@ -244,6 +244,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                     // Get the union as an array
                     const union = Array.from(map.values());
                     console.log(union)
+                    dispatch(setField({ field: 'editing', value: true }))
                     dispatch(setField({ field: 'invoices', value: union }))
                   })
                 }catch(e){

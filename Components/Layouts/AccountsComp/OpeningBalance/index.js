@@ -76,6 +76,7 @@ const OpeningBalance = ({id, voucherData}) => {
         type:"Opening Balance", Voucher_Heads:voucherAccounts
       }).then((x) => {
         if(x.data.status=="success"){
+          // Router.push(`/accounts/openingBalance/list`)
           Router.push(`/accounts/openingBalance/${x.data.result.id}`)
         }
       })
@@ -165,6 +166,11 @@ const OpeningBalance = ({id, voucherData}) => {
               ]}
             />
       </Col>
+      <Col md={4}>
+      <button style={{float:'right', backgroundColor: '#1d1d1f', color: '#d7d7d7', padding: '2.5px 25px', borderRadius: '15px', fontSize: '14px'}}
+      onClick={() => Router.push(`/accounts/openingBalance/list`)}
+      >Back</button>
+      </Col>
       
       <Col md={12}>
       <hr/>
@@ -189,7 +195,7 @@ const OpeningBalance = ({id, voucherData}) => {
                   showSearch
                   filterOption={filterOption}
                   options={ accounts?.map((y) => {
-                    return { label:y.title, value:y.id }
+                    return { label:`(${y.code}) ${y.title}`, value:y.id }
                   })}
                 />}
                 {load && <div className='text-center pt-2'><Spinner size='sm' /></div> }

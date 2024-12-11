@@ -379,14 +379,54 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           }
           <td style={{ padding: 3 }}>{/* QTY */}
           <div style={{border:chargeList[index]?.qty==0?'2px solid red':'silver'}}>
-            <InputNumComp register={register} name={`chargeList.${index}.qty`} control={control} width={30} font={13} 
-              disabled={permissionAssign(permissions, x)}
-            />
+          <InputNumComp register={register} name={`chargeList.${index}.qty`} control={control} label='' width={20} 
+            disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
+              let tempChargeList = [...chargeList];
+              tempChargeList[index].qty = e;
+              let amount = tempChargeList[index].amount*tempChargeList[index].rate_charge - tempChargeList[index].discount;
+              let tax = 0.00;
+              if(tempChargeList[index].tax_apply==true){
+                tax = (amount/100.00) * tempChargeList[index].taxPerc;
+                tempChargeList[index].tax_amount = tax;
+                tempChargeList[index].net_amount =( amount + tax ) * parseFloat(e);
+              } else {
+                tempChargeList[index].net_amount = (amount * parseFloat(e)).toFixed(2);
+              }
+              if(tempChargeList[index].currency=="PKR"){
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*1.00).toFixed(2);
+              } else {
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*tempChargeList[index].ex_rate).toFixed(2);
+              }
+              let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+              dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+              reset({ chargeList: tempChargeList });
+            }}
+          />
           </div>
           </td> 
           {(operationType=="AI"||operationType=="AE") &&<td style={{ padding: 3 }}>{/* rate_charge */}
-          <InputNumComp register={register} name={`chargeList.${index}.rate_charge`} control={control} width={30} font={13} 
-            disabled={permissionAssign(permissions, x)}
+          <InputNumComp register={register} name={`chargeList.${index}.rate_charge`} control={control} label='' width={20} 
+            disabled={!(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
+              let tempChargeList = [...chargeList];
+              tempChargeList[index].rate_charge = e;
+              let amount = e*tempChargeList[index].amount - tempChargeList[index].discount;
+              let tax = 0.00;
+              if(tempChargeList[index].tax_apply==true){
+                tax = (amount/100.00) * tempChargeList[index].taxPerc;
+                tempChargeList[index].tax_amount = tax;
+                tempChargeList[index].net_amount =( amount + tax ) * parseFloat(tempChargeList[index].qty);
+              } else {
+                tempChargeList[index].net_amount = (amount * parseFloat(tempChargeList[index].qty)).toFixed(2);
+              }
+              if(tempChargeList[index].currency=="PKR"){
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*1.00).toFixed(2);
+              } else {
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*tempChargeList[index].ex_rate).toFixed(2);
+              }
+              let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+              dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+              reset({ chargeList: tempChargeList });
+            }}
           />
           </td> }
           <td style={{ padding: 3 }} > {/* Currency */}
@@ -406,12 +446,52 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           </td>
           <td style={{ padding: 3 }}> {/* Amount */}
           <InputNumComp register={register} name={`chargeList.${index}.amount`} control={control} label='' width={20} 
-            disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} 
+            disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
+              let tempChargeList = [...chargeList];
+              tempChargeList[index].amount = e;
+              let amount = e*tempChargeList[index].rate_charge - tempChargeList[index].discount;
+              let tax = 0.00;
+              if(tempChargeList[index].tax_apply==true){
+                tax = (amount/100.00) * tempChargeList[index].taxPerc;
+                tempChargeList[index].tax_amount = tax;
+                tempChargeList[index].net_amount =( amount + tax ) * parseFloat(tempChargeList[index].qty);
+              } else {
+                tempChargeList[index].net_amount = (amount * parseFloat(tempChargeList[index].qty)).toFixed(2);
+              }
+              if(tempChargeList[index].currency=="PKR"){
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*1.00).toFixed(2);
+              } else {
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*tempChargeList[index].ex_rate).toFixed(2);
+              }
+              let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+              dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+              reset({ chargeList: tempChargeList });
+            }}
           />
           </td>
           <td style={{ padding: 3 }}>  {/* Discount */}
           <InputNumComp register={register} name={`chargeList.${index}.discount`} control={control} width={30} font={13} 
-            disabled={permissionAssign(permissions, x)} 
+            disabled={permissionAssign(permissions, x)} onChange={(e)=>{
+              let tempChargeList = [...chargeList];
+              tempChargeList[index].discount = e;
+              let amount = tempChargeList[index].amount*tempChargeList[index].rate_charge - e;
+              let tax = 0.00;
+              if(tempChargeList[index].tax_apply==true){
+                tax = (amount/100.00) * tempChargeList[index].taxPerc;
+                tempChargeList[index].tax_amount = tax;
+                tempChargeList[index].net_amount =( amount + tax ) * parseFloat(tempChargeList[index].qty);
+              } else {
+                tempChargeList[index].net_amount = (amount * parseFloat(tempChargeList[index].qty)).toFixed(2);
+              }
+              if(tempChargeList[index].currency=="PKR"){
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*1.00).toFixed(2);
+              } else {
+                tempChargeList[index].local_amount = (tempChargeList[index].net_amount*tempChargeList[index].ex_rate).toFixed(2);
+              }
+              let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+              dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+              reset({ chargeList: tempChargeList });
+            }}
           />
           </td>
           <td style={{ textAlign: 'center' }}> {/* Tax Apply */}
@@ -424,8 +504,28 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           <td style={{ padding: 3 }}> {/* Ex. Rate */}
           {chargeList[index]?.currency!="PKR" && 
             <InputNumComp register={register} name={`chargeList.${index}.ex_rate`}  control={control} label='' width={10} 
-              disabled={permissionAssign(permissions, x)} 
-            />
+            disabled={permissionAssign(permissions, x)}  onChange={(e)=>{
+                let tempChargeList = [...chargeList];
+                tempChargeList[index].ex_rate = e;
+                let amount = tempChargeList[index].amount*e - tempChargeList[index].discount;
+                let tax = 0.00;
+                if(tempChargeList[index].tax_apply==true){
+                  tax = (amount/100.00) * tempChargeList[index].taxPerc;
+                  tempChargeList[index].tax_amount = tax;
+                  // tempChargeList[index].net_amount =( amount + tax ) * parseFloat(tempChargeList[index].qty);
+                } else {
+                  // tempChargeList[index].net_amount = (amount * parseFloat(tempChargeList[index].qty)).toFixed(2);
+                }
+                if(tempChargeList[index].currency=="PKR"){
+                  tempChargeList[index].local_amount = (tempChargeList[index].net_amount*1.00).toFixed(2);
+                } else {
+                  tempChargeList[index].local_amount = (tempChargeList[index].net_amount*tempChargeList[index].ex_rate).toFixed(2);
+                }
+                let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
+                dispatch({type:'set', payload:{...tempChargeHeadsArray}})
+                reset({ chargeList: tempChargeList });
+            }}
+          />
           }
           {chargeList[index]?.currency=="PKR" && <InputNumber value={1.00} />}
           </td>
@@ -455,7 +555,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    {checkEditAccess() && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
+    {checkEditAccess() && state.selectedRecord.approved[0] == '1' && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

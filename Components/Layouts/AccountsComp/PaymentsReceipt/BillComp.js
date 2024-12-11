@@ -136,8 +136,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     if(state.edit && temp == 0){
       temp = total
     }
+    console.log("GainLoss Amount: ", gainLoss)
     if(state.invoices.length>0){
-      if(!state.edit){
+      if(!state.edit || state.editing){
         dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
         dispatch(setField({ field: 'totalReceivable', value: temp }))
         dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
@@ -239,13 +240,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         })
       }
       let accountAmount = state.totalReceivable<0?state.totalReceivable*-1:state.totalReceivable
-      console.log("Account Amount 1>>", accountAmount)
       accountAmount = state.totalReceivable>0?accountAmount-state.bankChargesAmount:accountAmount+state.bankChargesAmount
-      console.log("Account Amount 2>>", accountAmount)
       accountAmount = state.totalReceivable>0?accountAmount-state.taxAmount:accountAmount+state.taxAmount
-      console.log("Account Amount 3>>", accountAmount)
-      // accountAmount -= state.gainLossAmount/state.exRate
-      // console.log("Account Amount 4>>", accountAmount)
+      // accountAmount = state.totalReceivable<0?(state.gainLossAmount/state.exRate)>0?accountAmount+(state.gainLossAmount/state.exRate):accountAmount-(state.gainLossAmount/state.exRate):(state.gainLossAmount/state.exRate)<0?accountAmount+(state.gainLossAmount/state.exRate):accountAmount-(state.gainLossAmount/state.exRate)
       if(state.totalReceivable!=0){
         temp.push({
           partyId: state.receivingAccount,
@@ -261,18 +258,34 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           partyId: state.gainLossAccount,
           accountType: "Gain/Loss Account",
           accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
-          debit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-          credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-          type: state.totalReceivable>0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
+          credit: state.gainLossAmount>0?state.gainLossAmount/state.exRate:0,
+          debit: state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          type: state.gainLossAmount<0?'debit':'credit'
         })
+        // temp.push({
+        //   partyId: state.gainLossAccount,
+        //   accountType: "Gain/Loss Account",
+        //   accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
+        //   debit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        //   credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        //   type: state.totalReceivable>0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
+        // })
         temp.push({
           partyId: state.selectedAccount,
           accountType: "Gain/Loss Account",
           accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
-          debit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-          credit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-          type: state.totalReceivable<0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
+          debit: state.gainLossAmount>0?state.gainLossAmount/state.exRate:0,
+          credit: state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+          type: state.gainLossAmount>0?'debit':'credit'
         })
+        // temp.push({
+        //   partyId: state.selectedAccount,
+        //   accountType: "Gain/Loss Account",
+        //   accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+        //   debit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        //   credit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
+        //   type: state.totalReceivable<0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
+        // })
       }
       // if(x.accountType=="Gain/Loss Account"){
       //   await Voucher_Heads.create({
@@ -308,10 +321,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           partyId: state.taxAccount,
           accountType: "Tax Account",
           accountName: state.adjustAccounts.find((x) => x.id === state.taxAccount)?.title || "N/A",
-          debit: state.totalReceivable>0?state.taxAmount:0,
-          credit: state.totalReceivable<0?state.taxAmount:0,
-          type: state.totalReceivable>0?'debit':'credit'
+          debit: state.taxAmount,
+          credit: 0,
+          type: 'debit'
         })
+        // temp.push({
+        //   partyId: state.taxAccount,
+        //   accountType: "Tax Account",
+        //   accountName: state.adjustAccounts.find((x) => x.id === state.taxAccount)?.title || "N/A",
+        //   debit: state.totalReceivable>0?state.taxAmount:0,
+        //   credit: state.totalReceivable<0?state.taxAmount:0,
+        //   type: state.totalReceivable>0?'debit':'credit'
+        // })
       }
     }else{
       if(state.totalReceivable!=0){

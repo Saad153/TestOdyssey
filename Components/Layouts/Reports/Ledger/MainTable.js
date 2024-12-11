@@ -59,7 +59,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                 {Object.keys(openingVoucher).length > 0 && <tr>
                   <td>1</td>
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
-                  <td className="text-center fs-12 grey-txt">{moment(openingVoucher["Voucher.date"]).format("YYYY-MM-DD")}</td>
+                  <td className="text-center fs-12 grey-txt">{moment(openingVoucher.createdAt).format("YYYY-MM-DD")}</td>
                   <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
                   <td className="text-end fs-12">{openingVoucher.type == "debit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
                   <td className="text-end fs-12">{openingVoucher.type == "credit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>

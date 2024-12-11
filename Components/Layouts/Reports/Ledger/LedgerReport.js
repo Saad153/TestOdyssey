@@ -32,14 +32,19 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
                 closingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
             
           }
-          if (y["Voucher.vType"] === "OP") {
-            // console.log(y)
-            setOpeningVoucher(y);
-            openingBalance =
-              y.type === "debit" ?
-                openingBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 
-                openingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
-          } else if(!(currency!="PKR" && y.narration.includes("Ex-Rate"))){
+          // if (y["Voucher.vType"] === "OP") {
+          //   // console.log(y)
+          //   // setOpeningVoucher(y);
+          //   prevBalance =
+          //     y.type === "debit" ? 
+          //       prevBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 
+          //       prevBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
+          //   openingBalance =
+          //     y.type === "debit" ?
+          //       openingBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 
+          //       openingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
+          // } else 
+          if(!(currency!="PKR" && y.narration.includes("Ex-Rate"))){
 
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
             tempArray.push({

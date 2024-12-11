@@ -361,6 +361,25 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
   return obj
 }
 
+const autoInvoice = async (list, companyId, type, dispatch, state) => {
+  let tempList = list.filter((x)=>x.check);
+  const groupPartiesByName = (data) => {
+    return data.reduce((groups, party) => {
+      if (!groups[party.name]) {
+        groups[party.name] = [];
+      }
+      groups[party.name].push(party);
+      return groups;
+    }, {});
+  };
+  
+  const groupedParties = groupPartiesByName(tempList);
+  console.log(groupedParties);
+  tempList.forEach((x)=>{
+
+  })
+}
+
 const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
   let tempList1 = list.filter((x)=>x.check && x.partyType.includes("client"));
   let tempList2 = list.filter((x)=>x.check && x.partyType.includes("vendor"));
