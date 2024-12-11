@@ -50,7 +50,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
   const [ first, setFirst] = useState(false)
   useEffect(() => {
-    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount) || (state.invoices.length > 0 && state.invoices[0].currency != state.currency))){
+    if(state.selectedAccount && !state.edit && (state.invoices.length == 0 || (state.invoices.length > 0 && state.invoices[0].party_Id != state.selectedAccount) || (state.invoices.length > 0 && state.invoices[0].currency != state.currency) || (state.invoices.length > 0 && state.invoices[0].payType != state.payType))){
       fetchInvoices()
       setFirst(true)
     }

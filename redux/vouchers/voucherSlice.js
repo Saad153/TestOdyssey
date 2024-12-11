@@ -49,9 +49,12 @@ export const voucherSlice = createSlice({
     resetState(state, action) {
       return initialState;
     },
+    resetVouchers(state, action) {
+      return initialState;
+    },
   },
 });
 
-export const { setField, resetState } = voucherSlice.actions;
+export const { setField, resetState, resetVouchers } = voucherSlice.actions;
 
 export default voucherSlice.reducer;
