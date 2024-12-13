@@ -77,7 +77,9 @@ const OpeningBalance = ({id, voucherData}) => {
       }).then((x) => {
         if(x.data.status=="success"){
           // Router.push(`/accounts/openingBalance/list`)
-          Router.push(`/accounts/openingBalance/${x.data.result.id}`)
+          openNotification("Success", `Opening Balance Saved Successfully!`, "green")
+          // Router.push(`/accounts/openingBalance/${x.data.result.id}`)
+          Router.push(`/accounts/openingBalance/list`)
         }
       })
     }else{

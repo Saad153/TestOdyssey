@@ -58,16 +58,32 @@ const PartySearch = ({state, dispatch, reset, useWatch, control}) => {
           let temp = [];
           temp = chargeList;
           if(state.chargesTab=='1'){
-            temp[state.headIndex].invoiceType = x.types?.includes("Overseas Agent")?"Agent Bill":"Job Invoice" ;
+            console.log(x)
+            if(x.types.includes("Overseas Agent")){
+              temp[state.headIndex].invoiceType = "Agent Bill";
+              temp[state.headIndex].partyType = "agent";
+              
+            }else{
+              temp[state.headIndex].invoiceType = "Job Invoice";
+              
+            }
           }
           else {
-            temp[state.headIndex].invoiceType = x.types?.includes("Overseas Agent")?"Agent Invoice":"Job Bill" ;
+            if(x.types.includes("Overseas Agent")){
+              temp[state.headIndex].invoiceType = "Agent Invoice";
+              temp[state.headIndex].partyType = "agent";
+              
+            }else{
+              temp[state.headIndex].invoiceType = "Job Bill";
+              
+            }
+            // temp[state.headIndex].invoiceType = x.types?.includes("Overseas Agent")?"Agent Invoice":"Job Bill" ;
           }
           temp[state.headIndex] = {
             ...temp[state.headIndex], 
             name:x.name, 
             partyId:x.id, 
-            partyType:partyType
+            partyType:temp[state.headIndex].partyType!="agent"?partyType:temp[state.headIndex].partyType
           }
           reset({ chargeList: temp });
 

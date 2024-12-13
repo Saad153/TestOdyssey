@@ -119,10 +119,13 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     let gainLoss = 0.0
     state.invoices.forEach((x) => {
       x.payType=="Recievable"?
-      temp += x.receiving:
-      temp -= x.receiving
+      temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp+parseFloat(x.recieved):
+      temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp-parseFloat(x.paid)
       if(x.currency!="PKR"){
-        const receiving = parseFloat(x.receiving) || 0;
+        console.log("X:",x)
+        const receiving = x.payType=="Recievable"?parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.recieved):parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.paid)
+        // parseFloat(x.receiving)!=0?receiving = parseFloat(x.receiving) : parseFloat(x.recieved)!=0?parseFloat(x.recieved):0;
+        console.log(parseFloat(x.receiving), parseFloat(x.recieved), receiving)
         const exRate = parseFloat(x.ex_rate) || 0;
         const stateRate = parseFloat(state.exRate) || 0;
 
@@ -138,11 +141,13 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     }
     console.log("GainLoss Amount: ", gainLoss)
     if(state.invoices.length>0){
+      dispatch(setField({ field: 'totalReceivable', value: temp }))
+      dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
       if(!state.edit || state.editing){
-        dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
-        dispatch(setField({ field: 'totalReceivable', value: temp }))
-        dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
       }
+      // if(!state.edit){
+      //   dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
+      // }
     }
   },[state.invoices, state.exRate])
 
@@ -158,33 +163,34 @@ const BillComp = ({back, companyId, state, dispatch}) => {
 
   const submitTransaction = async () => {
     try{
-          await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
-            transactions: state.transactions,
-            invoices: state.invoices,
-            gainLoss: state.gainLossAmount,
-            totalReceiving: state.totalReceivable,
-            partyId: state.selectedAccount,
-            partyName: state.accounts.find((x)=>x.id==state.selectedAccount).name,
-            partyType: state.type,
-            type: state.onAccount,
-            transactionMode: state.transactionMode,
-            payType: state.payType,
-            currency: state.currency,
-            checkNo: state.checkNo,
-            checkDate: state.checkDate,
-            transactionMode: state.transactionMode,
-            subType: state.subType,
-            exRate: state.exRate,
-            date: state.date,
-            companyId: companyId,
-            tranDate: state.date,
-            edit: state.edit,
-            voucherId: state.voucherId,
-            narration: state.voucherNarration
-          }).then((x) => {
-            x.data.status=="success"?back():null
-            x.data.status=="success"?openNotification('Success', `Transaction Saved`, 'green'):openNotification('Error', `Error saving transaction`, 'red')
-          })
+        // console.log(state.invoices)
+        await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
+          transactions: state.transactions,
+          invoices: state.invoices,
+          gainLoss: state.gainLossAmount,
+          totalReceiving: state.totalReceivable,
+          partyId: state.selectedAccount,
+          partyName: state.accounts.find((x)=>x.id==state.selectedAccount).name,
+          partyType: state.type,
+          type: state.onAccount,
+          transactionMode: state.transactionMode,
+          payType: state.payType,
+          currency: state.currency,
+          checkNo: state.checkNo,
+          checkDate: state.checkDate,
+          transactionMode: state.transactionMode,
+          subType: state.subType,
+          exRate: state.exRate,
+          date: state.date,
+          companyId: companyId,
+          tranDate: state.date,
+          edit: state.edit,
+          voucherId: state.voucherId,
+          narration: state.voucherNarration
+        }).then((x) => {
+          x.data.status=="success"?back():null
+          x.data.status=="success"?openNotification('Success', `Transaction Saved`, 'green'):openNotification('Error', `Error saving transaction`, 'red')
+        })
 
       }catch(e){
         console.error(e)
@@ -681,7 +687,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{commas(invoice.total)}</td> 
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{
                     <InputNumber style={{width: '100%'}} value={invoice.receiving}
-                    disabled={invoice.payType=="Payble"?invoice.total - invoice.paid == 0:invoice.total - invoice.recieved == 0}
+                    // disabled={invoice.payType=="Payble"?invoice.total - invoice.paid == 0:invoice.total - invoice.recieved == 0}
                     formatter={(value) =>
                       `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
                     }

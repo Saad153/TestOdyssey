@@ -9,7 +9,7 @@ import { Row, Col, Table, Spinner } from 'react-bootstrap';
 import PopConfirm from '/Components/Shared/PopConfirm';
 import React, { useEffect, useState } from 'react';
 import PartySearch from './PartySearch';
-import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew, approveHeads } from "../states";
+import { saveHeads, calculateChargeHeadsTotal, makeInvoice, getHeadsNew, approveHeads, autoInvoice } from "../states";
 import { v4 as uuidv4 } from 'uuid';
 import openNotification from '/Components/Shared/Notification';
 import { checkEditAccess } from "../../../../../functions/checkEditAccess";
@@ -42,19 +42,21 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const calculate  = () => {
     let tempChargeList = [...chargeList];
     for(let i = 0; i<tempChargeList.length; i++){
-      let amount = tempChargeList[i].amount*tempChargeList[i].rate_charge - tempChargeList[i].discount;
-      let tax = 0.00;
-      if(tempChargeList[i].tax_apply==true){
-        tax = (amount/100.00) * tempChargeList[i].taxPerc;
-        tempChargeList[i].tax_amount = tax;
-        tempChargeList[i].net_amount =( amount + tax ) * parseFloat(tempChargeList[i].qty);
-      } else {
-        tempChargeList[i].net_amount = (amount * parseFloat(tempChargeList[i].qty)).toFixed(2);
-      }
-      if(tempChargeList[i].currency=="PKR"){
-        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*1.00).toFixed(2);
-      } else {
-        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*tempChargeList[i].ex_rate).toFixed(2);
+      if(tempChargeList[i].charge!=""){
+        let amount = tempChargeList[i].amount*tempChargeList[i].rate_charge - tempChargeList[i].discount;
+        let tax = 0.00;
+        if(tempChargeList[i].tax_apply==true){
+          tax = (amount/100.00) * tempChargeList[i].taxPerc;
+          tempChargeList[i].tax_amount = tax;
+          tempChargeList[i].net_amount =( amount + tax ) * parseFloat(tempChargeList[i].qty);
+        } else {
+          tempChargeList[i].net_amount = (amount * parseFloat(tempChargeList[i].qty)).toFixed(2);
+        }
+        if(tempChargeList[i].currency=="PKR"){
+          tempChargeList[i].local_amount = (tempChargeList[i].net_amount*1.00).toFixed(2);
+        } else {
+          tempChargeList[i].local_amount = (tempChargeList[i].net_amount*tempChargeList[i].ex_rate).toFixed(2);
+        }
       }
     }
     let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
@@ -64,19 +66,21 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const calculate1  = () => {
     let tempChargeList = [...chargeList];
     for(let i = 0; i<tempChargeList.length; i++){
-      let amount = tempChargeList[i].amount*tempChargeList[i].rate_charge - tempChargeList[i].discount;
-      let tax = 0.00;
-      if(tempChargeList[i].tax_apply==true){
-        tax = (amount/100.00) * tempChargeList[i].taxPerc;
-        tempChargeList[i].tax_amount = tax;
-        tempChargeList[i].net_amount =( amount + tax ) * parseFloat(tempChargeList[i].qty);
-      } else {
-        tempChargeList[i].net_amount = (amount * parseFloat(tempChargeList[i].qty)).toFixed(2);
-      }
-      if(tempChargeList[i].currency=="PKR"){
-        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*1.00).toFixed(2);
-      } else {
-        tempChargeList[i].local_amount = (tempChargeList[i].net_amount*tempChargeList[i].ex_rate).toFixed(2);
+      if(tempChargeList[i].charge!=""){
+        let amount = tempChargeList[i].amount*tempChargeList[i].rate_charge - tempChargeList[i].discount;
+        let tax = 0.00;
+        if(tempChargeList[i].tax_apply==true){
+          tax = (amount/100.00) * tempChargeList[i].taxPerc;
+          tempChargeList[i].tax_amount = tax;
+          tempChargeList[i].net_amount =( amount + tax ) * parseFloat(tempChargeList[i].qty);
+        } else {
+          tempChargeList[i].net_amount = (amount * parseFloat(tempChargeList[i].qty)).toFixed(2);
+        }
+        if(tempChargeList[i].currency=="PKR"){
+          tempChargeList[i].local_amount = (tempChargeList[i].net_amount*1.00).toFixed(2);
+        } else {
+          tempChargeList[i].local_amount = (tempChargeList[i].net_amount*tempChargeList[i].ex_rate).toFixed(2);
+        }
       }
     }
     let tempChargeHeadsArray = calculateChargeHeadsTotal(tempChargeList, 'full');
@@ -183,11 +187,45 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
     </Col>
     <Col>
       <div className='div-btn-custom mx-2 py-1 px-3 fl-right' onClick={saveCharges}>Save Charges</div>
-      <div className='div-btn-custom-green fl-right py-1 px-3' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
+      {/* <div className='div-btn-custom-green fl-right py-1 px-3' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
         if(generate){
           generateInvoice();
         }
-      }}>Generate Invoice No</div>
+      }}>Generate Invoice No</div> */}
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
+        if(generate){
+          let temp = chargeList.filter((x)=>x.partyType=="client"&&x.check)
+          console.log(temp.length)
+          console.log(temp)
+          if(temp.length==0){
+            openNotification('Error', `No Client Selected!`, 'red');
+          }else{
+            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+          }
+        }
+      }}>Auto Invoice</div>
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
+        if(generate){
+          let temp = chargeList.filter((x)=>x.partyType=="vendor"&&x.check)
+          console.log(temp.length)
+          if(temp.length==0){
+            openNotification('Error', `No Vendor Selected!`, 'red');
+          }else{
+            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+          }
+        }
+      }}>Auto Bill</div>
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
+        if(generate){
+          let temp = chargeList.filter((x)=>x.partyType=="agent"&&x.check)
+          console.log(temp.length)
+          if(temp.length==0){
+            openNotification('Error', `No Agent Selected!`, 'red');
+          }else{
+            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+          }
+        }
+      }}>Auto Agent Invoice</div>
       <div className='mx-2' style={{float:'right'}}>
         <InputNumber placeholder='Ex.Rate' size='small' className='my-1' min={"0.1"}  style={{position:'relative', bottom:2}}
           value={state.exRate} onChange={(e)=>dispatch({type:'toggle',fieldName:'exRate',payload:e})} 
@@ -250,7 +288,11 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                         tempState.splice(index, 1);
                         reset({ chargeList: tempState });
                         dispatch({ type: 'toggle', fieldName: 'deleteList', payload: tempDeleteList });
-                })}}}
+                })}else{
+                  console.log(x.Invoice, x.Invoice.status, x.Invoice.approved)
+                  console.log("stuck in the else")
+                }
+              }}
             />
           </td>
           <td style={{ backgroundColor: x.status === "1" ? "#DAF7A6" : "white" }} className='text-center'>
@@ -556,7 +598,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    {checkEditAccess() && state.selectedRecord.approved[0] == '1' && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
+    {checkEditAccess() && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

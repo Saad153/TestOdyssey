@@ -46,6 +46,7 @@ const Sheet = ({state, overflow, fontSize}) => {
         </thead>
         <tbody>
         {recordState.length>0 && recordState?.map((x,index)=>{
+            console.log("X", x)
         return (
         <tr key={index} className='f fs-10 text-center'>
             <td>{index + 1}</td>
@@ -71,7 +72,7 @@ const Sheet = ({state, overflow, fontSize}) => {
             <td>{setCommas(x.cost)}</td>
             <td>{setCommas(x.actual)}</td>
             <td style={{color:x.gainLoss<0?'crimson':'green'}}>
-                {setCommas(x.gainLoss<0?x.gainLoss*-1:x.gainLoss)}
+                {setCommas(x.gainLoss<0?x.gainLoss:x.gainLoss)}
             </td>
             <td>{setCommas(x.after)}</td>
 

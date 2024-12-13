@@ -559,6 +559,7 @@ return (
                 <th style={{minWidth:60}}>DG</th>
                 <th>Qty</th>
                 <th>Currency</th>
+                <th>Type</th>
                 <th>Amount</th>
                 <th>Disc</th>
                 <th>Tax</th>
@@ -572,6 +573,7 @@ return (
               {records?.length>0 &&
               <>
                 {records?.map((x, index) => {
+                  console.log(x)
                 return (
                 <tr key={index} className='f table-row-center-singleLine' style={{lineHeight:0.5}}>
                   <td>{index + 1}</td>
@@ -583,6 +585,7 @@ return (
                   <td>{x.dg_type}</td>
                   <td>{x.qty}</td>
                   <td>{x.currency}</td>
+                  <td>{x.type=="Recievable"?"DN":"CN"}</td>
                   <td>{x.amount}</td>
                   <td>{x.discount}</td>
                   <td>{x.tax_apply}</td>

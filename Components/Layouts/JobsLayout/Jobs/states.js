@@ -361,7 +361,7 @@ const calculateChargeHeadsTotal = (chageHeads, type) => {
   return obj
 }
 
-const autoInvoice = async (list, companyId, type, dispatch, state) => {
+const autoInvoice = async (list, companyId, reset, type, dispatch, state) => {
   let tempList = list.filter((x)=>x.check);
   const groupPartiesByName = (data) => {
     return data.reduce((groups, party) => {
@@ -374,15 +374,17 @@ const autoInvoice = async (list, companyId, type, dispatch, state) => {
   };
   
   const groupedParties = groupPartiesByName(tempList);
-  console.log(groupedParties);
-  tempList.forEach((x)=>{
-
-  })
+  // console.log("Auto Invoice: ", groupedParties);
+  Object.values(groupedParties).forEach((group) => {
+    console.log("Party Group: ", group);
+    // Here, you can further work with each group of parties
+    makeInvoice(group, companyId, reset, type, dispatch, state)
+  });
 }
 
 const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
-  let tempList1 = list.filter((x)=>x.check && x.partyType.includes("client"));
-  let tempList2 = list.filter((x)=>x.check && x.partyType.includes("vendor"));
+  let tempList1 = list
+  // let tempList2 = list.filter((x)=>x.check && x.partyType.includes("vendor"));
   tempList1.forEach((x)=>{
     if(x.description && x.invoiceType.includes("Invoice")){
       if(x.type == "Payble"){
@@ -399,23 +401,23 @@ const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
     }
 
   })
-  tempList2.forEach((x)=>{
-    // console.log(x.invoiceType)
-    if(x.description && x.invoiceType.includes("Invoice")){
-      if(x.type == "Payble"){
-        x.amount = parseFloat(x.amount) * -1
-        x.net_amount = parseFloat(x.net_amount) * -1
-        x.local_amount = parseFloat(x.local_amount) * -1
-      }
-    }else if(x.description && x.invoiceType.includes("Bill")){
-      if(x.type == "Recievable"){
-        x.amount = parseFloat(x.amount) * -1
-        x.net_amount = parseFloat(x.net_amount) * -1
-        x.local_amount = parseFloat(x.local_amount) * -1
-      }
-    }
+  // tempList2.forEach((x)=>{
+  //   console.log("Invoice Type: ", x.invoiceType)
+  //   if(x.description && x.invoiceType.includes("Invoice")){
+  //     if(x.type == "Payble"){
+  //       x.amount = parseFloat(x.amount) * -1
+  //       x.net_amount = parseFloat(x.net_amount) * -1
+  //       x.local_amount = parseFloat(x.local_amount) * -1
+  //     }
+  //   }else if(x.description && x.invoiceType.includes("Bill")){
+  //     if(x.type == "Recievable"){
+  //       x.amount = parseFloat(x.amount) * -1
+  //       x.net_amount = parseFloat(x.net_amount) * -1
+  //       x.local_amount = parseFloat(x.local_amount) * -1
+  //     }
+  //   }
 
-  })
+  // })
   let result1, result2;
   // console.log(tempList)
   tempList1.length>0?
@@ -429,17 +431,17 @@ const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
       }
     })
   :null
-  tempList2.length>0?
-    result2 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
-      chargeList:tempList2, companyId, type:type
-    }).then(async(x)=>{
-      if(x.data.status=="success"){
-        approve(x.data.result)
-        await delay(500)
-        await getHeadsNew(state.selectedRecord.id, dispatch, reset)
-      }
-    })
-  :null
+  // tempList2.length>0?
+  //   result2 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
+  //     chargeList:tempList2, companyId, type:type
+  //   }).then(async(x)=>{
+  //     if(x.data.status=="success"){
+  //       approve(x.data.result)
+  //       await delay(500)
+  //       await getHeadsNew(state.selectedRecord.id, dispatch, reset)
+  //     }
+  //   })
+  // :null
 }
 
 const getInvoices = async(id, dispatch) => {
@@ -474,5 +476,5 @@ export {
   saveHeads, getHeadsNew, getStatus,
   calculateChargeHeadsTotal,
   makeInvoice, getInvoices,
-  setHeadsCache, approveHeads
+  setHeadsCache, approveHeads, autoInvoice
 };

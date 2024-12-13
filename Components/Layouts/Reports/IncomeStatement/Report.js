@@ -212,7 +212,9 @@ const accountlevel = query.accountLevel;
                 });
 
                  let tempFilter =[];
-                 tempFilter=  temp.filter(item => item.type !== 'parent');
+                 let ex = temp.filter(item => item.title == "EX-CHANGE RATE GAIN / LOSS")
+                 tempFilter =  temp.filter(item => item.type !== 'parent' && item.title != "EX-CHANGE RATE GAIN / LOSS");
+                 tempFilter.push(...ex)
                  setfilteredTempData(tempFilter)
               }
             })
