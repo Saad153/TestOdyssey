@@ -309,7 +309,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           partyId: state.bankChargesAccount,
           accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
           accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
-          debit: state.bankChargesAmount,
+          debit: Math.abs(state.bankChargesAmount),
           credit: 0,
           type: 'debit'
         })

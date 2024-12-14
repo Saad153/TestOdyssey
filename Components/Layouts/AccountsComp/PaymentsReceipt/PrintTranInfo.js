@@ -20,7 +20,7 @@ const PrintTranInfo = ({state}) => {
       <Col md={3}>
         <span className="grey-txt fs-14">Date</span>
         <div className="custom-select-input-small">
-          {moment(state.date).format("YYYY-MM-DD")}
+          {moment(state.date).format("DD-MM-YYYY")}
         </div>
       </Col>
       <Col md={3}>

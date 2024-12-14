@@ -123,7 +123,7 @@ const Gl = ({state, dispatch, companyId}) => {
       voucher.partyId = state.selectedParty.id;
       voucher.partyName = state.selectedParty.name;
       voucher.partyType = state.partytype;
-      voucher.tranDate = moment(state.date).format("yyyy-MM-DD");
+      voucher.tranDate = moment(state.date).format("DD-MM-YYYY");
       state.edit?voucher.id = state.id : null;
       voucher.createdAt = state.createdAt;
       // console.log(tempInvoices)

@@ -138,7 +138,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
         // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
       }
-      if(y.accountType=="Gain/Loss Account"){
+      if(y.accountType=="Gain/Loss Account" && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
         console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
         y.type!='debit'?
         dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) })):

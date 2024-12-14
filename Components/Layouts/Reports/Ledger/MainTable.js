@@ -59,7 +59,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                 {Object.keys(openingVoucher).length > 0 && <tr>
                   <td>1</td>
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
-                  <td className="text-center fs-12 grey-txt">{moment(openingVoucher.createdAt).format("YYYY-MM-DD")}</td>
+                  <td className="text-center fs-12 grey-txt">{moment(openingVoucher.createdAt).format("DD-MM-YYYY")}</td>
                   <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
                   <td className="text-end fs-12">{openingVoucher.type == "debit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
                   <td className="text-end fs-12">{openingVoucher.type == "credit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
@@ -142,7 +142,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
     <div style={{ display: "none" }}>
       <div className="pt-5 px-3" ref={(response) => (inputRef = response)}>
         <TableComponent overFlow={false}/>
-        <div style={{ position: 'absolute', bottom: 10 }}>Printed On: {`${moment().format("YYYY-MM-DD")}`}</div>
+        <div style={{ position: 'absolute', bottom: 10 }}>Printed On: {`${moment().format("DD-MM-YYYY")}`}</div>
         <div style={{ position: 'absolute', bottom: 10, right: 10 }}>Printed By: {username}</div>
       </div>
     </div>

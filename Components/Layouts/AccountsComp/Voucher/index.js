@@ -189,41 +189,41 @@ const Voucher = ({ id }) => {
     })
     let narration  = ""
     if(state.vType=="BPV"){
-      narration = `Bank Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD"):""}from `
+      narration = `Bank Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY"):""}from `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="BRV"){
-      narration = `Bank Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD")+", ":""}from `
+      narration = `Bank Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="CPV"){
-      narration = `Cash Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD")+", ":""}from `
+      narration = `Cash Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="CRV"){
-      narration = `Cash Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD")+", ":""}from `
+      narration = `Cash Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="JV"){
-      narration = `Journal Transaction ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD")+", ":""}between `
+      narration = `Journal Transaction ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}between `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
     }
     if(state.vType=="TV"){
-      narration = `Transfer ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("YYYY-MM-DD")+", ":""}between `
+      narration = `Transfer ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}between `
       state.Voucher_Heads.forEach((x)=>{
         narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
       })

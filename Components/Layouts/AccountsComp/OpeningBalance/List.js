@@ -75,7 +75,7 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
         <td>{x?.currency}</td>
         <td>{x.exRate}</td>
         <td>{x.Voucher_Heads[0].amount}</td>
-        <td>{moment(x?.createdAt).format("YYYY-MM-DD")}</td>
+        <td>{moment(x?.createdAt).format("DD-MM-YYYY")}</td>
         <td><DeleteOutlined onClick={(e) => { e.stopPropagation(); handleDelete(x.id) }} /></td>
       </tr>
       )})}

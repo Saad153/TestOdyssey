@@ -63,7 +63,7 @@ const Sheet = ({state, overflow, fontSize}) => {
                     )
                 }}
             >{x.jobNo}</td>
-            <td>{moment(x.createdAt).format("MM/DD/YY")}</td>
+            <td>{moment(x.createdAt).format("DD-MM-YY")}</td>
             <td>{x.Client.name}</td>
             <td>{x.subType}</td>
             <td>{x.Bl?.hbl}</td>
