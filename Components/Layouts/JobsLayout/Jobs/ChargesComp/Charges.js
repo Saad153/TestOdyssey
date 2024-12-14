@@ -598,7 +598,8 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    {checkEditAccess() && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
+    {console.log("STATE:", allValues)}
+    {(checkEditAccess() && allValues.approved.length>0) && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

@@ -18,7 +18,7 @@ const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace
 
 const BillComp = ({back, companyId, state, dispatch}) => {
   const [firstCall, setFirstCall] = useState(true);
-
+  const router =  useRouter()
   const fetchInvoices = async () => {
     try{
       await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
@@ -677,8 +677,35 @@ const BillComp = ({back, companyId, state, dispatch}) => {
               {state.invoices.length>0&&state.invoices.map((invoice, index) => (
                 <tr key={index} style={{borderBottom: '1px solid #dee2e6', padding: '10px 0px'}}>
                   <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{index + 1}</td>
-                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.SE_Job?.jobNo}</b></td>
-                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.invoice_No}</b></td>
+                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}
+                  onClick={()=>{
+                    let type = invoice.SE_Job?.operation;
+                    let id = invoice.SE_Job?.id
+                    console.log(type)
+                    console.log(invoice.SE_Job.id)
+                    if(invoice?.SE_Job?.jobNo){
+                      dispatch(incrementTab({
+                      "label":type=="SE"?"SE JOB":type=="SI"?"SI JOB":type=="AE"?"AE JOB":"AI JOB",
+                      "key":type=="SE"?"4-3":type=="SI"?"4-6":type=="AE"?"7-2":"7-5",
+                      "id":id
+                      }))
+                      router.push(type=="SE"?`/seaJobs/export/${id}`:type=="SI"?`/seaJobs/import/${id}`:
+                        type=="AE"?`/airJobs/export/${id}`:`/airJobs/import/${id}`
+                      )
+                    }
+                  }
+                }
+                  ><b>{invoice.SE_Job?.jobNo}</b></td>
+                  <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}
+                    onClick={()=>{
+                      console.log(invoice)
+                      if(invoice?.id){
+                        dispatch(incrementTab({ "label": "Invoice Details", "key": "2-11", "id":`${invoice.id}`}))
+                        router.push(`/reports/invoice/${invoice.id}`)
+                      }
+                    }
+                  }
+                  ><b>{invoice.invoice_No}</b></td>
                   <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl?.hbl}</td>
                   <td style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.SE_Job?.Bl?.mbl}</td>
                   <td style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.currency}</td>

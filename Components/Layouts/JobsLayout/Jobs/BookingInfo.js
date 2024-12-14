@@ -22,6 +22,7 @@ import airports from "/jsonData/airports";
 import Carrier from './Carrier';
 import AddPort from './AddPort';
 import { FaPlus } from "react-icons/fa6";
+import { getChargeHeads } from '../../../../apis/jobs';
 
 const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, errors, state, useWatch, dispatch, reset, id, type }) => {
   const tabs = useSelector((state) => state.tabs.tabs)
@@ -46,8 +47,21 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
   const [isOpen, setIsOpen] = useState(false);
   const Space = () => <div className='mt-2' />
   const approved1 = useSelector((state) => state.invoice);
+  const [charges, setCharges] = useState(false)
 
-
+  useEffect(() => {
+    const fetchChargeHeads = async () => {
+      const result = await getChargeHeads({ id: state.selectedRecord.id });
+      console.log("Charges:", result);
+      let check = false
+      result.charges.forEach((x)=>{
+        x.status=='1'?check = true : null
+      })
+      setCharges(check)
+    };
+  
+    fetchChargeHeads();
+  });
 
   useEffect(() => {
     if (allValues.freightType == "Prepaid") {
@@ -418,12 +432,11 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
         <Col md={3}>
           {state.edit && <Notes state={state} dispatch={dispatch} />}
           {approved == "1" && <img src={'/approve.png'} height={100} />}
-
-          {approved != "0" && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
-            <CheckGroupComp register={register} name='approved' control={control} label=''
-              options={[{ label: "Approve Job", value: "1" }]}
-            />
-          </div>}
+        {charges != true && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
+          <CheckGroupComp register={register} name='approved' control={control} label=''
+            options={[{ label: "Approve Job", value: "1" }]}
+          />
+        </div>}
           <hr />
           {id != "new" && <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
             <button className='btn-custom px-4' type="button"
