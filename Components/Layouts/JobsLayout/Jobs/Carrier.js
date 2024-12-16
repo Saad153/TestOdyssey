@@ -7,7 +7,7 @@ import Dates from './Dates';
 import { Popover } from "antd";
 import { Row, Col } from "react-bootstrap";
 
-const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, approved, VoyageId, vesselId, type}) => {
+const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, approved, VoyageId, vesselId, shippingLineId,airLineId, type}) => {
     // console.log("state carrier",state)
     
     function getVoyageNumber (id) {
@@ -43,13 +43,18 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
     const voyageFilterData=  getVoyageNumber(VoyageId)
 
   return (
-    <div className='px-2 pb-2 mt-3' style={{border:'1px solid silver'}}>
+    <>
+    <div className='mt-3'>Carrier Info</div>
+    <div className='px-2 pb-3 mt-2' style={{border:'1px solid silver'}}>
         {(type=="SE"||type=="SI") && <>
-        <div className='custom-link mt-2' onClick={()=>pageLinking("vessel")} >Vessel *</div>
+            <div className='custom-link mt-2' onClick={()=>pageLinking("vendor", shippingLineId)} >Sline/Carrier</div>
+        <SelectSearchComp register={register} name='shippingLineId' control={control} label='' options={state.fields.vendor.sLine} width={"100%"} />
+            
+        {/* <div className='custom-link mt-2' onClick={()=>pageLinking("vessel")} >Vessel *</div> */}
         {/* <SelectSearchComp register={register} name='vesselId' control={control} label=''disabled={getStatus(approved)} width={"100%"}
             options={filterVessels(state.fields.vessel)}
         /> */}
-        <SelectSearchComp
+        {/* <SelectSearchComp
             register={register}
             clear={true}
             name='vesselId'
@@ -66,8 +71,8 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
                     dispatch({type:'voyageSelection', payload:vesselId})
                 }
             }}
-        >{voyageFilterData.voyage }</div>
-        <Row>
+        >{voyageFilterData.voyage }</div> */}
+        {/* <Row>
             <Col md={6}>
                 <div className='my-2'></div>
                 <DateComp register={register} name="etd" defaultValues={voyageFilterData.etd ||voyageFilterData.exportEtd } control={control} label='ETD' disabled={getStatus(approved)} />
@@ -92,8 +97,8 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
                 <TimeComp register={register} name='cutOffTime' defaultValues={voyageFilterData.cutoffTime } control={control} label='Time'  width={100} disabled={getStatus(approved)} />
             </Col>
             </>}
-        </Row>
-        <div className='mt-3'></div>
+        </Row> */}
+        {/* <div className='mt-3'></div>
         <Popover trigger="click"
         content={
             <div style={{border:'1px solid silver', paddingLeft:10, paddingTop:20, paddingBottom:20}}>
@@ -101,17 +106,37 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
             </div>
         }>
             <span className='ex-btn py-2 px-3'>Dates</span>
-        </Popover>
-        <div className='mt-2'></div>
+        </Popover> */}
+        <div className='mt-2'>
+            <DateComp register={register} name='aesDate' width={'100%'} control={control} label='Vessel Date' />
+          </div>
+        {/* <div className='mt-2'></div> */}
         </>
         }
         {(type=="AE"||type=="AI") && <>
         <Row>
+        <Col md={12} className='pt-2'>
+        <div className='custom-link mt-2' onClick={()=>pageLinking("vendor", airLineId)} >Air line *</div>
+          <SelectSearchComp 
+            label='' 
+            width={"100%"} 
+            register={register} 
+            name='airLineId' 
+
+            control={control} options={state.fields.vendor.airLine} 
+          />
+          </Col>
             <Col md={12} className='pt-2'>
                 <InputComp register={register} name='flightNo' control={control} label='Flight No.' disabled={getStatus(approved)} />
             </Col>
+            <Col md={12}>
+            <div className='mt-2'>
+              <DateComp register={register} name='aesDate' width={'100%'} control={control} label='Flight Date' />
+            </div>
+          </Col>
         </Row>
-        <Row>
+
+        {/* <Row>
 
             <Col md={6}>
                 <div className='my-2'></div>
@@ -136,8 +161,8 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
                 <div className='my-2'></div>
                 <InputComp register={register} name='cbkg' control={control} label='C.BKG/ED'  disabled={getStatus(approved)} />
             </Col>
-        </Row>
-        <div className='mt-3'></div>
+        </Row> */}
+        {/* <div className='mt-3'></div>
         <Popover trigger="click"
         content={
             <div style={{border:'1px solid silver', paddingLeft:10, paddingTop:20, paddingBottom:20}}>
@@ -146,10 +171,11 @@ const Carrier = ({state, register, control, pageLinking, dispatch, getStatus, ap
         }>
             <span className='ex-btn py-2 px-3'>Dates</span>
         </Popover>
-        <div className='mt-2'></div>
+        <div className='mt-2'></div> */}
         </>
         }
     </div> 
+    </>
   )}
 
 export default React.memo(Carrier)

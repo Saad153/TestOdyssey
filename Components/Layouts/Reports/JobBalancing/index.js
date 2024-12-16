@@ -14,11 +14,11 @@ const JobBalancing = () => {
   const dispatch = useDispatch();  
   const [from, setFrom] = useState(moment("2023-07-01").format("YYYY-MM-DD"));
   const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
-  const [ company, setCompany ] = useState(4);
+  const [ company, setCompany ] = useState(2);
   const [ party, setParty ] = useState("");
   const [ overseasAgent, setOverseasAgent ] = useState("");
   const [ reportType, setReportType ] = useState("viewer");
-  const [ options, setOptions ] = useState("exclude0");
+  const [ options, setOptions ] = useState("exclude");
   const [ representator, setRepresentator ] = useState("");
   const [ currency, setCurrency ] = useState("");
   const [ jobTypes, setJobTypes ] = useState([]);
@@ -113,10 +113,10 @@ const JobBalancing = () => {
           value={company}
           onChange={(e)=>{setCompany(e) }} 
           options={[
-            {value:1,label:"Sea Net Shipping & Logistics"},
+            // {value:1,label:"Sea Net Shipping & Logistics"},
             {value:2,label:"Cargo Linkers"},
-            {value:3,label:"Air Cargo Services"},
-            {value:4,label:"SNS & ACS"},
+            // {value:3,label:"Air Cargo Services"},
+            // {value:4,label:"SNS & ACS"},
           ]}
         />
         <Row>
@@ -166,7 +166,7 @@ const JobBalancing = () => {
         Local Vendor
         <Select defaultValue="" onChange={()=>{ }} style={{width:'100%', marginBottom:5}} size='small' disabled
           options={[
-            {value:1,label:"Sea Net Shipping & Logistics"},
+            {value:1,label:"International Freight Aviation & Logistics"},
             {value:2,label:"Cargo Linkers"},
             {value:3,label:"Air Cargo Services"},
           ]}
@@ -174,7 +174,7 @@ const JobBalancing = () => {
         Forwarder/Coloader
         <Select defaultValue="" onChange={()=>{ }} style={{width:'100%', marginBottom:5}} size='small' disabled
           options={[
-            {value:1,label:"Sea Net Shipping & Logistics"},
+            {value:1,label:"International Freight Aviation & Logistics"},
             {value:2,label:"Cargo Linkers"},
             {value:3,label:"Air Cargo Services"},
           ]}
@@ -182,7 +182,7 @@ const JobBalancing = () => {
         Shipping Line
         <Select defaultValue="" onChange={()=>{ }} style={{width:'100%', marginBottom:5}} size='small' disabled
           options={[
-            {value:1,label:"Sea Net Shipping & Logistics"},
+            {value:1,label:"International Freight Aviation & Logistics"},
             {value:2,label:"Cargo Linkers"},
             {value:3,label:"Air Cargo Services"},
           ]}
@@ -190,7 +190,7 @@ const JobBalancing = () => {
         Air Line
         <Select defaultValue="" onChange={()=>{ }} style={{width:'100%', marginBottom:5}} size='small' disabled
           options={[
-            {value:1,label:"Sea Net Shipping & Logistics"},
+            {value:1,label:"International Freight Aviation & Logistics"},
             {value:2,label:"Cargo Linkers"},
             {value:3,label:"Air Cargo Services"},
           ]}

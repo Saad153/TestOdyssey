@@ -26,16 +26,23 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   const indexOfLast = currentPage * recordsPerPage;
   const indexOfFirst = indexOfLast - recordsPerPage;
   const currentRecords = (query!='' && query!=null && query!=undefined)?records.filter((x)=>{
-    return  x.jobNo.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Client?.name.toLowerCase().includes(query.toLowerCase()) ||
-      x?.fd.toLowerCase().includes(query.toLowerCase()) ||
-      x?.freightType.toLowerCase().includes(query.toLowerCase()) ||
-      x?.nomination.toLowerCase().includes(query.toLowerCase()) ||
-      x?.pod.toLowerCase().includes(query.toLowerCase()) ||
-      x?.pol.toLowerCase().includes(query.toLowerCase()) ||
-      x?.weight.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Bl?.hbl.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Bl?.mbl.toLowerCase().includes(query.toLowerCase()) 
+    return  x?.Client?.name?.toLowerCase().includes(query.toLowerCase()) ||
+            x?.jobNo?.toLowerCase().includes(query.toLowerCase()) ||
+            x?.gd?.toLowerCase().includes(query.toLowerCase()) ||
+            x?.containers?.toLowerCase().includes(query.toLowerCase()) ||
+            x?.pcs?.includes(query) ||
+            x?.customerRef?.includes(query) ||
+            x?.created_by?.name?.includes(query)
+    // x.jobNo.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.Client?.name.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.fd.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.freightType.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.nomination.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.pod.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.pol.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.weight.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.Bl?.hbl.toLowerCase().includes(query.toLowerCase()) ||
+    //   x?.Bl?.mbl.toLowerCase().includes(query.toLowerCase()) 
   }) : records?.slice(indexOfFirst, indexOfLast);
   const noOfPages = Math.ceil(records?.length / recordsPerPage);
 
@@ -103,12 +110,13 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
               <thead>
                 <tr>
                   <th>Sr.</th>
-                  <th>Basic Info</th>
+                  <th style={{ width: '14rem '}}>Basic Info</th>
+                  <th >Container Info</th>
                   <th>Shipment Info</th>
                   <th>Weight Info</th>
                   <th>Other Info</th>
                   <th>Status</th>
-                  <th>Dates</th>
+                  <th>Created By</th>
                 </tr>
               </thead>
               <tbody>
@@ -136,26 +144,41 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
                       >
                         <td>{index + 1}</td>
                         <td>
-                          <span className='blue-txt fw-7'>{x.jobNo}</span>
-                          <br />{(type=="SE"||type=="SI")?'HBL:':'AWBL'} <span className='blue-txt'>{x?.Bl?.hbl}</span>
+                          Job #<span className='blue-txt fw-7'>{x.jobNo}</span>
+                          <br/>GD #<span className='blue-txt fw-7'> {x.gd}</span><br/>
+                          Party:<span className='blue-txt fw-5'> {x.Client===null?"":x.Client.name}</span>
+                          {/* <br />{(type=="SE"||type=="SI")?'HBL:':'AWBL'} <span className='blue-txt'>{x?.Bl?.hbl}</span>
                           <br />{(type=="SE"||type=="SI")?'MBL:':'MWBL'}<span className='blue-txt'>{x?.Bl?.mbl}</span>
                           <br />Nomination: <span className='grey-txt'>{x.nomination}</span>
-                          <br />Freight Type: <span className='grey-txt'>{x.freightType}</span>
+                          <br />Freight Type: <span className='grey-txt'>{x.freightType}</span> */}
+                        </td>
+                        <td>
+                        {x.SE_Equipments.length>0 &&
+                    x.SE_Equipments.map((y, j)=>{
+                      return(
+                        <div key={j} className='blue-txt'>{y.container}</div>
+                      )
+                    })
+                  }
+                  {x.SE_Equipments.length==0 && <div className='grey-txt'>{"(Empty)"}</div>}
                         </td>
                         <td>
                           POL: <span className='grey-txt'>{x.pol}</span><br />
                           POD: <span className='grey-txt'>{x.pod}</span><br />
-                          FLD: <span className='grey-txt'> {x.fd}</span>
+                          {/* FLD: <span className='grey-txt'> {x.fd}</span> */}
+                          Type: <span className='grey-txt'>{x.subType}</span>
                         </td>
                         <td>
                           {/* Container: <span className='grey-txt'>{x.container}</span><br/> */}
-                          Weight: <span className='grey-txt'>{x.weight}</span>
+                          Weight: <span className='grey-txt'>{x.weight}</span><br/>
+                          No of Pcs: <span className='grey-txt'>{x.pcs} {x.pkgUnit}</span>
                         </td>
                         <td>
-                          Party:<span className='blue-txt fw-5'> {x.Client === null ? "" : x.Client.name}</span><br />
+                          {/* Party:<span className='blue-txt fw-5'> {x.Client === null ? "" : x.Client.name}</span><br /> */}
                           Transportion: <span className='blue-txt fw-5'>{x.transportCheck != '' ? 'Yes' : 'No'}</span>
                           <br />
-                          Custom Clearance: <span className='blue-txt fw-5'>{x.customCheck != '' ? 'Yes' : 'No'}</span>
+                          {/* Custom Clearance: <span className='blue-txt fw-5'>{x.customCheck != '' ? 'Yes' : 'No'}</span> */}
+                          Invoice #: <span className='blue-txt fw-5'>{x.customerRef}</span>
                         </td>
                         <td>
                           {x.approved == "true" ? <img src={'/approve.png'} height={70} className='' /> : "Not Approved"}
@@ -165,7 +188,7 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
                             {x.created_by?.name}
                           </span>
                           <br/>
-                          Created at:{" "} 
+                          Created at:{" "} <br/>
                           <span className='grey-txt '>
                             {x.createdAt ? moment(x.createdAt).format("DD-MM-YY") : "-"}
                           </span>

@@ -21,6 +21,7 @@ const Invoice = ({state, dispatch, companyId}) => {
     await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_NO, {
       headers:{"invoiceno": `${state.selectedInvoice}`}
     }).then((x)=>{
+      console.log('payload>>>>>',x.data.result)
       setLoad(false);
       dispatch({type:'toggle', fieldName:'invoiceData', payload:x.data.result});
     })

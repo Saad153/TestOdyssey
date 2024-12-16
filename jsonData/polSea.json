@@ -1,0 +1,19 @@
+{
+    "ports": [
+        {
+            "id": "MEK",
+            "name": "MCC Export Karachi",
+            "country": "Pakistan"
+        },
+        {
+            "id": "MPQ-EPZ",
+            "name": "MCC Port Qasim EPZ, - Export",
+            "country": "Pakistan"
+        },
+        {
+            "id": "PQE",
+            "name": "Port Qasim, - Exports",
+            "country": "Pakistan"
+        }
+    ]
+}

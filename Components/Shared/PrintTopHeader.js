@@ -6,12 +6,12 @@ const PrintTopHeader = ({company, from, to}) => {
     <>
     <div className="d-flex justify-content-between" >
         <div style={{width:"20%"}} className="text-center">
-            <img src={company=='1'?"/seanet-logo-complete.png":company=='2'?"/aircargo-logo.png":"/sns-acs.png"} className="invert" width={company=='4'?250:130}/>
+            <img src={company=='1' && "/cargolinkers-logo.png"} className="invert" width={company=='4'?250:130}/>
         </div>
         <div style={{width:"60%"}} className="text-center">
             <h5>
                 <b>
-                    {company=='1'?"SEA NET SHIPPING & LOGISTICS":company=='2'?"AIR CARGO SERVICES":"SEANET + AIR CARGO"}
+                    {company=='1' && "CARGO LINKERS"}
                 </b>
             </h5>
             <div className="fs-13">

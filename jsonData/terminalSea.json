@@ -1,0 +1,15 @@
+{
+    "terminal": [
+        {"id":"QICT", "name":"QICT"},
+        {"id":"KICT", "name":"KICT"},
+        {"id":"KGTL", "name":"KGTL"},
+        {"id":"SAPT", "name":"SAPT"},
+        {"id":"QFS", "name":"QFS"},
+        {"id":"Fast Track", "name":"Fast Track"},
+        {"id":"Shaheen (PQ)", "name":"Shaheen (PQ)"},
+        {"id":"Pak Shaheen (KPT)", "name":"Pak Shaheen (KPT)"},
+        {"id":"Badaruddin", "name":"Badaruddin"},
+        {"id":"Bay West", "name":"Bay West"},
+        {"id":"Supreme Off Dock", "name":"Supreme Off Dock"}
+      ]
+}

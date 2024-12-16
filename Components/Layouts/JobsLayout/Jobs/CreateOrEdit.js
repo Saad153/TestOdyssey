@@ -26,6 +26,7 @@ import { createNotification } from '/functions/notifications';
 import openNotification from '/Components/Shared/Notification';
 import FullScreenLoader from '/Components/Shared/FullScreenLoader';
 import { useQueryClient } from '@tanstack/react-query';
+import GDOperate from './GDOperate';
 
 const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) => {
   const queryClient = useQueryClient();
@@ -101,6 +102,7 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
     data.equipments = state.equipments
     data.customAgentId = data.customCheck.length>0?data.customAgentId:null;
     data.transporterId = data.transportCheck.length>0?data.transporterId:null;
+    data.vesselId = data.vesselId===""?null:data.vesselId;
     data.VoyageId = data.VoyageId!=""?data.VoyageId:null;
     data.ClientId = data.ClientId!=""?data.ClientId:null;
     data.shippingLineId = data.shippingLineId!=""?data.shippingLineId:null;
@@ -113,12 +115,13 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
     data.commodityId = data.commodityId!=""?data.commodityId:null;
     data.shippingLineId = data.shippingLineId!=""?data.shippingLineId:null;
     data.approved = data.approved[0]=="1"?true:false;
-    data.companyId = companyId;
+    data.companyId = companyId.toString();
     data.operation = type
     let loginId = Cookies.get('loginId');
     data.createdById = loginId;
     dispatch({type:'toggle', fieldName:'load', payload:true});
     setTimeout(async() => {
+      // console.log("data:",data)
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_SEAJOB,{
         data
       }).then((x)=>{
@@ -177,15 +180,15 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
       createdById: Cookies.get("loginId"),
       notification: approved[0] == '1' ?  `Job No ${data.jobNo} Approved`: `Job No ${data.jobNo} Dispproved`
     }
-    axios.post('https://app.nativenotify.com/api/notification',{
-      "appId": 20066,
-      "appToken": "6QD0cTOyCmXeUb7Q6okftL",
-      "title": `${type} JOB`,
-      "body": approved[0] == '1' ?  `Job No ${data.jobNo} Approved`: `Job No ${data.jobNo} Dispproved`,
-      "dateSent": "3-8-2024 0:17AM",
-      "pushData": { "yourProperty": "yourPropertyValue" },
-      "bigPictureURL": "Big picture URL as a string"
-    })
+    // axios.post('https://app.nativenotify.com/api/notification',{
+    //   "appId": 20066,
+    //   "appToken": "6QD0cTOyCmXeUb7Q6okftL",
+    //   "title": `${type} JOB`,
+    //   "body": approved[0] == '1' ?  `Job No ${data.jobNo} Approved`: `Job No ${data.jobNo} Dispproved`,
+    //   "dateSent": "3-8-2024 0:17AM",
+    //   "pushData": { "yourProperty": "yourPropertyValue" },
+    //   "bigPictureURL": "Big picture URL as a string"
+    // })
     setTimeout(async() => {
       await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_EDIT_SEAJOB,{data}).then((x)=>{
         if(x.data.status=='success'){
@@ -232,14 +235,20 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
           errors={errors} state={state} useWatch={useWatch} dispatch={dispatch} reset={reset} id={id} type={type}
         />
       </Tabs.TabPane>
-      {(subType=="FCL" && (type=="SE" || type=="SI")) &&
+      <Tabs.TabPane tab="GD Entry" key="2">
+          <GDOperate 
+             handleSubmit={handleSubmit} onEdit={onEdit} companyId={companyId} control={control} register={register} 
+             errors={errors} state={state} useWatch={useWatch} dispatch={dispatch} reset={reset} id={id} type={type}
+          />
+        </Tabs.TabPane>
+      {/* {(subType=="FCL" && (type=="SE" || type=="SI")) &&
         <Tabs.TabPane tab="Equipment" key="2">
           <EquipmentInfo control={control} register={register} errors={errors} state={state} dispatch={dispatch} useWatch={useWatch}/>
         </Tabs.TabPane>
-      }
-        <Tabs.TabPane tab="Routing" key="3">
+      } */}
+        {/* <Tabs.TabPane tab="Routing" key="3">
           <Routing control={control} register={register} errors={errors} state={state} useWatch={useWatch} type={type} />
-        </Tabs.TabPane>
+        </Tabs.TabPane> */}
       {state.edit &&
         <Tabs.TabPane tab="Charges" key="4">
           <ChargesComp state={state} dispatch={dispatch} type={type} allValues={allValues} />

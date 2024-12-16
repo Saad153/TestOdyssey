@@ -40,8 +40,8 @@ const baseValues = {
   costCenter:'KHI',
   shipStatus:'Booked',
   jobDate:moment(),
-  jobType:'Direct',
-  jobKind:'Current',
+  jobType:'Clearing Only',
+  jobKind:'FCL',
   subType:'FCL',
   dg:'non-DG',
   pkgUnit:'',
@@ -55,7 +55,7 @@ const baseValues = {
   commodityId:'',
   overseasAgentId:'',
   salesRepresentatorId:'',
-  pol:'PKKHI',
+  pol:'',
   pod:'',
   fd:'',
   customCheck:[],
@@ -64,10 +64,10 @@ const baseValues = {
   transporterId:'',
   forwarderId:'',
   localVendorId:'',
-  localVendorId:'',
-  airLineId:'',
+  // localVendorId:'',
+  airLineId:null,
   shippingLineId:'',
-  vesselId:'',
+  vesselId:"",
   VoyageId:'',
   cutOffDate:'',
   cutOffTime:'',
@@ -90,7 +90,7 @@ const baseValues = {
   weight:'',
   weightUnit:'',
   bkg:'',
-  container:'',
+  // container:'',
   shpVol:'',
   billVol:'',
   teu:'',
@@ -113,7 +113,9 @@ const baseValues = {
   arrivalDate:'',  
   arrivalTime:'',
   departureDate:'',
-  departureTime:''
+  departureTime:'',
+  gross:'',
+  regPageNo:'',
 };
 
 const initialState = {
@@ -129,7 +131,7 @@ const initialState = {
   viewHistory:false,
   invoiceData : [],
   InvoiceList : [],
-
+  container:[{truck:'', container:''}],
   selection:{
     partyId:null,
     InvoiceId:null
@@ -233,6 +235,22 @@ const getVendors = memoize(async(id) => {
   .then((x) => x.data.result)
   return result;
 })
+
+const getEmpList = memoize(async (No) => {
+  try {
+    const response = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_POST_GET_EMPLOYEE_PAYABLE_BY_JOB,
+    {headers:{jobNo: No}});
+    if(response.data.status == 'success') {
+      return response.data.result;
+    }else{
+      console.error('Error fetching employee list:', error);
+
+    }
+  } catch (error) {
+    console.error('Error fetching employee list:', error);
+    return [];
+  }
+});
 
 const getHeadsNew = async(id, dispatch, reset) => {
   dispatch({type:'toggle', fieldName:'chargeLoad', payload:true})
@@ -474,5 +492,6 @@ export {
   saveHeads, getHeadsNew, getStatus,
   calculateChargeHeadsTotal,
   makeInvoice, getInvoices,
-  setHeadsCache, approveHeads
+  setHeadsCache, approveHeads,
+  getEmpList
 };

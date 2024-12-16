@@ -66,6 +66,8 @@ const MainLayout = ({children}) => {
       x.data?.result?.forEach((x, index) => {
         tempState[index]={value:x.id, label:x.title}
       });
+      console.log('Temp',tempState)
+      handleChange(tempState[0].value)
       setCompanies(tempState)
     });
   }
@@ -74,11 +76,10 @@ const MainLayout = ({children}) => {
     Cookies.set('companyId', value, { expires: 1000000000 });
     setCompany(parseInt(value));
     dispatch(companySelect(value))
-    Router.push('/')
+    // Router.push('/')
   };
 
   useEffect(() => {
-    console.log("Router Path", newRouter.pathname)
     // When visiting pages inside folders the initial path in url confilts, so to this is mandatory for resolving it
     if(newRouter.pathname==="/reports/jobBalancing/[id]"){
       setToggleState('5-1-1');
@@ -197,7 +198,7 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="tasks/riders/riderAssign/"){
       setToggleState('6-2');
     }
-    // console.log("pathname:",newRouter.pathname)
+    console.log("pathname:",newRouter.pathname)
     // console.log("toggleState",toggleState)
   }, [newRouter])
 
@@ -379,7 +380,7 @@ const MainLayout = ({children}) => {
     else if(x.key=='3-2'){ Router.push('/accounts/accountActivity') }
     else if(x.key=='3-3'){ Router.push('/accounts/invoiceAndBills') }
     else if(x.key=='3-4'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
-    // else if(x.key=='3-13'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
+    else if(x.key=='3-13'){ Router.push(`/accounts/paymentReceipt/${setKey(x)}`) }
     else if(x.key=='3-5'){ 
       //console.log(x);
       if(x.id){
@@ -433,7 +434,7 @@ const MainLayout = ({children}) => {
   };
 
   const removeTab = (index) => {
-    console.log("Remove Tab>>", index)
+    // console.log("Remove Tab>>", index)
     if(index == '3-4'){
       dispatch(resetState())
     }
@@ -486,7 +487,7 @@ const MainLayout = ({children}) => {
       style={{maxHeight:'100vh', overflowY:'auto'}}>
       <div className={!collapsed ? 'big-logo' : 'small-logo'}>
         <span>
-          <img src={company=='1'?'/seanet-logo.png':company=='3'?'/aircargo-logo.png':company=='2'?'/cargolinkers-logo.png':null}/>
+          <img src={'/cargolinkers-logo.png'}/>
           {!collapsed && <p className='wh-txt'>Dashboard</p>}
         </span>
       </div>
@@ -511,7 +512,7 @@ const MainLayout = ({children}) => {
     <Header className="site-layout-background" style={{padding:0}}>
     {collapsed && <span className="menu-toggler" onClick={() => setCollapsed(!collapsed)}><AiOutlineRight /></span>}
     {!collapsed && <span className="menu-toggler" onClick={() => setCollapsed(!collapsed)} ><AiOutlineLeft /></span>}
-    <Select style={{width: 155, opacity:0.9}} onChange={handleChange} options={companies} value={company} />
+    {/* <Select style={{width: 155, opacity:0.9}} onChange={handleChange} options={companies} value={company} /> */}
     {/* //admin links  */}
     {username=="Saad" &&<>
       <span className='mx-3'></span>

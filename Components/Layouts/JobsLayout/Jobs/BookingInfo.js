@@ -4,6 +4,7 @@ import SelectComp from '/Components/Shared/Form/SelectComp';
 import SelectSearchComp from '/Components/Shared/Form/SelectSearchComp';
 import CheckGroupComp from '/Components/Shared/Form/CheckGroupComp';
 import DateComp from '/Components/Shared/Form/DateComp';
+import InputNumComp from "/Components/Shared/Form/InputNumComp";
 import TimeComp from '/Components/Shared/Form/TimeComp';
 import { Row, Col } from 'react-bootstrap';
 import CustomBoxSelect from '/Components/Shared/Form/CustomBoxSelect';
@@ -18,11 +19,17 @@ import InputComp from '/Components/Shared/Form/InputComp';
 import { addBlCreationId } from '/redux/BlCreation/blCreationSlice';
 import Weights from './WeightComp';
 import BLInfo from './BLInfo';
-import airports from "/jsonData/airports";
+import EquipmentInfo from './EquipmentInfo';
+// import airports from "/jsonData/airports";
 import Carrier from './Carrier';
 import AddPort from './AddPort';
 import { FaPlus } from "react-icons/fa6";
-
+import airports from "/jsonData/airports";
+import polAir from "/jsonData/polAir.json";
+import polSea from "/jsonData/polSea.json";
+// import QRCode from 'qrcode';
+import { current } from '@reduxjs/toolkit';
+import QRPageComp from './QRcode';
 const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, errors, state, useWatch, dispatch, reset, id, type }) => {
   const tabs = useSelector((state) => state.tabs.tabs)
   //const companyId = useSelector((state) => state.company.value);
@@ -34,6 +41,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
   const vesselId = useWatch({ control, name: "vesselId" });
   const VoyageId = useWatch({ control, name: "VoyageId" });
   const ClientId = useWatch({ control, name: "ClientId" });
+  const commodityId = useWatch({control, name:"commodityId"});
   const shipperId = useWatch({ control, name: "shipperId" });
   const consigneeId = useWatch({ control, name: "consigneeId" });
   const overseasAgentId = useWatch({ control, name: "overseasAgentId" });
@@ -57,6 +65,10 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
     }
   }, [allValues.freightType])
 
+// useEffect(() => {
+//   console.log(id);
+//   QRcode(id);
+// },[])
   const handleOk = () => {
     allValues.approved = approved
     handleSubmit(onEdit(allValues))
@@ -122,14 +134,80 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
         label: "Voyages",
         key: "2-4",
       };
-    }
+    }else if(pageType=="commodity"){
+      route=`/commodity/`
+      obj={
+        label:"commodity",
+        key:"2-3"
+      }
+    };
     dispatchNew(incrementTab(obj));
     Router.push(route);
   };
 
   // console.log(state)
-
-
+  const packages = [
+    {id:'BAGS', value:'BAGS'},
+    {id:'BALES', value:'BALES'},
+    {id:'BARRELS', value:'BARRELS'},
+    {id:'CARTONS', value:'CARTONS'},
+    {id:'BLOCKS', value:'BLOCKS'},
+    {id:'BOATS', value:'BOATS'},
+    {id:'BOBBIN', value:'BOBBIN'},
+    {id:'BOTTLES', value:'BOTTLES'},
+    {id:'BOXES', value:'BOXES'},
+    {id:'BRIQUETTES', value:'BRIQUETTES'},
+    {id:'BUNDLES', value:'BUNDLES'},
+    {id:'CABLE DRUM', value:'CABLE DRUM'},
+    {id:'CANS', value:'CANS'},
+    {id:'CARBOY', value:'CARBOY'},
+    {id:'CARTONS', value:'CARTONS'},
+    {id:'CASE', value:'CASE'},
+    {id:'CASKS', value:'CASKS'},
+    {id:'COILS', value:'COILS'},
+    {id:'COLLI', value:'COLLI'},
+    {id:'CRATES', value:'CRATES'},
+    {id:'CYLINDERS', value:'CYLINDERS'},
+    {id:'DOZENS', value:'DOZENS'},
+    {id:'DRUMS', value:'DRUMS'},
+    {id:'FUBRE DRUMS', value:'FUBRE DRUMS'},
+    {id:'ITEMS', value:'ITEMS'},
+    {id:'JOTTAS', value:'JOTTAS'},
+    {id:'KEGS', value:'KEGS'},
+    {id:'LOOSE', value:'LOOSE'},
+    {id:'METAL DRUMS', value:'METAL DRUMS'},
+    {id:'METERS', value:'METERS'},
+    {id:'MODULES', value:'MODULES'},
+    {id:'PACKETS', value:'PACKETS'},
+    {id:'PACKAGES', value:'PACKAGES'},
+    {id:'PAILS', value:'PAILS'},
+    {id:'PALLETS', value:'PALLETS'},
+    {id:'PARCELS', value:'PARCELS'},
+    {id:'PIECES', value:'PIECES'},
+    {id:'PLASTIC DRUMS', value:'PLASTIC DRUMS'},
+    {id:'REELS', value:'REELS'},
+    {id:'ROLLS', value:'ROLLS'},
+    {id:'SACKS', value:'SACKS'},
+    {id:'SETS', value:'SETS'},
+    {id:'SHEETS', value:'SHEETS'},
+    {id:'SKIDS', value:'SKIDS'},
+    {id:'SLABS', value:'SLABS'},
+    {id:'STEEL PACKAGES', value:'STEEL PACKAGES'},
+    {id:'STEEL PLATES', value:'STEEL PLATES'},
+    {id:'STEEL TRUNKS', value:'STEEL TRUNKS'},
+    {id:'TES CHESTS', value:'TES CHESTS'},
+    {id:'TONS', value:'TONS'},
+    {id:'UNIT', value:'UNIT'}
+  ];
+  // const QRcode = (id) => {
+  //   let currentUrl = '';
+  //   if (typeof window !== 'undefined') {
+  //     currentUrl = window.location.origin;
+  //     console.log('count',currentUrl); // Outputs the current origin, e.g., https://example.com
+  //   }
+  //   const url =  `${currentUrl}/jobInfo/${id}`;
+  //   const qrCode = QRcode.toDataURL(url);
+  // }
   const ShipperComp = () => {
 
     return (
@@ -160,111 +238,36 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
           </div>
         </Col>
         <Col md={2} className='py-1'>
-          <SelectComp register={register} name='jobType' control={control} label='Job Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Direct', name: 'Direct' },
-              { id: 'Coloaded', name: 'Coloaded' },
-              { id: 'Cross Trade', name: 'Cross Trade' },
-              { id: 'Liner Agency', name: 'Liner Agency' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='jobKind' control={control} label='Job Kind' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Current', name: 'Current' },
-              { id: 'Opening', name: 'Opening' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
           <DateComp register={register} name='jobDate' control={control} label='Job Date' width={"100%"} disabled={getStatus(approved)} />
           {errors.registerDate && <div className='error-line'>Required*</div>}
         </Col>
+        <Col md={2} className='py-1'>     
+        <DateComp register={register} name='shipDate' control={control} label='Sailing/Flight Date'  width={"100%"} />
+      </Col>
         <Col md={2} className='py-1'>
-          <DateComp register={register} name='shipDate' control={control} label='Ship Date' disabled={getStatus(approved)} width={"100%"} />
-          {errors.registerDate && <div className='error-line'>Required*</div>}
-        </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='shipStatus' control={control} label='Ship Status:' width={"100%"} disabled={getStatus(approved)}
+          <SelectComp register={register} name='jobType' control={control} label='Job Type' width={"100%"} disabled={getStatus(approved)}
             options={[
-              { id: 'Hold', name: 'Hold' },
-              { id: 'Booked', name: 'Booked' },
-              { id: 'Delivered', name: 'Delivered' },
-              { id: 'Shipped', name: 'Shipped' },
-              { id: 'Closed', name: 'Closed' }
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='costCenter' control={control} label='C. Center' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'FSD', name: 'FSD' },
-              { id: 'KHI', name: 'KHI' }
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          {(type == "SE" || type == "SI") && <SelectComp register={register} name='subType' control={control} disabled={getStatus(approved)}
-            label='Sub Type' width={"100%"}
-            options={[
-              { id: 'FCL', name: 'FCL' },
-              { id: 'LCL', name: 'LCL' },
-            ]} />}
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='dg' control={control} label='DG Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'DG', name: 'DG' },
-              { id: 'non-DG', name: 'non-DG' },
-              { id: 'Mix', name: 'Mix' },
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='freightType' control={control} label='Fr. Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Prepaid', name: 'Prepaid' },
-              { id: 'Collect', name: 'Collect' },
+              {id:'Clearing Only', name:'Clearing Only'},
+              {id:'Clearing + Tpt', name:'Clearing + Tpt'},
+              {id:'Tpt Only', name:'Tpt Only'},
             ]} />
         </Col>
         <Col md={2} className='py-1'>
-          <SelectComp register={register} name='nomination' control={control} label='Nomination' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Free Hand', name: 'Free Hand' },
-              { id: 'Nominated', name: 'Nominated' },
-              { id: 'B2B', name: 'B2B' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='incoTerms' control={control} label='Inco Terms' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'EXW', name: 'EXW' },
-              { id: 'FCP', name: 'FCP' },
-              { id: 'FAS', name: 'FAS' },
-              { id: 'FOB', name: 'FOB' },
-              { id: 'CFR', name: 'CFR' },
-              { id: 'CIF', name: 'CIF' },
-              { id: 'CIP', name: 'CIP' },
-              { id: 'CPT', name: 'CPT' },
-              { id: 'DAP', name: 'DAP' },
-              { id: 'DPU', name: 'DPU' },
-              { id: 'DDP', name: 'DDP' },
-              { id: 'CNI', name: 'CNI' },
-              { id: 'DTP', name: 'DTP' },
-              { id: 'DPP', name: 'DPP' },
-              { id: 'DAT', name: 'DAT' },
-              { id: 'DDU', name: 'DDU' },
-              { id: 'DES', name: 'DES' },
-              { id: 'DEQ', name: 'DEQ' },
-              { id: 'DAF', name: 'DAF' },
-              { id: 'CNF', name: 'CNF' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <InputComp register={register} name='customerRef' control={control} label='Customer Ref#' width={"100%"} disabled={getStatus(approved)} />
-        </Col>
-        <Col md={2} className='pt-1 mb-0 pb-0'>
-          <InputComp register={register} name='fileNo' control={control} label='File #' width={"100%"} disabled={getStatus(approved)} />
-        </Col>
-        <Col className='py-0 my-0'>
-          <BLInfo blValues={state.selectedRecord?.Bl} />
-        </Col>
+        <SelectComp register={register} name='subType' control={control} label='Shipment Type' width={"100%"} 
+          options={[
+            {id:'FCL', name:'FCL'},
+            {id:'LCL', name:'LCL'},
+            {id:'PART', name:'PART'},
+            {id:'EPZ', name:'EPZ'},
+          ]}
+        />
+      </Col>
+      <Col md={1} className='py-1'>
+        <InputComp register={register} name='customerRef' control={control} label='Invoice #' width={"100%"}  />
+      </Col>
+      <Col md={1} className='py-1'>
+        <InputComp register={register} name='regPageNo' control={control} label='S/R Page#' width={"100%"}  />
+      </Col>
       </Row>
       <hr className='mb-0' />
       <Row style={{ fontSize: 12 }}>
@@ -274,109 +277,70 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
             clear={true}
             name='ClientId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
             options={state.fields.party.client} />
-          {(type == "SE" || type == "AE") && <ShipperComp />}
-          <div className='custom-link mt-2'
-            onClick={() => pageLinking("client", consigneeId)} >Consignee *</div>
-          <SelectSearchComp register={register} clear={true}
-
-            name='consigneeId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.party.consignee} /><Space />
-          {(type == "SI" || type == "AI") && <ShipperComp />}
-          {(type == "SE" || type == "SI") && <>
-            <SelectSearchComp register={register}
-              name='pol'
-              clear={true}
-              control={control} label='Port Of Loading' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports} /><Space />
-            <SelectSearchComp register={register}
-              clear={true}
-              name='pod' control={control} label='Port Of Discharge *' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports} />
-            <FaPlus onClick={() => setIsOpen(true)} style={{ cursor: "pointer" }} />
-            <Space />
-            {isOpen && <AddPort isOpen={isOpen} onClose={() => setIsOpen(false)} />}
-          </>
-          }
-          {(type == "AE" || type == "AI") && <>
-            {type == "AI" && <>
-              <SelectSearchComp register={register}
-                clear={true}
-                name='pol' control={control} label='Air Port Of Loading' disabled={getStatus(approved)} width={"100%"}
-                options={airports} /><Space />
-              <SelectSearchComp register={register}
-                clear={true}
-                name='pod' control={control} label='Air Port Of Discharge *' disabled={getStatus(approved)} width={"100%"}
-                options={airports} />
-
-              <FaPlus onClick={() => setIsOpen(true)} style={{ cursor: "pointer" }} />
-              <Space />
-              {isOpen && <AddPort isOpen={isOpen} onClose={() => setIsOpen(false)} />}
+          {(type == "SE" || type == "SI") && 
+          <>
+          <SelectSearchComp register={register} name='pol' control={control} label='Port Of Shipment'  width={"100%"}
+              options={polSea.ports} /><Space/>
+            <SelectSearchComp register={register} name='pod' control={control} label='Port Of Discharge'  width={"100%"}
+              options={ports.ports} /><Space/>
+            </>
+            }
+            {(type=="AE" || type=="AI") &&<>
+            <SelectSearchComp register={register} name='pol' control={control} label='Airport Of Shipment'  width={"100%"}
+              options={polAir.ports} /><Space/>
+            <SelectSearchComp register={register} name='pod' control={control} label='Airport Of Discharge'  width={"100%"}
+              options={airports} /><Space/>
             </>}
-          </>}
-          {(type == "AE" || type == "AI") && <>
             <SelectSearchComp register={register}
               clear={true}
-              name='fd' control={control} label='Final Destination *' disabled={getStatus(approved)} width={"100%"}
+              name='fd' control={control} label='Final Destination ' disabled={getStatus(approved)} width={"100%"}
               options={destinations}
             />
-          </>}
-          {(type == "SE" || type == "SI") && <>
-            <SelectSearchComp register={register}
-              clear={true}
-              name='fd' control={control} label='Final Destination *' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports}
-            />
-          </>}
           <Space />
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", forwarderId)} >Forwarder/Coloader *</div>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='forwarderId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.vendor.forwarder} /><Space />
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='salesRepresentatorId' control={control} label='Sales Representator' disabled={getStatus(approved)}
-            options={state.fields.sr} width={"100%"} />
         </Col>
         <Col md={3}><Space />
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", overseasAgentId)} >Overseas Agent *</div>
+          {/* <div className='custom-link mt-2' onClick={() => pageLinking("vendor", overseasAgentId)} >Overseas Agent *</div>
           <SelectSearchComp register={register}
             clear={true}
 
-            name='overseasAgentId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.overseasAgent} width={"100%"} />
+            name='overseasAgentId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.overseasAgent} width={"100%"} /> */}
 
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", localVendorId)} >Local Vendor *</div>
+          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", localVendorId)} >Local Vendor </div>
           <SelectSearchComp register={register}
             clear={true}
 
             name='localVendorId' control={control} label=''
             disabled={getStatus(approved)} options={state.fields.vendor.localVendor} width={"100%"}
           />
+          <div className='custom-link mt-2' onClick={()=>pageLinking("commodity", commodityId)} >Commodity</div>
+          <SelectSearchComp register={register} name='commodityId' control={control} label='' width={"100%"}
+              options={state.fields.commodity} 
+            />
+            {(type == "SE" || type == "SI") && <>
+          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", forwarderId)} >Freight Forwarder {"(CHA/CHB)"}</div>
+          <SelectSearchComp register={register}
+            clear={true}
+            name='forwarderId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
+            options={state.fields.vendor.forwarder} /> </>}
+             {(type=="AE" || type=="AI") &&<> 
+            <InputComp register={register} name='airwayBill' control={control} label='Airway Bill#' width={"100%"}  />
+            </> }
+            {(type=="AE" || type=="AI") &&<>
+            <div className='custom-link mt-2' onClick={()=>pageLinking("vendor", airLineId)} >Airline</div>
+            <SelectSearchComp register={register} name='airLineId' control={control} label='' width={"100%"}
+              options={state.fields.vendor.airLine} 
+            />
+                 </>
+            }
           {(type == "SE" || type == "SI") && <>
             <div className='custom-link mt-2' onClick={() => pageLinking("vendor", shippingLineId)} >Sline/Carrier</div>
             <SelectSearchComp register={register}
               clear={true} name='shippingLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.sLine} width={"100%"} />
           </>}
-          {(type == "AE" || type == "AI") && <>
-            <div className='custom-link mt-2' onClick={() => pageLinking("vendor", airLineId)} >Air line *</div>
-            <SelectSearchComp register={register}
-              clear={true}
-
-              name='airLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.airLine} width={"100%"} />
-          </>}
-          <Carrier state={state} register={register} control={control} pageLinking={pageLinking} dispatch={dispatch}
-            getStatus={getStatus} approved={approved} VoyageId={VoyageId} vesselId={vesselId} type={type}
-          />
         </Col>
+        
         <Col md={3}><Space />
-          <SelectSearchComp register={register}
-            clear={true}
 
-            name='commodityId' control={control} label='Commodity *' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.commodity}
-          />
           <div className='mt-2' />
           <Row>
             <Col md={1}>
@@ -384,49 +348,37 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
                 options={[{ label: "", value: "Transport" }]} />
             </Col>
             <Col md={3}>
-              <div className='custom-link' onClick={() => pageLinking("vendor", transporterId)} >Transport</div>
+              <div className='custom-link' onClick={() => pageLinking("vendor", transporterId)} >Transporter</div>
             </Col>
             <Col>.</Col>
           </Row>
           <SelectSearchComp register={register}
             clear={true}
-
             name='transporterId' control={control} label=''
             options={state.fields.vendor.transporter} disabled={getStatus(approved) || transportCheck.length == 0} width={"100%"} />
-          <div className='mt-2'></div>
+          {/* <div className='mt-2'></div> */}
           <Row>
-            <Col md={1}>
-              <CheckGroupComp register={register} name='customCheck' control={control} label='' disabled={getStatus(approved)}
-                options={[{ label: "", value: "Custom Clearance" }]} />
+            <Col md={4}>
+            <InputNumComp register={register} name='pcs' control={control}  label='No of Pkgs' width={"120%"}  />
             </Col>
-            <Col md={6}>
-              <div className='custom-link' onClick={() => pageLinking("vendor", customAgentId)} >Custom Clearance</div>
+            <Col md={8}>
+            <SelectComp register={register} name='pkgUnit' control={control} label='.' width={"100%"}  options={packages}  />
             </Col>
-            <Col>.</Col>
+            {/* <Col>.</Col> */}
           </Row>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='customAgentId' control={control} label='' width={"100%"}
-            options={state.fields.vendor.chaChb} disabled={getStatus(approved) || customCheck.length == 0}
-          />
-          <div style={{ marginTop: 13 }}></div>
-          <Weights state={state} register={register} control={control} equipments={state.equipments}
-            type={type} approved={approved} useWatch={useWatch}
-          />
         </Col>
-        <Col md={3}>
+        <Col md={3}><Space />
           {state.edit && <Notes state={state} dispatch={dispatch} />}
           {approved == "1" && <img src={'/approve.png'} height={100} />}
 
           {approved != "0" && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
             <CheckGroupComp register={register} name='approved' control={control} label=''
-              options={[{ label: "Approve Job", value: "1" }]}
+              options={[{ label: "Vessel Sailed", value: "1" }]}
             />
           </div>}
           <hr />
           {id != "new" && <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-            <button className='btn-custom px-4' type="button"
+            {/* <button className='btn-custom px-4' type="button"
               onClick={
                 async () => {
                   if (id != "new") {
@@ -449,7 +401,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
                     await Router.push(`${type == "SE" ? "/seaJobs/export/bl/" : type == "SI" ? "/seaJobs/import/bl/" : type == "AE" ? "/airJobs/export/bl/" : "/airJobs/import/bl/"}${state.selectedRecord.Bl != null ? state.selectedRecord.Bl.id : "new"}`);
                   }
                 }}
-            >{(type == "SE" || type == "SI") ? "BL" : "AWBL"}</button>
+            >{(type == "SE" || type == "SI") ? "BL" : "AWBL"}</button> */}
             <Popover
               content={
                 <>{state.InvoiceList?.map((x, i) =>
@@ -467,22 +419,34 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
                 </>}>
               <button type="button" className="btn-custom">Invoice/Bills {`(${state.InvoiceList.length})`}</button>
             </Popover>
+            {/* <br/> */}
 
-            {(type == "AE" || type == "SE") &&
+            {/* {(type == "AE" || type == "SE") &&
               <button className='btn-custom px-4' type='button' onClick={() => dispatch({ type: 'set', payload: { loadingProgram: 1, tabState: "6" } })}
               >Loading Program</button>}
 
             {(type == "AI" || type == "SI") && <button className='btn-custom px-4' type='button' onClick={() => dispatch({ type: 'set', payload: { do: 1, tabState: "7" } })}>
               DO
-            </button>}
+            </button>} */}
           </div>}
+          <br/>
+
         </Col>
+        {(type=="SE"||type=="SI") &&<>
+      <Col md={7} style={{ display:'flex', marginRight:"10rem", marginTop:"1rem"}}><Space />
+        <EquipmentInfo state={state} dispatch={dispatch} />
+      </Col>
+      </> }
+      <Col md={3} style={{ display:'flex'}}><Space />
+      <QRPageComp id={id} />
+      </Col>
+      
       </Row>
       {(state.voyageVisible && approved[0] != "1") &&
         <CustomBoxSelect reset={reset} useWatch={useWatch} control={control} state={state} dispatch={dispatch} />
       }
       <Modal open={state.isModalOpen} onOk={handleOk} onCancel={handleCancel} maskClosable={false}>
-        {approved == "1" ? "Are You Sure You Want To Approve This Job? " : "Are You Sure You Want To Disapprove This Job?"}
+        {approved == "1" ? "Mark Vessel Sailed? " : "Unmark Vessel Sailed? "}
       </Modal>
     </>
   )

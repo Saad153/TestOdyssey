@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Row, Col, Table } from 'react-bootstrap';
 import inWords from '/functions/numToWords';
 
-const CLPrint = ({ records, invoice }) => {
+const CLPrint = ({ logo,records, invoice }) => {
     // console.log("invoice",invoice)
     const [values, setValues] = useState({
         tax: 0,
@@ -44,7 +44,12 @@ const CLPrint = ({ records, invoice }) => {
                 <Row>
                     <Col>
                         <header className='justify-content-center text-center'>
-                            <span className='fs-6'><strong>CARGO LINKERS</strong></span> <br />
+                            {/* <span className='fs-6'><strong>CARGO LINKERS</strong></span>  */}
+                            {/* {console.log("invoice", invoice)} */}
+                            {!logo && <><img src={'/cargolinkers-logo.png'} style={{filter:"invert(1)"}} className='my-2' height={80} />
+                            <br />
+                            </>}
+                            {logo && <div style={{fontSize:20}}><b>CARGO LINKERS</b></div>}
                             <span className='fs-12' style={{ lineHeight: "-20px" }}>F-50 BLOCK-6 SHAHRAH-E-FAISAL KARACHI</span>
                         </header>
                     </Col>
@@ -53,7 +58,7 @@ const CLPrint = ({ records, invoice }) => {
                 <Row>
                     <Col>
                         <header className='justify-content-center text-center'>
-                            <span className='fs-12'>NTN.5322935-2</span> <br />
+                            <span className='fs-17'>NTN.5322935-2</span> <br />
                         </header>
                     </Col>
                 </Row>
@@ -61,7 +66,7 @@ const CLPrint = ({ records, invoice }) => {
                 <Row>
                     <Col md={5}><Line /></Col>
                     <Col md={2}>
-                        <div className='text-center fs-15' style={{ whiteSpace: 'nowrap' }}>
+                        <div className='text-center fs-17' style={{ whiteSpace: 'nowrap' }}>
                             <strong>Invoice</strong>
                         </div>
                     </Col>
@@ -79,18 +84,18 @@ const CLPrint = ({ records, invoice }) => {
                         </div>
                     </Col>
                     <Col md="6" style={{ borderTop: border, borderRight: border, borderLeft: border, borderBottom: border, textAlign: "center" }}>
-                        <div className='d-flex justify-content-center'>
-                            <div className='text-end' style={{ lineHeight: "-20px" }}>
-                                <span className='fs-10 pe-3 fw-bold'>Invoice No :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Invoice Date :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Client Ref # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>GST Invoice # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Job Type :</span><br />
+                        <div className='d-flex justify-content-start'>
+                            <div className='text-start' style={{ lineHeight: "-20px" }}>
+                                <span className='fs-12 pe-3 fw-bold'>Invoice No :</span><br />
+                                <span className='fs-12 pe-3 fw-bold'>Invoice Date :</span><br />
+                                {/* <span className='fs-10 pe-3 fw-bold'>Client Ref # :</span><br /> */}
+                                <span className='fs-12 pe-3 fw-bold'>GST Invoice # :</span><br />
+                                <span className='fs-12 pe-3 fw-bold'>Job Type :</span><br />
                             </div>
                             <div className='text-start' style={{ lineHeight: "-20px" }}>
                                 <span className='fs-10'>{invoice?.invoice_No ? invoice?.invoice_No : ""}</span><br />
-                                <span className='fs-10'>{invoice?.createdAt ? moment(invoice?.createdAt).format("ll") : ""}</span><br />
-                                <span className='fs-10'></span><br />
+                                <span className='fs-10'>{invoice?.createdAt ? moment(invoice.createdAt).format('DD MMM, YYYY') : ""}</span><br />
+                                {/* <span className='fs-10'></span><br /> */}
                                 <span className='fs-10'></span><br />
                                 <span className='fs-10'>{invoice?.operation ? invoice?.operation : ""}</span><br />
                             </div>
@@ -99,43 +104,55 @@ const CLPrint = ({ records, invoice }) => {
                 </Row>
 
                 <Row style={{ paddingLeft: 12, paddingRight: 12, }}>
-                    <Col md="4" style={{ borderLeft: border, borderBottom: border }}>
+                    <Col md="6" style={{ borderLeft: border, borderBottom: border }}>
                         <div className='d-flex justify-content-start'>
                             <div className='text-start'>
-                                <span className='fs-10 pe-3 fw-bold'>Job # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>No Of Packages :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Description # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Shipment From # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>Vessel :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>HBL No :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>MBL No :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Client Ref # :</span><br />
+                                <span className='fs-11 pe-3 fw-bold mt-6'>GD:</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>No Of Packages :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Description # :</span><br />
+                                <span className='fs-10 pe-3 fw-bold'>FORM {"'E'"} #:</span><br />
+                                {/* <span className='fs-11 pe-3 fw-bold'>Shipment From # :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Vessel :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>HBL No :</span><br />
+                                <span className='fs-10 pe-3 fw-bold'>MBL No :</span><br /> */}
                             </div>
                             <div className='text-start'>
-                                <span className='fs-10'>{invoice?.SE_Job.jobNo ? invoice?.SE_Job.jobNo : ""}</span><br />
-                                <span className='fs-10'>{invoice?.SE_Job.pcs ? invoice?.SE_Job.pcs : ""} Cartons</span><br />
-                                <span className='fs-10'>{invoice?.SE_Job.commodity ? invoice?.SE_Job.commodity.name : ""}</span><br />
-                                <span className='fs-10'></span><br />
-                                <span className='fs-10'>{invoice?.SE_Job.vessel ? invoice?.SE_Job.vessel.name : ""}</span><br />
+                            <span className='fs-12'>{invoice?.SE_Job.customerRef ? invoice?.SE_Job.customerRef : ""}</span><br />
+                                {/* <span className='fs-10'>{invoice?.SE_Job.jobNo ? invoice?.SE_Job.jobNo : ""}</span><br /> */}
+                                <span className='fs-12 mt-6'>{invoice?.SE_Job?.gd}</span><br />
+                                <span className='fs-12'>{invoice?.SE_Job.pcs ? invoice?.SE_Job.pcs : ""} Cartons</span><br />
+                                <span className='fs-12'>{invoice?.SE_Job.commodity ? invoice?.SE_Job.commodity.name : ""}</span><br />
+                                <span className='fs-12'>{invoice?.SE_Job?.fileNo}</span><br />
+                                <span className='fs-12'></span><br />
+                                <span className='fs-12 mt-6'></span><br />
+                                <span className='fs-12'></span>
+                                {/* <span className='fs-12'>{invoice?.SE_Job.vessel ? invoice?.SE_Job.vessel.name : ""}</span><br /> */}
                             </div>
                         </div>
                     </Col>
-                    <Col md="4" style={{ borderBottom: border }}>
+                    <Col md="6" style={{ borderRight: border, borderBottom: border }}>
                         <div className='d-flex justify-content-start'>
                             <div className='text-start'>
-                                <span className='fs-10 pe-3 fw-bold'>File Job # :</span><br />
-                                <span className='fs-10 pe-3 fw-bold mt-6'>Index :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>IGM Date :</span><br />
-                                <span className='fs-10 pe-3 fw-bold'>IGM No :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Job # :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Shipment From #:</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Terminal:</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>S/Line :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>Sailing Date :</span><br />
+                                {/* <span className='fs-11 pe-3 fw-bold mt-6'>Index :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>IGM Date :</span><br />
+                                <span className='fs-11 pe-3 fw-bold'>IGM No :</span><br /> */}
                             </div>
                             <div className='text-start'>
-                                <span className='fs-10'>{invoice?.SE_Job ? invoice?.SE_Job.jobNo : ""}</span><br />
-                                <span className='fs-10 mt-6'></span><br />
-                                <span className='fs-10'></span><br />
-                                <span className='fs-10'></span><br />
+                                <span className='fs-12'>{invoice?.SE_Job ? invoice?.SE_Job.jobNo : ""}</span><br />
+                                <span className='fs-12'>{invoice?.SE_Job?.pol} </span><br/>
+                                <span className='fs-12'>{invoice?.SE_Job?.terminal}</span><br />
+                                <span className='fs-12'>{invoice?.SE_Job?.shipping_line?.name}</span><br/>
+                                <span className='fs-12'>{moment(invoice?.SE_Job?.shipDate).format("DD-MM-YYYY")}</span>
                             </div>
                         </div>
                     </Col>
-                    <Col md="4" style={{ borderRight: border, borderBottom: border }}>
+                    {/* <Col md="4" style={{ borderRight: border, borderBottom: border }}>
                         <div className='d-flex justify-content-start'>
                             <div className='text-start'>
                                 <span className='fs-10 pe-3 fw-bold'>Ref. Invoice # :</span><br />
@@ -161,7 +178,7 @@ const CLPrint = ({ records, invoice }) => {
                                 <span className='fs-10'></span><br />
                             </div>
                         </div>
-                    </Col>
+                    </Col> */}
                 </Row>
 
                 <Row>
@@ -185,6 +202,7 @@ const CLPrint = ({ records, invoice }) => {
                                                 <td >{x.basis}</td>
                                                 <td >0.00</td>
                                                 <td >{x.net_amount}</td>
+                                                <td>{x.net_amount}</td>
                                             </tr>
                                         </>
                                     )

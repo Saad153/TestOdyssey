@@ -16,6 +16,7 @@ import InvoiceEditor from './InvoiceEditor';
 import PartySearch from '../Layouts/JobsLayout/Jobs/ChargesComp/PartySearch';
 import { set } from 'js-cookie';
 import { DeleteOutlined, PrinterOutlined, RightOutlined } from '@ant-design/icons';
+import SLPrint from './SLPrint';
 
 const { TextArea } = Input;
 
@@ -24,6 +25,7 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
   const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
   let inputRef = useRef(null);
+  let inputSalesRef = useRef(null);
   const dispatchNew = useDispatch();
   const queryClient = useQueryClient();
   const [bank, setBank] = useState(1);
@@ -84,6 +86,7 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
 
   useEffect(()=>{
     if(Object.keys(data).length>0){
+      console.log('data>>>>',data)
       setInvoice(data.resultOne);
       setRecords(data.resultOne?.Charge_Heads);
       setInvoiceData(!invoiceData)
@@ -387,14 +390,17 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
       <Checkbox onChange={()=>setRef(!ref)} checked={ref} className='mb-2'>Hide Ref & Sales Rep</Checkbox><br/>
       <Checkbox onChange={()=>setLogo(!logo)} checked={logo} className='mb-2'>Hide Logo</Checkbox><br/>
       <Checkbox onChange={()=>setBalance(!balance)} checked={balance} className='mb-2'>Hide Balance</Checkbox><br/>
-      Logo: {" "}
+      {/* Logo: {" "}
       <Radio.Group optionType="button" buttonStyle="solid" value={compLogo}
         options={[{ label: 'SNS', value: '1' }, { label: 'ACS', value: '2' }]}
         onChange={(e)=>setCompLogo(e.target.value)}
-      />
-      <br/>
+      /> */}
+      {/* <br/> */}
       <div className='mt-3'></div>
       <ReactToPrint content={()=>inputRef} trigger={()=><div className='div-btn-custom text-center p-2'>Go</div>} />
+      <br/>
+      <ReactToPrint content={()=>inputSalesRef} trigger={()=><div className='div-btn-custom text-center p-2'>Print GST</div>} />
+      {/* <div className='div-btn-custom text-center p-2 mt-3' onClick={printInvoice()}>Print GST</div> */}
     </div>
   );
   const updateNote = async() => {
@@ -691,7 +697,7 @@ return (
         }}
       >
         <div ref={(response)=>(inputRef=response)}>
-          {invoice && companyId !== "2" ?
+          {/* {invoice && companyId !== "2" ?
             <InvoicePrint 
               logo={logo} 
               compLogo={compLogo} 
@@ -701,9 +707,11 @@ return (
               invoice={invoice} 
               calculateTotal={calculateTotal} 
             /> 
-          :
-          <CLPrint records={records} invoice={invoice} />
-          }
+          : */}
+          <CLPrint logo={logo} records={records} invoice={invoice} />
+        </div>
+        <div ref={(response)=>(inputSalesRef=response)}>
+                    <SLPrint  records={records} invoice={invoice}/>
         </div>
       </div>
     </div>

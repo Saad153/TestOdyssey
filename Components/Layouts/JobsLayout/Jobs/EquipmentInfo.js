@@ -6,7 +6,7 @@ import PopConfirm from '../../../Shared/PopConfirm';
 
 const EquipmentInfo = ({state, dispatch}) => {
 
-  const width = 162;
+  const width = '100%';
   
   const addEquipment = () => {
     let tempState = [...state.equipments];
@@ -15,24 +15,26 @@ const EquipmentInfo = ({state, dispatch}) => {
   }
 
   return (
-  <div style={{minHeight:630, maxHeight:630}}>
+  <div style={{border:'1px solid silver', padding:'10px'}}>
     <button type='button' className='btn-custom fw-8' onClick={addEquipment}>Add +</button>
-    <Table className='mt-2'>
+    <div style={{maxHeight:170, overflowY:'auto', overflowX:'hidden'}}>
+    <Table className='mt-2' borderless>
       <thead>
         <tr>
-          <th>Size/Type</th>
-          <th>Qty</th>
-          <th>DG/Non-DG</th>
-          <th>Gross WT/CNT</th>
+          <th>Size</th>
+          <th>Container #</th>
+          <th>Truck</th>
+          {/* <th>Gross WT/CNT</th>
           <th>TEU</th>
-          <th>Modify</th>
+          <th>Modify</th> */}
+          <th></th>
         </tr>
       </thead>
       <tbody>
       {state.equipments.map((x, i) => {
       return(
         <tr className='f' key={i}>
-          <td>
+          <td className='p-0 m-0 '>
           <Select style={{width:width}} value={x.size}
           allowClear
             onChange={(e)=>{
@@ -56,13 +58,10 @@ const EquipmentInfo = ({state, dispatch}) => {
               dispatch({type:'toggle', fieldName:'equipments', payload:tempState})
             }}
             options={[
-              {value:'40HC', label:'40HC'},
               {value:'20HC', label:'20HC'},
               {value:'20SD', label:'20SD'},
               {value:'20FR', label:'20FR'},
               {value:'40SD', label:'40SD'},
-              {value:'45HC', label:'45HC'},
-
               {value:'40HV', label:'40HV'},
               {value:'45BK', label:'45BK'},
               {value:'45OT', label:'45OT'},
@@ -78,10 +77,33 @@ const EquipmentInfo = ({state, dispatch}) => {
               {value:'20BK', label:'20BK'},
               {value:'20OT', label:'20OT'},
               {value:'20FT', label:'20FT'},
+              {value:'40FT', label:'40FT'},
+              {value:'40HC', label:'40HC'},
+              {value:'45HC', label:'45HC'},
+              {value:'Reef 20', label:'Reef 20'},
+              {value:'Reef 40', label:'Reef 40'},
             ]}
           />
           </td>
-          <td>
+          <td className='p-0'>
+                <Input placeholder="Container #" value={x.container} style={{width:width}}
+                  min={1}
+                  onChange={(e)=>{
+                    let tempState = [...state.equipments];
+                    tempState[i].container = e.target.value;
+                    dispatch({type:'toggle', fieldName:'equipments', payload:tempState})
+                  }} />
+              </td>
+              <td className='p-0'>
+                <Input placeholder="truck #" value={x.qty} style={{width:width}}
+                  min={1}
+                  onChange={(e)=>{
+                    let tempState = [...state.equipments];
+                    tempState[i].qty = e.target.value;
+                    dispatch({type:'toggle', fieldName:'equipments', payload:tempState})
+                  }} />
+              </td>
+          {/* <td>
             <InputNumber placeholder="Basic usage" value={x.qty} style={{width:width}}
             allowClear
               min={1}
@@ -128,12 +150,12 @@ const EquipmentInfo = ({state, dispatch}) => {
               <Input placeholder="" style={{width:width}} disabled />
             }
           </td>
-          <td><Input placeholder="" style={{width:width}} value={x.teu} /></td>
-          <td>
+          <td><Input placeholder="" style={{width:width}} value={x.teu} /></td> */}
+          <td className='p-0 pt-2'>
             <CloseCircleOutlined className='mx-3 cross-icon' onClick={()=>{
               PopConfirm(
                 "Confirmation",
-                "Are You Sure To Delete This Equipment",
+                "Are You Sure To Remove This Container",
                 ()=>{
                   let tempState = [...state.equipments];
                   tempState.splice(i, 1);
@@ -146,6 +168,7 @@ const EquipmentInfo = ({state, dispatch}) => {
       )})}
       </tbody>
     </Table>
+  </div>
   </div>
   )
 }

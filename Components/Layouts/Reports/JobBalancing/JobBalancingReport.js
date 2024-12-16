@@ -639,7 +639,7 @@ const JobBalancingReport = ({ result, query }) => {
         link.click();
         window.URL.revokeObjectURL(url);
       }catch(e){
-        //console.log(e)
+        console.log(e)
         console.error(e)
       }
     }

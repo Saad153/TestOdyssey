@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 import {setApproved } from '../../../../../redux/invoice/invoiceSlice';
 import Charges from './Charges';
 import { Tabs } from 'antd';
+import EmployeePaybles from "./EmployeePaybles";
 
   const ChargesComp = ({state, dispatch, type, allValues}) => {
 
@@ -60,6 +61,9 @@ import { Tabs } from 'antd';
           companyId={companyId} operationType={type} allValues={allValues} chargesData={chargesData}
         />
       </Tabs.TabPane>
+      {/* <Tabs.TabPane tab="Employee Payables" key="3">
+        <EmployeePaybles state={state} dispatch={dispatch} jobNo={state.selectedRecord.jobNo} jobID={state.selectedRecord.id}/>
+      </Tabs.TabPane> */}
     </Tabs>
     <hr/>
     </div>
