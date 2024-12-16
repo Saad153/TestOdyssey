@@ -76,7 +76,6 @@ const initialState = {
           y.gainLoss = 0.00;
           y.after = 0.00;
           y.Invoices.forEach((z) => {
-            console.log(z)
             if(z.currency=='PKR'){
               if(z.payType=="Recievable") {
                 y.revenue = y.revenue + parseFloat(z.total);  //total will not be multiplied by Ex.Rate
@@ -115,7 +114,7 @@ const initialState = {
               }
             }
           })
-          y.gainLoss = y.gainLoss*-1;
+          // y.gainLoss = y.gainLoss*-1;
           
           y.pnl = y.revenue-y.cost
           totalRevenue  = totalRevenue + y.revenue;

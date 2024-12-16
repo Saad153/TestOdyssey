@@ -14,7 +14,7 @@ const VoucherPrint = ({ compLogo, voucherData }) => {
   const border = "1px solid black";
 
   const Line = () => <div style={{ backgroundColor: "grey", height: 1, position: 'relative', top: 12 }}></div>
-  const fomratedDate = moment(voucherData.createdAt).format("yyyy-MM-DD");
+  const fomratedDate = moment(voucherData.createdAt).format("DD-MM-YYYY");
   const commas = (a) => a < 1 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ");
   let debitSum = 0;
   let creditSum = 0;

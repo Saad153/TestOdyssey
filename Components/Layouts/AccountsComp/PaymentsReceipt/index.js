@@ -33,6 +33,15 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     }).then((x) => {
       console.log(x.data.result)
       const temp = [];
+      x.data.result.forEach((x)=>{
+        x.invoice.forEach((y)=>{
+          if(y.payType=="Payble"){
+            y.receiving = y.paid
+          }else{
+            y.receiving = y.recieved
+          }
+        })
+      })
       x.data.result.length>0?temp.push(x.data.result.map((x) => {
         console.log(x)
         return {
@@ -109,7 +118,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     console.log("<><><", x);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
+    dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
     dispatch(setField({ field: 'currency', value: x.currency }))
     dispatch(setField({ field: 'date', value: moment(x.x.data) }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
@@ -117,6 +126,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     dispatch(setField({ field: 'exRate', value: x.x.exRate }))
     dispatch(setField({ field: 'voucherId', value: x.id }))
     dispatch(setField({ field: 'invoices', value: x.x.invoice }))
+    dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))
     x.x.Voucher_Heads.forEach((y) => {
       console.log(y)
       if(y.accountType=="payAccount"){
@@ -128,9 +138,11 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
         // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
       }
-      if(y.accountType=="Gain/Loss Account"){
+      if(y.accountType=="Gain/Loss Account" && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
         console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
-        dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) }));
+        y.type!='debit'?
+        dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) })):
+        dispatch(setField({ field: 'gainLossAmount', value: (parseFloat(y.amount)*-1)*parseFloat(x.x.exRate) }))
         dispatch(setField({ field: 'gainLossAccount', value: y.ChildAccountId }))
       }
       if(y.accountType.includes('Charges Account')){

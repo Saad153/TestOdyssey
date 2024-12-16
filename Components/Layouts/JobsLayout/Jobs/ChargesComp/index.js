@@ -29,6 +29,10 @@ import EmployeePaybles from "./EmployeePaybles";
     getChargeHeads({id:state.selectedRecord.id})
   }, [])
 
+  useEffect(()=>{
+    allValues.charges = chargeList
+  }, [chargeList])
+
   useEffect(() => {
     if(chargesData){
       chargesData.charges.forEach((x)=>{
