@@ -683,17 +683,19 @@ const Upload_CoA = () => {
                 invoice = {
                     invoice_No: x.invoice___bill_+"-O",
                     type: "Old Job Invoice",
-                    payType: x.payable!=0?"Payble":"Recievable",
+                    payType: x.payable==0?parseFloat(x.receivable)>0?"Recievable":"Payble":parseFloat(x.payable)>0?"Payble":"Recievable",
                     status: "2",
                     operation: x.op_code?x.op_code:null,
                     currency: x.curr,
                     ex_rate: x.curr=="PKR"?"1":"0",
                     party_Id: party_id,
                     party_Name: party_name,
-                    paid: x.payable!=0?(x.payable-x.balance).toString():"0",
-                    recieved: x.payable==0?(x.receivable-x.balance).toString():"0",
+                    paid: x.payable==0?parseFloat(x.receivable)>0?"0":(Math.abs(parseFloat(x.receivable))-Math.abs(parseFloat(x.balance))):parseFloat(x.payable)>0?(Math.abs(parseFloat(x.payable))-Math.abs(parseFloat(x.balance))):"0",
+                    // paid: x.payable!=0?(Math.abs(x.payable)-x.balance).toString():"0",
+                    recieved: x.payable==0?parseFloat(x.receivable)>0?(Math.abs(parseFloat(x.receivable))-Math.abs(parseFloat(x.balance))):"0":parseFloat(x.payable)<0?(Math.abs(parseFloat(x.payable))-Math.abs(parseFloat(x.balance))):"0",
+                    // recieved: x.payable==0?(Math.abs(x.receivable)-x.balance).toString():"0",
                     roundOff: "0",
-                    total: x.payable!=0?x.payable.toString():x.receivable.toString(),
+                    total: x.payable!=0?Math.abs(x.payable).toString():Math.abs(x.receivable).toString(),
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice___bill_date?x.invoice___bill_date:null
@@ -740,7 +742,7 @@ const Upload_CoA = () => {
         }
         if(agentInvoices){
             for(let x of data){
-                x.rcvd_paid = parseFloat(removeCommas(x.rcvd_paid)) * x.exchange_rate
+                // x.rcvd_paid = parseFloat(removeCommas(x.rcvd_paid)) * x.exchange_rate
                 let party_id = ""
                 let party_name = ""
                 let matched = false
@@ -798,10 +800,10 @@ const Upload_CoA = () => {
                     ex_rate: x.currency=="PKR"?"1":x.exchange_rate,
                     party_Id: party_id,
                     party_Name: party_name,
-                    paid: x.type_dn_cn=="Credit"?removeCommas(x.rcvd_paid):"0",
-                    recieved: x.type_dn_cn=="Credit"?"0":removeCommas(x.rcvd_paid),
+                    paid: x.type_dn_cn=="Credit"?removeCommas(Math.abs(parseFloat(x.rcvd_paid)).toString()):"0",
+                    recieved: x.type_dn_cn=="Credit"?"0":removeCommas(Math.abs(parseFloat(x.rcvd_paid)).toString()),
                     roundOff: "0",
-                    total: x.type_dn_cn=="Credit"?removeCommas(x.local_amount.toString().slice(1)):removeCommas(x.local_amount.toString()),
+                    total: x.type_dn_cn=="Credit"?removeCommas(Math.abs(parseFloat(x.invoice_amount)).toString()):removeCommas(Math.abs(parseFloat(x.invoice_amount)).toString()),
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
@@ -1175,8 +1177,8 @@ const Upload_CoA = () => {
                     count++
                     a = {
                         voucher_Id: y.voucher_no,
-                        amount: y.debit!=0?y.debit:y.credit,
-                        defaultAmount: y.currency!="PKR"?y.debit!=0?y.debit/y.exchangerate:y.credit/y.exchangerate:y.debit!=0?y.debit:y.credit,
+                        defaultAmount: y.debit!=0?y.debit:y.credit,
+                        amount: y.currency!="PKR"?y.debit!=0?y.debit/y.exchangerate:y.credit/y.exchangerate:y.debit!=0?y.debit:y.credit,
                         type: y.debit!=0?"debit":"credit",
                         narration: y.narration,
                         settlement: "",

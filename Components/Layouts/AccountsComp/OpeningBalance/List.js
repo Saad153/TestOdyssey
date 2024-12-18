@@ -7,6 +7,7 @@ import { DeleteOutlined } from '@ant-design/icons';
 import PopConfirm from '/Components/Shared/PopConfirm';
 import Cookies from 'js-cookie';
 
+const commas = (a) => { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") };
 
 const OpeningBalance = ({sessionData, openingBalancesList}) => {
 
@@ -74,7 +75,7 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
         <td>{x?.Voucher_Heads[0].Child_Account.title}</td>
         <td>{x?.currency}</td>
         <td>{x.exRate}</td>
-        <td>{x.Voucher_Heads[0].amount}</td>
+        <td>{commas(x.Voucher_Heads[0].amount)}</td>
         <td>{moment(x?.createdAt).format("DD-MM-YYYY")}</td>
         <td><DeleteOutlined onClick={(e) => { e.stopPropagation(); handleDelete(x.id) }} /></td>
       </tr>

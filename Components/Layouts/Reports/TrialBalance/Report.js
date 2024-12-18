@@ -35,12 +35,12 @@ const Report = ({query, result}) => {
           const createdAtDate = moment(y.createdAt);
           if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
             y.type=="debit"?
-              transactions.trDebit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate):
-              transactions.trCredit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate)
+              transactions.trDebit += parseFloat(y.defaultAmount):
+              transactions.trCredit += parseFloat(y.defaultAmount)
           } else {
             y.type=="debit"?
-              transactions.opDebit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate):
-              transactions.opCredit += parseFloat(y.amount)*parseFloat(y.Voucher.exRate)
+              transactions.opDebit += parseFloat(y.defaultAmount):
+              transactions.opCredit += parseFloat(y.defaultAmount)
           }
 
         });
@@ -66,16 +66,16 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
-        console.log(x)
+        // console.log(x)
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           x.type=="debit"?
-            transactions.trDebit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate):
-            transactions.trCredit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate)
+            transactions.trDebit += parseFloat(x.defaultAmount):
+            transactions.trCredit += parseFloat(x.defaultAmount)
         } else {
           x.type=="debit"?
-            transactions.opDebit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate):
-            transactions.opCredit += parseFloat(x.amount)*parseFloat(x.Voucher.exRate)
+            transactions.opDebit += parseFloat(x.defaultAmount):
+            transactions.opCredit += parseFloat(x.defaultAmount)
         }
 
       });
@@ -100,7 +100,7 @@ const Report = ({query, result}) => {
             });
             let type = "Non-EX"
             x.Child_Accounts.forEach((y)=>{
-              // console.log("Accounts", y)
+              console.log("Accounts", y)
               y.title.includes("EX-CHANGE RATE GAIN / LOSS")?type = "EX":null
               temp.push({
                 title:y.title,
@@ -217,12 +217,12 @@ const Report = ({query, result}) => {
         index: i + 1,
         code: x.code,
         title: x.title,
-        Odebit: commas(x.opDebit),
-        Ocredit: commas(x.opCredit),
-        Tdebit: commas(x.trDebit),
-        Tcredit: commas(x.trCredit),
-        Cdebit: commas(x.clDebit),
-        Ccredit: commas(x.clCredit),
+        Odebit: x.opDebit,
+        Ocredit: x.opCredit,
+        Tdebit: x.trDebit,
+        Tcredit: x.trCredit,
+        Cdebit: x.clDebit,
+        Ccredit: x.clCredit,
       }));
       
   

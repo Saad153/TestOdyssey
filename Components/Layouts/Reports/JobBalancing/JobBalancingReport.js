@@ -735,9 +735,17 @@ const JobBalancingReport = ({ result, query }) => {
   // Pagination Variables
   const [currentPage,setCurrentPage] = useState(0);
   const [recordsPerPage] = useState(20);
-  const indexOfLast = currentPage * recordsPerPage ;
-  const indexOfFirst = indexOfLast - recordsPerPage;
-  const currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
+  let indexOfLast = currentPage * recordsPerPage ;
+  let indexOfFirst = indexOfLast - recordsPerPage;
+  let currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
+
+  useEffect(() => {
+    indexOfFirst = currentPage * recordsPerPage;
+    indexOfLast = indexOfFirst + recordsPerPage;
+    console.log(result.result)
+    currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
+    console.log(currentRecords)
+  },[currentPage])
   const noOfPages = records ? Math.ceil(records.length / recordsPerPage) : 0 ;
   // Pagination Variables
   
@@ -787,7 +795,8 @@ const JobBalancingReport = ({ result, query }) => {
             </thead>
             <tbody>
               {/* without print  */}
-              {overflow ? result.result.filter((x) => {
+              {console.log("Length: ", currentRecords.length)}
+              {overflow ? currentRecords.filter((x) => {
                 //console.log("X..", x)
                 //console.log("QUERY..", query)
                   if (query.options == 'exclude0') {
@@ -868,7 +877,7 @@ const JobBalancingReport = ({ result, query }) => {
                 </tr>
               )}) : 
               // print mode 
-              result.result.map((x, i) => {
+              currentRecords.map((x, i) => {
                   return (
                   <tr key={i}>
                     <td style={{ maxWidth: 30 }}>{i + 1}</td>
