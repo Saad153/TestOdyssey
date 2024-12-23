@@ -13,7 +13,8 @@ const qrCodeGenerater = async (id) => {
     // console.log('count',currentUrl); // Outputs the current origin, e.g., https://example.com
   }
   const url =  `${currentUrl}/jobInfo/${id}`;
-console.log(url)
+//   console.log('id',id);
+// console.log(url)
   // Generate a QR code as a base64 image
   const qr =  await QRCode.toDataURL(url);
   setQrCode(qr);
@@ -35,7 +36,7 @@ useEffect(() => {
         <img
           src={qrCode}
           alt="QR Code"
-          style={{ border: '1px solid #ddd', padding: '5px', width: '130px', height: '130px' }}
+          style={{ border: '1px solid #ddd', padding: '5px',minWidth: '100px' ,maxWidth: '130px',minHeight: '100px', maxHeight: '130px' }}
         />
       </div>
     </div>

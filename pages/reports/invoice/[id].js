@@ -17,7 +17,7 @@ export async function getServerSideProps(context) {
   const { params } = context;
   const invoiceData = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_ID, {
     headers: { "invoiceid": `${params.id}`}
-  }).then((x)=>consolex.data.result)
+  }).then((x)=>x.data.result)
   console.log("invoiceData",invoiceData)
   return {
     props:{

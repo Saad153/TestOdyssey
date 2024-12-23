@@ -85,11 +85,12 @@ const JobPL = () => {
             <Select style={{ width: "100%" }}
              value={company} onChange={handleChange}
              allowClear
+             disabled={true}
              options={[
-              {value:1,label:"Sea Net Shipping & Logistics"},
-              {value:2,label:"Cargo Linkers"},
-              {value:3,label:"Air Cargo Services"},
-              {value:4,label:"SNS & ACS"},
+              // {value:1,label:"Sea Net Shipping & Logistics"},
+              {value:1,label:"Cargo Linkers"},
+              // {value:3,label:"Air Cargo Services"},
+              // {value:4,label:"SNS & ACS"},
             ]}
             />
           </Col>

@@ -20,7 +20,7 @@ import SLPrint from './SLPrint';
 
 const { TextArea } = Input;
 
-const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
+const InvoiceCharges = ({data, state, dispatch, companyId, reload, id}) => {
 
   const commas = (a) => parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
@@ -711,7 +711,7 @@ return (
               calculateTotal={calculateTotal} 
             /> 
           : */}
-          <CLPrint logo={logo} records={records} invoice={invoice} />
+          <CLPrint logo={logo} records={records} invoice={invoice} id={id} />
         </div>
         <div ref={(response)=>(inputSalesRef=response)}>
                     <SLPrint  records={records} invoice={invoice}/>

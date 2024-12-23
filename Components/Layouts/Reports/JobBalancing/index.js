@@ -14,7 +14,7 @@ const JobBalancing = () => {
   const dispatch = useDispatch();  
   const [from, setFrom] = useState(moment("2023-07-01").format("YYYY-MM-DD"));
   const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
-  const [ company, setCompany ] = useState(2);
+  const [ company, setCompany ] = useState(1);
   const [ party, setParty ] = useState("");
   const [ overseasAgent, setOverseasAgent ] = useState("");
   const [ reportType, setReportType ] = useState("viewer");
@@ -114,7 +114,7 @@ const JobBalancing = () => {
           onChange={(e)=>{setCompany(e) }} 
           options={[
             // {value:1,label:"Sea Net Shipping & Logistics"},
-            {value:2,label:"Cargo Linkers"},
+            {value:1,label:"Cargo Linkers"},
             // {value:3,label:"Air Cargo Services"},
             // {value:4,label:"SNS & ACS"},
           ]}

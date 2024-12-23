@@ -278,6 +278,7 @@ const MainLayout = ({children}) => {
         let tempTabActive = {...tabActive};
         if(tabs.key=='1-1'){ tempTabActive.home=true }
         else if(tabs.key=='1-2'){ tempTabActive.requests=true }
+        else if(tabs.key=='1-3'){ tempTabActive.compareReports=true }
         else if(tabs.key=='2-1'){ tempTabActive.employee=true }
         else if(tabs.key=='2-2'){ tempTabActive.clientList=true }
         else if(tabs.key=='2-7'){ tempTabActive.client=true }
@@ -366,6 +367,7 @@ const MainLayout = ({children}) => {
     setToggleState(x.key);
     if(x.key=='1-1'){ Router.push('/dashboard/home') }
     else if(x.key=='1-2'){ Router.push('/dashboard/requests') }
+    else if(x.key=='1-3'){ Router.push('/dashboard/compareReports') }
     else if(x.key=='2-1'){ Router.push('/employees') }
     else if(x.key=='2-2'){ Router.push('/setup/clientList') }
     else if(x.key=='2-10'){ Router.push('/setup/ports') }

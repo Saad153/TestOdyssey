@@ -256,7 +256,7 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
       }
       {(state.selectedInvoice!='') &&
         <Tabs.TabPane tab="Invoice / Bills" key="5">
-          <Invoice state={state} dispatch={dispatch} companyId={companyId} />
+          <Invoice state={state} dispatch={dispatch} companyId={companyId} id={id} />
         </Tabs.TabPane>
       }
       {(state.loadingProgram!='') &&

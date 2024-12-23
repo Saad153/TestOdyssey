@@ -1,9 +1,11 @@
 import React from 'react';
 import moment from 'moment';
+import { Container } from 'react-bootstrap';
 
 const PrintTopHeader = ({company, from, to}) => {
   return (
     <>
+    {console.log("company", company)}
     <div className="d-flex justify-content-between" >
         <div style={{width:"20%"}} className="text-center">
             <img src={company=='1' && "/cargolinkers-logo.png"} className="invert" width={company=='4'?250:130}/>

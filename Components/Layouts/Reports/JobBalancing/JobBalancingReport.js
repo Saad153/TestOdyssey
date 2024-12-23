@@ -226,9 +226,9 @@ const JobBalancingReport = ({ result, query }) => {
       worksheet.insertRow(1, ['']);
       worksheet.insertRow(1, ['']);
       worksheet.insertRow(1, ['', '', '', '', '','House# D-213, DMCHS, Siraj Ud Daula Road, Karachi']);
-      Cookies.get('companyId')=='1' && worksheet.insertRow(1, ['', '', '', '', '','Seanet Shipping & Logistics']);
-      Cookies.get('companyId')=='2' && worksheet.insertRow(1, ['', '', '', '', '','Air Cargo Services']);
-      Cookies.get('companyId')!='1' && Cookies.get('companyId')!='2' && worksheet.insertRow(1, ['', '', '', '', '','Seanet Shipping & Logistics & Air Cargo Services']);
+      Cookies.get('companyId')=='1' && worksheet.insertRow(1, ['', '', '', '', '','Cargo Linkers']);
+      // Cookies.get('companyId')=='2' && worksheet.insertRow(1, ['', '', '', '', '','Air Cargo Services']);
+      // Cookies.get('companyId')!='1' && Cookies.get('companyId')!='2' && worksheet.insertRow(1, ['', '', '', '', '','Seanet Shipping & Logistics & Air Cargo Services']);
       
 
       // <td colSpan={8} style={{ textAlign: 'right' }}><b>Total</b></td>
@@ -395,7 +395,7 @@ const JobBalancingReport = ({ result, query }) => {
         },
       };
 
-      const imageUrl = Cookies.get('companyId')=='1' ? '/seanet-colored.png' : Cookies.get('companyId')=='2' ? '/acs-colored.png' : '/sns-acs.png';
+      const imageUrl = Cookies.get('companyId')=='1' && '/Cargolinkers.png';
 
       // const imageUrl = '/public/seanet-logo-complete.png'
       const imageBlob = await ImageToBlob(imageUrl);
@@ -407,7 +407,7 @@ const JobBalancingReport = ({ result, query }) => {
 
       worksheet.addImage(imageId, {
         tl: { col: 0, row: 0 }, // Top-left position (column, row)
-        ext: { width: 150, height: 100 }, // Image width and height
+        ext: { width: 185, height: 100 }, // Image width and height
       });
 
       try{
@@ -612,7 +612,7 @@ const JobBalancingReport = ({ result, query }) => {
         },
       };
 
-      const imageUrl = Cookies.get('companyId')=='1' ? '/seanet-colored.png' : Cookies.get('companyId')=='2' ? '/acs-colored.png' : '/sns-acs.png';
+      const imageUrl = Cookies.get('companyId')=='1' && '/Cargolinkers.png';
 
       // const imageUrl = '/public/seanet-logo-complete.png'
       const imageBlob = await ImageToBlob(imageUrl);
@@ -624,7 +624,7 @@ const JobBalancingReport = ({ result, query }) => {
 
       worksheet.addImage(imageId, {
         tl: { col: 0, row: 0 }, // Top-left position (column, row)
-        ext: { width: 150, height: 100 }, // Image width and height
+        ext: { width: 185, height: 100 }, // Image width and height
       });
 
       try{
@@ -1080,7 +1080,7 @@ const JobBalancingReport = ({ result, query }) => {
     <div style={{ display: 'none' }}>
       <div className="pt-5 px-3" ref={(response) => (inputRef = response)}>
         {/* <---- Setting overflow true while in printing ----> */}
-        <TableComponent overflow={true}/>
+        <TableComponent overflow={false}/>
         <div style={{ position: 'absolute', bottom: 10 }}>Printed On: {`${moment().format("YYYY-MM-DD")}`}</div>
         <div style={{ position: 'absolute', bottom: 10, right: 10 }}>Printed By: {username}</div>
       </div>

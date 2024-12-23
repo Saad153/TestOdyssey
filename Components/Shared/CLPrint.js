@@ -2,9 +2,10 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react'
 import { Row, Col, Table } from 'react-bootstrap';
 import inWords from '/functions/numToWords';
+import QRPageComp from '../Layouts/JobsLayout/Jobs/QRcode';
 
-const CLPrint = ({ logo,records, invoice }) => {
-    // console.log("invoice",invoice)
+const CLPrint = ({ logo,records, invoice, id }) => {
+    console.log("invoice",id)
     const [values, setValues] = useState({
         tax: 0,
         taxPercent:0,
@@ -46,9 +47,16 @@ const CLPrint = ({ logo,records, invoice }) => {
                         <header className='justify-content-center text-center'>
                             {/* <span className='fs-6'><strong>CARGO LINKERS</strong></span>  */}
                             {/* {console.log("invoice", invoice)} */}
-                            {!logo && <><img src={'/cargolinkers-logo.png'} style={{filter:"invert(1)"}} className='my-2' height={80} />
-                            <br />
+                            <div className='flex'>
+                            {!logo && 
+                            <>
+                            <img src={'/cargolinkers-logo.png'} style={{filter:"invert(1)", marginLeft: "16rem", marginRight: "8rem" }} className='my-2' height={80} />
                             </>}
+                            <div className='h-[100px] w-[100px]'>
+                            <QRPageComp id={id}/>
+                            </div>
+                            </div>
+                            {/* <br /> */}
                             {logo && <div style={{fontSize:20}}><b>CARGO LINKERS</b></div>}
                             <span className='fs-12' style={{ lineHeight: "-20px" }}>F-50 BLOCK-6 SHAHRAH-E-FAISAL KARACHI</span>
                         </header>

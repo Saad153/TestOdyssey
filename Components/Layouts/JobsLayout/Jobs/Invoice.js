@@ -3,7 +3,7 @@ import axios from 'axios';
 import InvoiceCharges from '/Components/Shared/InvoiceCharges';
 import { Spinner } from 'react-bootstrap';
 
-const Invoice = ({state, dispatch, companyId}) => {
+const Invoice = ({state, dispatch, companyId, id}) => {
 
   const [load, setLoad] = useState(false);
 
@@ -29,7 +29,7 @@ const Invoice = ({state, dispatch, companyId}) => {
   return (
     <div style={{minHeight:680}}>
       {!load && 
-        <InvoiceCharges  data={state.invoiceData} state={state} dispatch={dispatch} companyId={companyId} reload={getData} />
+        <InvoiceCharges  data={state.invoiceData} state={state} dispatch={dispatch} companyId={companyId} reload={getData} id = {id} />
       }
       {load && 
       <div style={{textAlign:"center", paddingTop:'30%'}}>

@@ -55,6 +55,11 @@ function setAccesLevels(dispatch, collapsed){
       key: '1-2',
       children: `Content of Tab Pane 2`,
     }),
+    getItem('Compare Reports', '1-3',<></>, null, {
+      label: `Compare Reports`,
+      key: '1-3',
+      children: `Content of Tab Pane 2`,
+    }),
   ])
   const setup = getParentItem('Setup', '2', <SettingOutlined />,
   [

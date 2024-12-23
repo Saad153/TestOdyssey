@@ -308,7 +308,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
             </>}
             <SelectSearchComp register={register}
               clear={true}
-              name='fd' control={control} label='Final Destination ' disabled={getStatus(approved)} width={"100%"}
+              name='fd' control={control} label='Final Destination ' disabled={getStatus(approved)}  width={"100%"}
               options={destinations}
             />
           <Space />
