@@ -45,7 +45,7 @@ const CompareReports = ({sessionData}) => {
               Title: company
             },
         });
-          console.log("data",response.data);
+          console.log("data",response);
           // response.data.Country = false;
           // response.data.Name = false;
        setResponse(response.data);   
@@ -55,7 +55,7 @@ const CompareReports = ({sessionData}) => {
     }
 
     const generateMessage = (data) => {
-      const result = Object.fromEntries(Object.entries(data.matched).filter(([key, value]) => {
+      const result = Object.fromEntries(Object.entries(data.matched)?.filter(([key, value]) => {
        return value === false
       
       }));
@@ -92,13 +92,13 @@ const CompareReports = ({sessionData}) => {
   <div className="" style={{width:"94%", height:"50%", display:"flex", alignItems:"center", justifyContent:"center" ,border:"2px dashed #bbbbbb", borderRadius:"10px", marginTop:"1.5rem",marginLeft:"3%", marginRight:"3%", padding:"1rem"}}>
     {isAllMatched === true? <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CheckCircleOutlined style={{fontSize:"18px", color:"green"}}/> All fields Matched</p>
     : isAllMatched === false ? (
-    <div>
-    <Table
+    <div style={{width:"100%", height:"100%", overflow:"auto"}}>
+    <Table 
             // className="tableFixHead"
-            dataSource={Object.keys(response.not_matched.gd_data)?.map((field) => ({
+            dataSource={Object?.keys(response?.not_matched?.gd_data)?.map((field) => ({
               key: field,
               field,
-              ...Object.keys(response.not_matched).reduce((acc, source) => {
+              ...Object?.keys(response?.not_matched).reduce((acc, source) => {
                 acc[source] = response.not_matched[source][field] || "-";
                 console.log('acc',acc)
                 return acc;
@@ -106,7 +106,7 @@ const CompareReports = ({sessionData}) => {
             }))}
             columns={[
               { title:<span style={{fontWeight:"bold"}}>Field</span>, dataIndex: "field", key: "field" },
-              ...Object.keys(response.not_matched).map((source) => ({
+              ...Object.keys(response?.not_matched)?.map((source) => ({
                 title:<span style={{fontWeight:"bold"}}>{snakeCaseConversion(source)}</span>, 
                 dataIndex: source,
                 key: source,
