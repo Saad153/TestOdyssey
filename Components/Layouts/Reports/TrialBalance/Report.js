@@ -90,6 +90,7 @@ const Report = ({query, result}) => {
 
     useEffect(() => {
       let temp = [];
+      console.log(result)
       if(result.result.length>0){
 
         result?.result?.forEach((x)=>{

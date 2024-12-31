@@ -22,21 +22,23 @@ const InvoiceBalancingReport = ({ result, query }) => {
   const [username, setUserName] = useState("");
   const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ") : '0.0';
 
+  console.log("Result:", result)
+
   const getTotal = (type, list) => {
     let result = 0.00;
     list.filter((x)=>{
-      console.log(`Balance: -${x.balance}-`)
-      console.log(`Query: -${query.balance}-`)
+      // console.log(`Balance: -${x.balance}-`)
+      // console.log(`Query: -${query.balance}-`)
       if(query.balance=="exclude0"){
-        console.log("Exclude Zero")
+        // console.log("Exclude Zero")
         if(x.balance!='0.0' && x.balance!='(0.0)'){
-          console.log("Balance Zero")
+          // console.log("Balance Zero")
           return x
         }else{
-          console.log("Balance Not Zero")
+          // console.log("Balance Not Zero")
         }
       }else{
-        console.log("Show All")
+        // console.log("Show All")
         return x
       }
       // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
@@ -55,18 +57,18 @@ const InvoiceBalancingReport = ({ result, query }) => {
   const paidReceivedTotal = (list) => {
     let paid = 0.00, Received = 0.00, total = 0.00;
     list.filter((x)=>{
-      console.log(`Balance: -${x.balance}-`)
-      console.log(`Query: -${query.balance}-`)
+      // console.log(`Balance: -${x.balance}-`)
+      // console.log(`Query: -${query.balance}-`)
       if(query.balance=="exclude0"){
-        console.log("Exclude Zero")
+        // console.log("Exclude Zero")
         if(x.balance!='0.0' && x.balance!='(0.0)'){
-          console.log("Balance Zero")
+          // console.log("Balance Zero")
           return x
         }else{
-          console.log("Balance Not Zero")
+          // console.log("Balance Not Zero")
         }
       }else{
-        console.log("Show All")
+        // console.log("Show All")
         return x
       }
       // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
@@ -97,18 +99,18 @@ const InvoiceBalancingReport = ({ result, query }) => {
   const balanceTotal = (list) => {
     let balance = 0.00;
     list.filter((x)=>{
-      console.log(`Balance: -${x.balance}-`)
-      console.log(`Query: -${query.balance}-`)
+      // console.log(`Balance: -${x.balance}-`)
+      // console.log(`Query: -${query.balance}-`)
       if(query.balance=="exclude0"){
-        console.log("Exclude Zero")
+        // console.log("Exclude Zero")
         if(x.balance!='0.0' && x.balance!='(0.0)'){
-          console.log("Balance Zero")
+          // console.log("Balance Zero")
           return x
         }else{
-          console.log("Balance Not Zero")
+          // console.log("Balance Not Zero")
         }
       }else{
-        console.log("Show All")
+        // console.log("Show All")
         return x
       }
       // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
@@ -143,7 +145,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
   }, [])
 
   async function getValues(value) {
-    console.log(value.result)
+    // console.log(value.result)
     if (value.status == "success") {
       let newArray = [...value.result];
       if(query.currency!='PKR'){
@@ -772,23 +774,23 @@ const InvoiceBalancingReport = ({ result, query }) => {
                   </thead>
                   <tbody>
                     {currentRecords.filter((x)=>{
-                      console.log(`Balance: -${x.balance}-`)
-                      console.log(`Query: -${query.balance}-`)
+                      // console.log(`Balance: -${x.balance}-`)
+                      // console.log(`Query: -${query.balance}-`)
                       if(query.balance=="exclude0"){
-                        console.log("Exclude Zero")
+                        // console.log("Exclude Zero")
                         if(x.balance!='0.0' && x.balance!='(0.0)'){
-                          console.log("Balance Zero")
+                          // console.log("Balance Zero")
                           return x
                         }else{
-                          console.log("Balance Not Zero")
+                          // console.log("Balance Not Zero")
                         }
                       }else{
-                        console.log("Show All")
+                        // console.log("Show All")
                         return x
                       }
                       // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
                     }).map((x, i) => {
-                      console.log(x)
+                      // console.log(x)
                     return (
                       <tr key={i}>
                         <td>{i + 1}</td>
@@ -943,7 +945,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
     {query.report != "viewer" &&
     
       <div className="ag-theme-alpine" style={{ width: "100%", height: '72vh' }}>
-        {console.log(records)}
+        {/* {console.log(records)}/ */}
         <AgGridReact
           ref={gridRef} // Ref for accessing Grid's API
           rowData={records} // Row Data for Rows
@@ -952,6 +954,8 @@ const InvoiceBalancingReport = ({ result, query }) => {
           animateRows={true} // Optional - set to 'true' to have rows animate when sorted
           rowSelection='multiple' // Options - allows click selection of rows
           getRowHeight={getRowHeight}
+          pagination={true}
+          paginationPageSize={50}
         />
       </div>
     }

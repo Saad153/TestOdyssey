@@ -15,7 +15,7 @@ const InvoiceBalaincing = () => {
   const [from, setFrom] = useState(moment("2023-07-01").format("YYYY-MM-DD"));
   const [to, setTo] = useState(moment().format("YYYY-MM-DD"));
   const [company, setCompany] = useState(4);
-  const [overseasAgent, setOverseasAgent] = useState("");
+  const [overseasAgent, setOverseasAgent] = useState(undefined);
   const [representator, setRepresentator] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [reportType, setReportType] = useState("viewer");
@@ -143,7 +143,7 @@ const InvoiceBalaincing = () => {
             </Col>
           </Row>
           Overseas Agent
-          <Select defaultValue="" style={{ width: '100%', marginBottom: 5 }} size='small'
+          <Select defaultValue="" placeholder="Select OverSeas Agent" value={overseasAgent} style={{ width: '100%', marginBottom: 5 }} size='small'
             onChange={(e) => setOverseasAgent(e)}
             showSearch
             allowClear

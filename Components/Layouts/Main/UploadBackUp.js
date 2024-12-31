@@ -551,8 +551,14 @@ const Upload_CoA = () => {
 
 
     function extractCode(str) {
-        const match = str.match(/^[A-Z]+-([A-Z]{2})-\d{2,4}\/\d+$/);
-        return match ? match[1] : null;
+        if(str){
+            // console.log(str)
+            const match = str.toString().match(/^[A-Z]+-([A-Z]{2})-\d{2,4}\/\d+$/);
+            return match ? match[1] : null;
+        }else{
+            return null
+        }
+        // console.log("Match:", match)
     }
 
     function removeBracketedPart(str) {
@@ -562,11 +568,13 @@ const Upload_CoA = () => {
     function parseDateString(dateStr) {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
-            const [monthName, day, year] = dateStr.split('-');
-            return new Date(year, parseInt(monthName)-1, day);
+            const [day, monthName, year] = dateStr.split('-');
+            let year1 = "20"+year
+            return new Date(year1, parseInt(monthName)-1, day);
         }else if(dateStr && dateStr.includes("/")){
-            const [monthName, day, year] = dateStr.split('/');
-            return new Date(year, parseInt(monthName)-1, day);
+            const [day, monthName, year] = dateStr.split('/');
+            let year1 = "20"+year
+            return new Date(year1, parseInt(monthName)-1, day);
         }
       }
 
@@ -581,17 +589,22 @@ const Upload_CoA = () => {
         }
       }
       function parseDateString2(dateStr) {
-        //console.log(dateStr)
-        if(dateStr && dateStr.includes("-")){
-            const [day, monthName, year] = dateStr.split('-');
-            // console.log(year, parseInt(monthName)-1, parseInt(day))
-            return new Date(year, parseInt(monthName)-1, parseInt(day)+1);
-        }else if(dateStr && dateStr.includes("/")){
-            const [day, monthName, year] = dateStr.split('/');
-            // console.log(year, parseInt(monthName)-1, parseInt(day))
-            return new Date(year, parseInt(monthName)-1, parseInt(day)+1);
+        if (dateStr && dateStr.includes("-")) {
+            let [day, monthName, year] = dateStr.split('-');
+            // year = year.length == 2 ? (parseInt(year) < 50 ? '20' + year : '19' + year) : year; // Handles two-digit years
+            year.length<=2?year="20"+year:null
+            // year = "20"+year
+            // console.log(year, parseInt(monthName) - 1, parseInt(day));
+            return new Date(parseInt(year), parseInt(monthName) - 1, parseInt(day)+1);
+        } else if (dateStr && dateStr.includes("/")) {
+            let [day, monthName, year] = dateStr.split('/');
+            // year = year.length == 2 ? (parseInt(year) < 50 ? '20' + year : '19' + year) : year; // Handles two-digit years
+            year.length<=2?year="20"+year:null
+            // console.log(year, parseInt(monthName) - 1, parseInt(day));
+            return new Date(parseInt(year), parseInt(monthName) - 1, parseInt(day)+1);
         }
-      }
+    }
+    
 
       function removeCommas(str) {
         typeof str == 'string'?str = str.replace(/,/g, ''):str = str.toString().replace(/,/g, '')
@@ -681,8 +694,9 @@ const Upload_CoA = () => {
                 }
                 let invoice = {}
                 invoice = {
-                    invoice_No: x.invoice___bill_+"-O",
-                    type: "Old Job Invoice",
+                    invoice_No: x.invoice___bill_,
+                    // type: "Old Job Invoice",
+                    type: x.payable==0?parseFloat(x.receivable)>0?"Old Job Invoice":"Old Job Bill":parseFloat(x.payable)>0?"Old Job Bill":"Old Job Invoice",
                     payType: x.payable==0?parseFloat(x.receivable)>0?"Recievable":"Payble":parseFloat(x.payable)>0?"Payble":"Recievable",
                     status: "2",
                     operation: x.op_code?x.op_code:null,
@@ -791,8 +805,8 @@ const Upload_CoA = () => {
                 }
                 let invoice = {}
                 companyID!="0"?invoice = {
-                    invoice_No: x.invoice_no+"-O",
-                    type: "Old Job Invoice",
+                    invoice_No: x.invoice_no,
+                    type:  x.type_dn_cn=="Credit"?"Old Agent Bill":"Old Agent Invoice",
                     payType: x.type_dn_cn=="Credit"?"Payble":"Recievable",
                     status: "2",
                     operation: x.invoice_no?extractCode(x.invoice_no):"",
@@ -800,10 +814,10 @@ const Upload_CoA = () => {
                     ex_rate: x.currency=="PKR"?"1":x.exchange_rate,
                     party_Id: party_id,
                     party_Name: party_name,
-                    paid: x.type_dn_cn=="Credit"?removeCommas(Math.abs(parseFloat(x.rcvd_paid)).toString()):"0",
-                    recieved: x.type_dn_cn=="Credit"?"0":removeCommas(Math.abs(parseFloat(x.rcvd_paid)).toString()),
+                    paid: x.rcvd_paid?x.type_dn_cn=="Credit"?Math.abs(parseFloat(x.rcvd_paid.toString().replace(/,/g, ''))):"0":"0",
+                    recieved: x.rcvd_paid?x.type_dn_cn=="Credit"?"0":Math.abs(parseFloat(x.rcvd_paid.toString().replace(/,/g, ''))):"0",
                     roundOff: "0",
-                    total: x.type_dn_cn=="Credit"?removeCommas(Math.abs(parseFloat(x.invoice_amount)).toString()):removeCommas(Math.abs(parseFloat(x.invoice_amount)).toString()),
+                    total: x.invoice_amount?Math.abs(parseFloat(x.invoice_amount.toString().replace(/,/g, ''))):"0",
                     approved: "1",
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
@@ -1195,7 +1209,7 @@ const Upload_CoA = () => {
             vouchers.push(voucher)
         }
 
-        console.log("bank",bank)
+        // console.log("bank",bank)
 
         const uniqueVouchers = vouchers.filter((voucher, index, self) =>
             index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)
@@ -1220,20 +1234,26 @@ const Upload_CoA = () => {
     }
 
     const verifyVouchers = async() => {
-        const voucher_heads = await axios.get("http://localhost:8088/voucher/getAllVoucehrHeads")
-        console.log(voucher_heads.data.result)
-        console.log(voucherData)
-        let notPresent = []
-        voucherData.forEach((x)=>{
-            let present = false
-            voucher_heads.data.result.forEach((y)=>{
-                if(y.Voucher.voucher_Id == x.voucher_no){
-                    present = true
-                }
-            })
-            !present?notPresent.push(x):null
-        })
-        console.log("Not Present in DB", notPresent)
+        console.log("Running API")
+        const invoices = await axios.get("http://localhost:8088/voucher/getAllVoucehrHeads")
+        // console.log(voucher_heads.data.result)
+        // console.log(voucherData)
+        // let notPresent = []
+        // voucherData.forEach((x)=>{
+        //     let present = false
+        //     voucher_heads.data.result.forEach((y)=>{
+        //         if(y.Voucher.voucher_Id == x.voucher_no){
+        //             present = true
+        //         }
+        //     })
+        //     !present?notPresent.push(x):null
+        // })
+        // console.log("Not Present in DB", notPresent)
+        // invoices.data.result.forEach((x)=>{
+
+        // })
+
+        console.log(invoices.data.message)
 
     }
 

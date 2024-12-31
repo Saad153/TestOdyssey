@@ -1081,7 +1081,7 @@ const JobBalancingReport = ({ result, query }) => {
         rowSelection='multiple' // Options - allows click selection of rows
         getRowHeight={getRowHeight}
         pagination={true}
-        paginationPageSize={20}
+        paginationPageSize={50}
       />
     </div>
     }
