@@ -25,6 +25,7 @@ const Upload_CoA = () => {
     let withoutAccounts = []
     const [status, setStatus] = useState("Waiting for file");
     const [statusInvoices, setStatusInvoices] = useState("Waiting for file");
+    const [statusInvoiceMatching, setStatusInvoiceMatching] = useState("Waiting for file");
     const [C, setClients] = useState(false);
     const [V, setVendors] = useState(false);
     const [CV, setCV] = useState(false);
@@ -1260,6 +1261,64 @@ const Upload_CoA = () => {
     const matchInvoices = async(data, fileInfo) => {
         console.log(data)
         console.log(fileInfo)
+        setStatusInvoiceMatching("File loaded, Fetching data...")
+        const invoices = await axios.get("http://localhost:8088/invoice/invoiceMatching")
+        setStatusInvoiceMatching("Data Fetched, Processing...")
+        console.log(invoices.data.result)
+        let unmatched = []
+        let unmatched1 = []
+        let testing = true
+        if(testing){
+            data.forEach((x)=>{
+                let invoiceNo = false
+                let party = false
+                let index = 0
+                invoices.data.result.forEach((y, i)=>{
+                    let check = false
+                    let check1 = true
+                    if(x.invoice___bill_ == y.invoice_No && x.party.includes(y.party_Name)){
+                        invoiceNo = true
+                        party = true
+                        check = true
+                        index = i
+                    }
+                    if(check){
+                        // console.log(x.payable, x.receivable, parseFloat(y.total), parseFloat(y.paid), parseFloat(y.recieved))
+                        if(y.payType=="Recievable"){
+                            if(x.payable < 0){
+                                if(Math.abs(x.payable) != parseFloat(y.total) || Math.abs(x.payable)-Math.abs(x.balance) != parseFloat(y.recieved)){
+                                    unmatched1.push(`Payable: ${Math.abs(x.payable)}, ${Math.abs(x.payable)-Math.abs(x.balance)}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`)
+                                    check1 = false
+                                }
+                            }else{
+                                if(Math.abs(x.receivable) != y.total || Math.abs(x.receivable)-Math.abs(x.balance) != parseFloat(y.recieved)){
+                                    unmatched1.push(`Receivable: ${Math.abs(x.receivable)}, ${Math.abs(x.receivable)-Math.abs(x.balance)}, Total: ${y.total}, Received: ${y.recieved}, Paid: ${y.paid}`)
+                                    check1 = false
+                                }
+                            }
+                        }else{
+                            if(x.receivable<0){
+                                if(Math.abs(x.receivable) != y.total || Math.abs(x.receivable)-Math.abs(x.balance) != parseFloat(y.paid)){
+                                    unmatched1.push(`Receivable: ${Math.abs(x.receivable)}, ${Math.abs(x.receivable)-Math.abs(x.balance)}, Total: ${y.total}, Received: ${y.recieved}, Paid: ${y.paid}`)
+                                    check1 = false
+                                }
+                            }else{
+                                if(Math.abs(x.payable) != parseFloat(y.total) || Math.abs(x.payable)-Math.abs(x.balance) != parseFloat(y.paid)){
+                                    unmatched1.push(`Payable: ${Math.abs(x.payable)}, ${Math.abs(x.payable)-Math.abs(x.balance)}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`)
+                                    check1 = false
+                                }
+                            }
+                        }
+                    }
+                    !check1?console.log(`${y.payType} - Payable: ${(x.payable)}, Receivable: ${(x.receivable)}, Paid: ${Math.abs(x.payable)-Math.abs(x.balance)}, Received: ${Math.abs(x.receivable)-Math.abs(x.balance)}, Balance: ${x.balance}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`):null
+                })
+                !invoiceNo?unmatched.push(`${x.invoice___bill_}, ${x.party}`):null
+                !party?unmatched1.push(x.party):null
+            })
+        }
+        console.log(unmatched)
+        console.log(unmatched1)
+        setStatusInvoiceMatching("Complete, check console")
     }
 
 
@@ -1315,15 +1374,16 @@ const Upload_CoA = () => {
         <span
             className="py-2"
             style={{
-                color: statusInvoices === "Waiting for file" ? "grey" :
-                    statusInvoices === "File loaded, Fetching data..." ? "orange" :
-                    statusInvoices === "Data Fetched, Processing..." ? "blue" :
-                    statusInvoices === "Success, see console for more details" ? "green" :
-                    statusInvoices === "Uploading..." ? "blue" :
+                color: statusInvoiceMatching === "Waiting for file" ? "grey" :
+                    statusInvoiceMatching === "File loaded, Fetching data..." ? "orange" :
+                    statusInvoiceMatching === "Data Fetched, Processing..." ? "blue" :
+                    // statusInvoiceMatching === "Success, see console for more details" ? "green" :
+                    statusInvoiceMatching === "Complete, check console" ? "green" :
+                    statusInvoiceMatching === "Uploading..." ? "blue" :
                     "red"
             }}
             >
-            {statusInvoices}
+            {statusInvoiceMatching}
         </span>
         <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
         <span className="py-2">Vouchers</span>
