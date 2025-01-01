@@ -468,30 +468,30 @@ const JobBalancingReport = ({ result, query }) => {
     const flattenedData = records.map((x) => {
       return {
         invoice_No: x.invoice_No,
-        'SE_Job.jobNo': x.SE_Job.jobNo,
-        'SE_Job.jobDate': x.SE_Job.jobDate,
+        'SE_Job.jobNo': x.SE_Job?.jobNo,
+        'SE_Job.jobDate': x.SE_Job?.jobDate,
         createdAt: x.createdAt,
         // doDate: x.doDate,
-        'SE_Job.Bl.hbl': x.SE_Job.Bl.hbl,
-        'SE_Job.Bl.mbl': x.SE_Job.Bl.mbl,
-        'SE_Job.shipDate': x.SE_Job.shipDate,
-        'SE_Job.fd': x.SE_Job.fd,
-        'SE_Job.freightType': x.SE_Job.freightType,
-        'SE_Job.subType': x.SE_Job.subType,
-        'SE_Job.shipper.name': x.SE_Job.shipper.name,
-        'SE_Job.consignee.name': x.SE_Job.consignee.name,
-        'SE_Job.sales_representator.name': x.SE_Job.sales_representator.name,
-        'SE_Job.shippingLine.name': x.SE_Job.shipping_line.name,
-        'SE_Job.weight': x.SE_Job.weight,
-        'SE_Job.vol': x.SE_Job.vol,
-        'SE_Job.payType': x.SE_Job.payType,
-        'SE_Job.customerRef': x.SE_Job.customerRef,
-        'SE_Job.fileNo': x.SE_Job.fileNo,
-        'SE_Job.arrivalDate': x.SE_Job.arrivalDate,
-        'SE_Job.Voyage.voyage': x.SE_Job.Voyage.voyage,
-        'SE_Job.Client.code': x.SE_Job.Client.code,
-        'SE_Job.vessel.name': x.SE_Job.vessel.name,
-        customerRef: x.SE_Job.customerRef,
+        'SE_Job.Bl.hbl': x.SE_Job?.Bl.hbl,
+        'SE_Job.Bl.mbl': x.SE_Job?.Bl.mbl,
+        'SE_Job.shipDate': x.SE_Job?.shipDate,
+        'SE_Job.fd': x.SE_Job?.fd,
+        'SE_Job.freightType': x.SE_Job?.freightType,
+        'SE_Job.subType': x.SE_Job?.subType,
+        'SE_Job.shipper.name': x.SE_Job?.shipper.name,
+        'SE_Job.consignee.name': x.SE_Job?.consignee.name,
+        'SE_Job.sales_representator.name': x.SE_Job?.sales_representator.name,
+        'SE_Job.shippingLine.name': x.SE_Job?.shipping_line.name,
+        'SE_Job.weight': x.SE_Job?.weight,
+        'SE_Job.vol': x.SE_Job?.vol,
+        'SE_Job.payType': x.SE_Job?.payType,
+        'SE_Job.customerRef': x.SE_Job?.customerRef,
+        'SE_Job.fileNo': x.SE_Job?.fileNo,
+        'SE_Job.arrivalDate': x.SE_Job?.arrivalDate,
+        'SE_Job.Voyage.voyage': x.SE_Job?.Voyage.voyage,
+        'SE_Job.Client.code': x.SE_Job?.Client.code,
+        'SE_Job.vessel.name': x.SE_Job?.vessel.name,
+        customerRef: x.SE_Job?.customerRef,
         company: x.company,
         paid: x.paid,
         age: x.age,
@@ -501,7 +501,7 @@ const JobBalancingReport = ({ result, query }) => {
         party_Name: x.party_Name,
         balance: x.payType == "Recievable" ? commas(x.balance) : `(${commas(x.balance)})`,
         total: x.payType != "Recievable" ? commas(x.total):"0",
-        total: x.payType == "Recievable" ? commas(x.total):"0",
+        total1: x.payType == "Recievable" ? commas(x.total):"0",
         paidRcvd: x.payType != "Recievable" ?commas(x.paid):commas(x.recieved),
         // total: commas(x.total),
       };
@@ -709,25 +709,17 @@ const JobBalancingReport = ({ result, query }) => {
       y.Receivable = y.payType == "Recievable" ? commas(y.total) : "-";
       y.payble = y.payType != "Recievable" ? commas(y.total) : "-";
       y.balanced = y.payType == "Recievable" ? commas(y.recieved) : y.paid;
-      // //console.log(y.balanced, y.recieved, commas(y.recieved))
       y.finalBalance = y.payType != "Recievable" ? (`${commas(y.balance)}`) : commas(y.balance)
       y.containers = y?.SE_Job?.SE_Equipments.map((x) => x.size).join(", ")
-      y.company = y.companyId == "1"? "Sea Net Shipping & Logistics Ltd.": y.companyId == "2"? "Acs Shipping & Logistics Ltd.": "Invalid"
+      y.company = y.companyId == "1"? "Sea Net Shipping & Logistics Ltd.": y.companyId == "3"? "Air Cargo Services": "Invalid"
       y.customerRef = y?.SE_Job?.customerRef
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? x.total : "-"}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ? x.recieved : x.paid}</td>
-      // <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ? (${x.balance}) : x.balance}</td>
     })
     if(query.options!="showall"){
-      // //console.log(newArray)
       newArray = await newArray.filter((x)=>{
         return x.balance!=0
       })
-      // //console.log(newArray)
 
     }
-    //console.log("Successful")
     setRecords(newArray);
     } else {}
   }
@@ -1007,7 +999,7 @@ const JobBalancingReport = ({ result, query }) => {
       }
     },
     {
-      headerName: 'Credit', field: 'total', filter: true,
+      headerName: 'Credit', field: 'total1', filter: true,
       cellRenderer: params => {
         return <>{params.data.payType == "Payble" ? commas(params.value) : "0"}</>;
       }

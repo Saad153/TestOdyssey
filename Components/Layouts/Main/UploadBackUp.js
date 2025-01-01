@@ -1257,6 +1257,11 @@ const Upload_CoA = () => {
 
     }
 
+    const matchInvoices = async(data, fileInfo) => {
+        console.log(data)
+        console.log(fileInfo)
+    }
+
 
 
     const uploadJobs = async()=>{
@@ -1291,6 +1296,22 @@ const Upload_CoA = () => {
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleOpeningBalances(data, fileInfo)}}/>
         <span className="py-2">Invoices</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleInvoices(data, fileInfo)}}/>
+        <span
+            className="py-2"
+            style={{
+                color: statusInvoices === "Waiting for file" ? "grey" :
+                    statusInvoices === "File loaded, Fetching data..." ? "orange" :
+                    statusInvoices === "Data Fetched, Processing..." ? "blue" :
+                    statusInvoices === "Success, see console for more details" ? "green" :
+                    statusInvoices === "Uploading..." ? "blue" :
+                    "red"
+            }}
+            >
+            {statusInvoices}
+        </span>
+        <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+        <span className="py-2">Invoice Matching, Upload grid csv</span>
+        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{matchInvoices(data, fileInfo)}}/>
         <span
             className="py-2"
             style={{
