@@ -1261,6 +1261,8 @@ const Upload_CoA = () => {
     const matchInvoices = async(data, fileInfo) => {
         console.log(data)
         console.log(fileInfo)
+        let agentInvoices  = false
+        data[0].agent?agentInvoices = true:agentInvoices = false
         setStatusInvoiceMatching("File loaded, Fetching data...")
         const invoices = await axios.get("http://localhost:8088/invoice/invoiceMatching")
         setStatusInvoiceMatching("Data Fetched, Processing...")
@@ -1268,7 +1270,8 @@ const Upload_CoA = () => {
         let unmatched = []
         let unmatched1 = []
         let testing = true
-        if(testing){
+        console.log("Agent Invoices: ", agentInvoices)
+        if(!agentInvoices){
             data.forEach((x)=>{
                 let invoiceNo = false
                 let party = false
@@ -1314,6 +1317,35 @@ const Upload_CoA = () => {
                 })
                 !invoiceNo?unmatched.push(`${x.invoice___bill_}, ${x.party}`):null
                 !party?unmatched1.push(x.party):null
+            })
+        }else{
+            let unmatched = []
+            let unmatched1 = []
+            let amounts = []
+            data.forEach((x)=>{
+                // console.log(x)
+                let invoiceNo = false
+                let amount = false
+                invoices.data.result.forEach((y)=>{
+                    if(x.invoice_no == y.invoice_No && x.agent.includes(y.party_Name)){
+                        invoiceNo = true
+                        if(x.inv_amount != parseFloat(y.total)){
+                            amount = true
+                        }else{
+                            if(x.dn_cn == "Credit"){
+                                if(x.received___paid != parseFloat(y.paid)){
+                                    amount = true
+                                }
+                            }else{
+                                if(x.received___paid != parseFloat(y.recieved)){
+                                    amount = true
+                                }
+                            }
+                        }
+                    }
+                })
+                invoiceNo?unmatched.push(`${x.invoice_no}, ${x.agent}`):null
+                amount?unmatched1.push(`${x.invoice_no}, ${x.agent}`):null
             })
         }
         console.log(unmatched)
