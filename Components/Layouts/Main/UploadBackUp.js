@@ -1313,7 +1313,7 @@ const Upload_CoA = () => {
                             }
                         }
                     }
-                    !check1?console.log(`${y.payType} - Payable: ${(x.payable)}, Receivable: ${(x.receivable)}, Paid: ${Math.abs(x.payable)-Math.abs(x.balance)}, Received: ${Math.abs(x.receivable)-Math.abs(x.balance)}, Balance: ${x.balance}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`):null
+                    !check1?console.log(`Unmatched Values: ${x.invoice___bill_}, ${x.party}`):null
                 })
                 !invoiceNo?unmatched.push(`${x.invoice___bill_}, ${x.party}`):null
                 !party?unmatched1.push(x.party):null
@@ -1342,9 +1342,12 @@ const Upload_CoA = () => {
                                 }
                             }
                         }
+                    }else{
+                        // console.log(x.invoice_no, x.agent, y.invoice_No, y.party_Name)
+                        unmatched.push(`${x.invoice_no}, ${x.agent}`)
                     }
                 })
-                invoiceNo?unmatched.push(`${x.invoice_no}, ${x.agent}`):null
+                // invoiceNo?unmatched.push(`${x.invoice_no}, ${x.agent}`):null
                 amount?unmatched1.push(`${x.invoice_no}, ${x.agent}`):null
             })
         }
