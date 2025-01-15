@@ -5,6 +5,7 @@ import companies from "/jsonData/companiesList.json";
 import { set } from "react-hook-form";
 import axios from "axios";
 import snakeCaseConversion from "../../../../functions/SnakeCaseConversion";
+import openNotification from "../../../Shared/Notification";
 const CompareReports = ({sessionData}) => {
   const [GdFile, setGdFile] = useState(null);
   const [InvoiceFile, setInvoiceFile] = useState(null);
@@ -28,8 +29,11 @@ const CompareReports = ({sessionData}) => {
       },[GdFile, InvoiceFile])
 
       useEffect(() => {
-        if(response){
+        console.log("data",response);
+
+        if(response?.error && response?.error !== null){
           console.log("///data",response);
+          openNotification('Error', `An Error occured Please Try Again!`, 'red');
           // generateMessage(response);
         }
         
@@ -49,7 +53,15 @@ const CompareReports = ({sessionData}) => {
           console.log("data",response);
           // response.data.Country = false;
           // response.data.Name = false;
-       response.data.error ? setResponse(response.data) : setResponse(response.data,{error:null});   
+          if(response.data?.error ){
+            setResponse(response.data);
+          } 
+          else {
+            let updatedResponse = response.data;
+            updatedResponse.error = null;
+            setResponse(updatedResponse);
+          }
+      //  console.log("data",response); 
        generateMessage(response.data);
       }
       // console.log("data",response);
@@ -63,7 +75,7 @@ const CompareReports = ({sessionData}) => {
       console.log('result',result);
       if(Object.keys(result).length > 0){
         setIsAllMatched(false);
-    }  else {
+    }  else if (Object.keys(result).length == 0 && data.error == null){
       setIsAllMatched(true);
     }
       console.log("data",result);
@@ -91,8 +103,7 @@ const CompareReports = ({sessionData}) => {
   </div>
   {/* {console.log('matched',isAllMatched)} */}
   <div className="" style={{width:"94%", height:"50%", display:"flex", alignItems:"center", justifyContent:"center" ,border:"2px dashed #bbbbbb", borderRadius:"10px", marginTop:"1.5rem",marginLeft:"3%", marginRight:"3%", padding:"1rem"}}>
-    {response?.error!==null ? <p className="text-left" style={{width:"25rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CloseCircleOutlined style={{fontSize:"18px", color:"red"}}/>Error in format please contact IT department</p> :
-    isAllMatched === true? <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CheckCircleOutlined style={{fontSize:"18px", color:"green"}}/> All fields Matched</p>
+    {isAllMatched === true? <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CheckCircleOutlined style={{fontSize:"18px", color:"green"}}/> All fields Matched</p>
     : isAllMatched === false ? (
     <div style={{width:"100%", height:"100%", overflow:"auto"}}>
     <Table 
