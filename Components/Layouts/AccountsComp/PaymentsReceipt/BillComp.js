@@ -725,7 +725,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                       e<0?e = e *-1:null
                       const value = e || 0; 
                       const updatedInvoiceList = [...state.invoices]; 
-                      updatedInvoiceList[index] = {
+                       [index] = {
                         ...updatedInvoiceList[index], 
                         receiving: value, 
                       };

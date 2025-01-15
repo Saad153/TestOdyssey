@@ -1,6 +1,6 @@
 import { Button, Select, Table, Upload } from "antd";
 import React, { use, useEffect, useState } from "react";
-import  { CheckCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import  { CheckCircleOutlined, UploadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import companies from "/jsonData/companiesList.json";
 import { set } from "react-hook-form";
 import axios from "axios";
@@ -10,6 +10,7 @@ const CompareReports = ({sessionData}) => {
   const [InvoiceFile, setInvoiceFile] = useState(null);
   const [company, setCompany] = useState("");
   const [response, setResponse] = useState({
+    // error: {},
     matched:{},
     not_matched:{},
   });
@@ -28,7 +29,7 @@ const CompareReports = ({sessionData}) => {
 
       useEffect(() => {
         if(response){
-          // console.log("///data",response);
+          console.log("///data",response);
           // generateMessage(response);
         }
         
@@ -48,7 +49,7 @@ const CompareReports = ({sessionData}) => {
           console.log("data",response);
           // response.data.Country = false;
           // response.data.Name = false;
-       setResponse(response.data);   
+       response.data.error ? setResponse(response.data) : setResponse(response.data,{error:null});   
        generateMessage(response.data);
       }
       // console.log("data",response);
@@ -90,7 +91,8 @@ const CompareReports = ({sessionData}) => {
   </div>
   {/* {console.log('matched',isAllMatched)} */}
   <div className="" style={{width:"94%", height:"50%", display:"flex", alignItems:"center", justifyContent:"center" ,border:"2px dashed #bbbbbb", borderRadius:"10px", marginTop:"1.5rem",marginLeft:"3%", marginRight:"3%", padding:"1rem"}}>
-    {isAllMatched === true? <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CheckCircleOutlined style={{fontSize:"18px", color:"green"}}/> All fields Matched</p>
+    {response?.error!==null ? <p className="text-left" style={{width:"25rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CloseCircleOutlined style={{fontSize:"18px", color:"red"}}/>Error in format please contact IT department</p> :
+    isAllMatched === true? <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}><CheckCircleOutlined style={{fontSize:"18px", color:"green"}}/> All fields Matched</p>
     : isAllMatched === false ? (
     <div style={{width:"100%", height:"100%", overflow:"auto"}}>
     <Table 
@@ -116,7 +118,7 @@ const CompareReports = ({sessionData}) => {
           />
 
     </div>
-  ): <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}>Please Upload Files</p>}
+  ):  <p className="text-left" style={{width:"10rem", marginLeft:"2%", fontSize:"16px", fontWeight:"bold"}}>Please Upload Files</p>}
   </div>
   </div>
     )
