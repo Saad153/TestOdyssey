@@ -67,8 +67,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               type: x.vType,
               data: moment(x.createdAt).format('DD-MM-YYYY'),
               currency: x.currency,
-              amount: x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General')
-                ? x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General').amount
+              amount: x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General' || y.accountType === 'Admin Expense')
+                ? x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General' || y.accountType === 'Admin Expense').amount
                 : 0.0,
               partyId: x.partyId,
               x: x
@@ -198,10 +198,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
         dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
       }
-      if(y.accountType=="partyAccount"||y.accountType=="General"){
+      if(y.accountType=="partyAccount"||y.accountType=="General"||y.accountType=="Admin Expense"){
         console.log("party Amount>>", parseFloat(y.amount))
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
-        // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
+        // dispatch(setField({ field: 'selectedAccount', value: parseInt(y.ChildAccountId) }))
       }
       if((y.accountType=="Gain/Loss Account") && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
         console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
