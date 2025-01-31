@@ -77,6 +77,7 @@ const InvoiceAndBills = ({invoiceData}) => {
           <Radio value={"Agent Invoice"}>Agent Invoice</Radio>
           <Radio value={"Agent Bill"}>Agent Bill</Radio>
           <Radio value={"Old Job Invoice"}>Old Job Invoice</Radio>
+          <Radio value={"Old Job Bill"}>Old Job Bill</Radio>
         </Radio.Group>
         </Col>
       </Row>

@@ -156,11 +156,11 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.index = i + 1
           // x.total = commas(invAmount);
           x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
-          x.debit = x.payType == "Recievable" ? commas(invAmount) : 0
-          x.credit = x.payType != "Recievable" ? commas(invAmount) : 0
-          x.total = x.payType == "Recievable" ? commas(invAmount) : `(${commas(invAmount)})`
-          x.paidRec = x.payType == "Recievable" ? commas(parseFloat(x.recieved)) : `(${commas(parseFloat(x.paid))})`;
-          x.balance = x.payType == "Recievable" ? commas(invAmount - parseFloat(x.recieved)) : `(${commas(invAmount - parseFloat(x.paid))})`
+          x.debit = x.payType == "Recievable" ? invAmount : 0
+          x.credit = x.payType != "Recievable" ? invAmount : 0
+          x.total = x.payType == "Recievable" ? invAmount : invAmount
+          x.paidRec = x.payType == "Recievable" ? parseFloat(x.recieved) : parseFloat(x.paid);
+          x.balance = x.payType == "Recievable" ? (invAmount - parseFloat(x.recieved)) : (invAmount - parseFloat(x.paid))
           x.age = getAge(x.createdAt);
           x.blHbl = x.SE_Job?.Bl?.hbl
           x.blMbl = x.SE_Job?.Bl?.mbl?x.SE_Job?.Bl?.mbl:"-"
@@ -194,8 +194,8 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.index = i + 1
           x.total = invAmount;
           x.createdAt = moment(x.createdAt).format("DD-MMM-YYYY")
-          x.debit = x.payType == "Recievable" ? commas(invAmount) : 0
-          x.credit = x.payType != "Recievable" ? commas(invAmount) : 0
+          x.debit = x.payType == "Recievable" ? invAmount : 0
+          x.credit = x.payType != "Recievable" ? invAmount : 0
           // x.total = x.payType == "Recievable" ? commas(invAmount) : `(${commas(invAmount)})`
           x.paidRec = x.payType == "Recievable" ? commas(parseFloat(x.recieved)*parseFloat(x.ex_rate)) : commas(parseFloat(x.paid)*parseFloat(x.ex_rate));
           x.balance = x.payType == "Recievable" ? commas(invAmount - x.paidRec) : `(${commas(invAmount - x.paidRec)})`
@@ -211,7 +211,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.vol = x.SE_Job?.vol
           x.dnCn = x.SE_Job?.payType == "Recievable"? "DN" : "CN"
           x.op = x.SE_Job?.operation
-          x.company = x.companyId == "1" ? "SEA NET SHIPPING & LOGISTICS" : x.companyId == "3" ? "AIR CARGO SERVICES" : "Invalid"
+          x.company = x.companyId == "1" ? "SEA NET SHIPPING & LOGISTICS" : x.companyId == "3" ? "AIR CARGO SERVICES" : "SNS & ACS"
           x.fileNo = x.SE_Job?.fileNo
           x.customerRef = x.SE_Job?.customerRef
           x.containers = x.SE_Job?.SE_Equipments?x.SE_Job.SE_Equipments.map((x) => x.size).join(","):"-"
@@ -225,6 +225,10 @@ const InvoiceBalancingReport = ({ result, query }) => {
           x.voyage = x.SE_Job?.Voyage?.voyage?x.SE_Job?.Voyage?.voyage:"-"
   
         })
+      }
+      console.log(query.balance)
+      if(query.balance=="exclude0"){
+        newArray = newArray.filter((x) => (query.balance === 'exclude0' ? Math.floor(x.balance) !== 0 : x))
       }
       setRecords(newArray);
     }
@@ -773,23 +777,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {currentRecords.filter((x)=>{
-                      // console.log(`Balance: -${x.balance}-`)
-                      // console.log(`Query: -${query.balance}-`)
-                      if(query.balance=="exclude0"){
-                        // console.log("Exclude Zero")
-                        if(x.balance!='0.0' && x.balance!='(0.0)'){
-                          // console.log("Balance Zero")
-                          return x
-                        }else{
-                          // console.log("Balance Not Zero")
-                        }
-                      }else{
-                        // console.log("Show All")
-                        return x
-                      }
-                      // return query.balance=="exclude0"?(x.balance!="0.0"&&x.balance!="(0.0)"):x
-                    }).map((x, i) => {
+                    {currentRecords.map((x, i) => {
                       // console.log(x)
                     return (
                       <tr key={i}>
@@ -834,7 +822,7 @@ const InvoiceBalancingReport = ({ result, query }) => {
                         <td>{commas(x.debit)}</td>
                         <td>{commas(x.credit)}</td>
                         <td>{commas(x.paidRec)}</td>
-                        <td>{x.balance}</td>
+                        <td>{commas(x.balance)}</td>
                         <td>{x.age}</td>
                       </tr>
                     )})}

@@ -119,8 +119,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     let gainLoss = 0.0
     state.invoices.forEach((x) => {
       x.payType=="Recievable"?
-      temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp+parseFloat(x.recieved):
-      temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp-parseFloat(x.paid)
+      temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp:
+      temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp
+      // temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp+parseFloat(x.recieved):
+      // temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp-parseFloat(x.paid)
       if(x.currency!="PKR"){
         console.log("X:",x)
         const receiving = x.payType=="Recievable"?parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.recieved):parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.paid)

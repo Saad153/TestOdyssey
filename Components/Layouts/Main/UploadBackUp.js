@@ -55,7 +55,7 @@ const Upload_CoA = () => {
             if(element[0].length == 2){
                 let sa = element[0].trim().charAt(0)
                 if(sa == 'P'){
-                    sa = element[0].trim().chatAt(1)
+                    sa = element[0].trim().charAt(1)
                 }
                 switch (sa) {
                     case "1":
@@ -120,7 +120,7 @@ const Upload_CoA = () => {
                 }
             }
         });
-        //console.log(accountsList)
+        console.log(accountsList)
     }
 
     const uploadData = async () => {
@@ -583,12 +583,32 @@ const Upload_CoA = () => {
         //console.log(dateStr)
         if(dateStr && dateStr.includes("-")){
             const [day, monthName, year] = dateStr.split('-');
+
             return new Date(year, parseInt(monthName)-1, day);
         }else if(dateStr && dateStr.includes("/")){
             const [day, monthName, year] = dateStr.split('/');
             return new Date(year, parseInt(monthName)-1, day);
         }
       }
+
+      function parseDateString3(dateStr) {
+        // Helper map for month names to numbers
+        const monthMap = {
+            Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+            Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+        };
+    
+        if (dateStr && dateStr.includes("-")) {
+            const [day, monthName, year] = dateStr.split('-');
+            return new Date(
+                parseInt(year.length === 2 ? `20${year}` : year), // Handle 2-digit year
+                monthMap[monthName],
+                parseInt(day)
+            );
+        }
+        return null; // Return null for invalid or empty date strings
+    }
+
       function parseDateString2(dateStr) {
         if (dateStr && dateStr.includes("-")) {
             let [day, monthName, year] = dateStr.split('-');
@@ -649,109 +669,188 @@ const Upload_CoA = () => {
         let  i = 0
         setStatusInvoices("Data Fetched, Processing...")
         if(!agentInvoices){
+            if(fileInfo.name.includes("RCV")){
+                console.log("Job balancing Report Recieavable")
+                
+            }
             for(let x of data){
                 let party_id = ""
                 let party_name = ""
                 let matched = false
                 let matched1 = false
                 let ChildAccountId = ""
-                vendors.forEach((a)=>{
-                    if(x.party && a.name.trim() == removeBracketedPart(x.party)){
-                        party_id = a.id
-                        party_name = a.name
-                        matched = true
-                    }
-                })
-                if(matched){
-                    vendorAssociationsList.forEach((a)=>{
-                        if(party_id == a.VendorId){
-                            ChildAccountId = a.ChildAccountId
-                            matched1 = true
-                        }
-                    })
-                }
-                !matched?clients.forEach((a)=>{
-                    if(x.party && a.name.trim() == removeBracketedPart(x.party)){
-                        party_id = a.id
-                        party_name = a.name
-                        matched = true
-                    }
-                }):null
-                if(matched && !matched1){
-                    clientAssociationsList.forEach((a)=>{
-                        if(party_id == a.ClientId){
-                            ChildAccountId = a.ChildAccountId
-                            matched1 = true
-                        }
-                    })
-                }
 
                 x.job_no?extractCode(x.job_no):""
                 
-                if(x.invoice___bill_date){
-                    let temp =  parseDateString1(x.invoice___bill_date)
-                    // const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
-                    x.invoice___bill_date = temp
-                }
+                
                 let invoice = {}
-                invoice = {
-                    invoice_No: x.invoice___bill_,
-                    // type: "Old Job Invoice",
-                    type: x.payable==0?parseFloat(x.receivable)>0?"Old Job Invoice":"Old Job Bill":parseFloat(x.payable)>0?"Old Job Bill":"Old Job Invoice",
-                    payType: x.payable==0?parseFloat(x.receivable)>0?"Recievable":"Payble":parseFloat(x.payable)>0?"Payble":"Recievable",
-                    status: "2",
-                    operation: x.op_code?x.op_code:null,
-                    currency: x.curr,
-                    ex_rate: x.curr=="PKR"?"1":"0",
-                    party_Id: party_id,
-                    party_Name: party_name,
-                    paid: x.payable==0?parseFloat(x.receivable)>0?"0":(Math.abs(parseFloat(x.receivable))-Math.abs(parseFloat(x.balance))):parseFloat(x.payable)>0?(Math.abs(parseFloat(x.payable))-Math.abs(parseFloat(x.balance))):"0",
-                    // paid: x.payable!=0?(Math.abs(x.payable)-x.balance).toString():"0",
-                    recieved: x.payable==0?parseFloat(x.receivable)>0?(Math.abs(parseFloat(x.receivable))-Math.abs(parseFloat(x.balance))):"0":parseFloat(x.payable)<0?(Math.abs(parseFloat(x.payable))-Math.abs(parseFloat(x.balance))):"0",
-                    // recieved: x.payable==0?(Math.abs(x.receivable)-x.balance).toString():"0",
-                    roundOff: "0",
-                    total: x.payable!=0?Math.abs(x.payable).toString():Math.abs(x.receivable).toString(),
-                    approved: "1",
-                    companyId: companyID,
-                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-                }
-                let Voucher_Heads = [];
-                if(x.job__ == "Advance"){
-                    invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
-                    invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
+                if(fileInfo.name.includes("RCV")){
+                    vendors.forEach((a)=>{
+                        if(x.client && a.name.trim() == removeBracketedPart(x.client)){
+                            party_id = a.id
+                            party_name = a.name
+                            matched = true
+                        }
+                    })
+                    if(matched){
+                        vendorAssociationsList.forEach((a)=>{
+                            if(party_id == a.VendorId){
+                                ChildAccountId = a.ChildAccountId
+                                matched1 = true
+                            }
+                        })
+                    }
+                    !matched?clients.forEach((a)=>{
+                        if(x.client && a.name.trim() == removeBracketedPart(x.client)){
+                            party_id = a.id
+                            party_name = a.name
+                            matched = true
+                        }
+                    }):null
+                    if(matched && !matched1){
+                        clientAssociationsList.forEach((a)=>{
+                            if(party_id == a.ClientId){
+                                ChildAccountId = a.ChildAccountId
+                                matched1 = true
+                            }
+                        })
+                    }
+                    if(x.invoicedate_f){
+                        let temp =  parseDateString3(x.invoicedate_f)
+                        // const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                        x.invoicedate_f = temp
+                    }
+                    console.log("Job balancing Report Receivable")
+                    invoice = {
+                        invoice_No: x.invoice_no,
+                        type: !(x.receivable.toString().includes("(")||x.receivable.toString().includes("-"))?"Old Job Invoice":"Old Job Bill",
+                        payType: !(x.receivable.toString().includes("(")||x.receivable.toString().includes("-"))?"Recievable":"Payble",
+                        status: "2",
+                        operation: x.operationcode?x.operationcode:null,
+                        currency: x.curr,
+                        ex_rate: x.curr=="PKR"?"1":"0",
+                        party_Id: party_id,
+                        party_Name: party_name,
+                        paid: "0",
+                        paid: x.received.toString().includes("(")||x.received.toString().includes("-")?(parseFloat(x.received.toString().replace("(", "").replace(")", "").replace("-", "").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace("(","").replace(/,/g, ""))).toString():"0",
+                        recieved: !(x.received.toString().includes("(")||x.received.toString().includes("-"))?(parseFloat(x.received.toString().replace("(", "").replace(")", "").replace("-", "").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace("(","").replace(/,/g, ""))).toString():"0",
+                        // recieved: x.payable==0?(Math.abs(x.receivable)-x.balance).toString():"0",
+                        roundOff: "0",
+                        total: x.receivable.toString().replace("(","").replace(")","").replace("-", "").replace(/,/g, ""),
+                        approved: "1",
+                        companyId: companyID,
+                        createdAt: x.invoicedate_f?x.invoicedate_f:null
+                    }
+                    invoice.total.includes(",")?console.log("Total", invoice.total):null
+                    invoice.paid.includes(",")?console.log("Paid", invoice.paid):null
+                    invoice.recieved.includes(",")?console.log("Rcvd", invoice.recieved):null
                     
+                }else{
+                    let vendorId = ''
+                    let vendorName = ''
+                    let vendorAccount = ''
+                    vendors.forEach((a)=>{
+                        if(x.vendor && a.name.trim() == removeBracketedPart(x.vendor)){
+                            vendorId = a.id
+                            vendorName = a.name
+                            matched = true
+                        }
+                    })
+                    if(matched){
+                        vendorAssociationsList.forEach((a)=>{
+                            if(vendorId == a.VendorId){
+                                vendorAccount = a.ChildAccountId
+                                matched1 = true
+                            }
+                        })
+                    }
+                    !matched?clients.forEach((a)=>{
+                        if(x.vendor && a.name.trim() == removeBracketedPart(x.vendor)){
+                            vendorId = a.id
+                            vendorName = a.name
+                            matched = true
+                        }
+                    }):null
+                    if(matched && !matched1){
+                        clientAssociationsList.forEach((a)=>{
+                            if(vendorId == a.ClientId){
+                                vendorAccount = a.ChildAccountId
+                                matched1 = true
+                            }
+                        })
+                    }
+                    // console.log(vendorId)
+                    if(x.billdate_f){
+                        let temp =  parseDateString3(x.billdate_f)
+                        // const isoString = new Date(temp.setHours(0, 0, 0, 0)).toISOString();
+                        x.billdate_f = temp
+                    }
+                    // console.log("Job balancing Report Payable", x.payable.toString().replace("(","").replace(")","").replace(/,/g, ""))
+                    invoice = {
+                        invoice_No: x.bill_no,
+                        type: x.payable.toString().includes("(")?"Old Job Invoice":"Old Job Bill",
+                        payType: x.payable.toString().includes("(")?"Recievable":"Payble",
+                        status: "2",
+                        operation: x.operationcode?x.operationcode:null,
+                        currency: x.curr,
+                        ex_rate: x.curr=="PKR"?"1":"0",
+                        party_Id: vendorId,
+                        party_Name: vendorName,
+                        paid: "0",
+                        paid: !x.paid.toString().includes("(")?(parseFloat(x.paid.toString().replace("(", "").replace(")", "").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace("(","").replace(/,/g, ""))).toString():"0",
+                        recieved: x.paid.toString().includes("(")?(parseFloat(x.paid.toString().replace("(", "").replace(")", "").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace("(","").replace(/,/g, ""))).toString():"0",
+                        // recieved: x.payable==0?(Math.abs(x.payable)-x.balance).toString():"0",
+                        roundOff: "0",
+                        total: x.payable.toString().replace("(","").replace(")","").replace(/,/g, ""),
+                        approved: "1",
+                        companyId: companyID,
+                        createdAt: x.invoicedate_f?x.invoicedate_f:null
+                    }
+                    // console.log("Total", invoice.total, "Paid", invoice.paid, "Recieved", invoice.recieved)
+                    invoice.total.includes(",")?console.log("Total", invoice.total):null
+                    invoice.paid.includes(",")?console.log("Paid", invoice.paid):null
+                    invoice.recieved.includes(",")?console.log("Rcvd", invoice.recieved):null
+                    // console.log(invoice)
+                    // invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):console.log("No party"):console.log("No invoice No")
+                    // invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
                 }
-                Voucher_Heads.push({
-                    defaultAmount: "-",
-                    amount: invoice.total,
-                    type: invoice.payType=="Payble"?"credit":"debit",
-                    narration: invoice.invoice_No,
-                    settlement: "",
-                    ChildAccountId: ChildAccountId,
-                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-                });
-                invoice.recieved != "0"?
-                Voucher_Heads.push({
-                    defaultAmount: "-",
-                    amount: invoice.payType=="Payble"?invoice.paid:invoice.recieved,
-                    type: invoice.payType=="Payble"?"debit":"credit",
-                    narration: invoice.invoice_No,
-                    settlement: "",
-                    ChildAccountId: ChildAccountId,
-                    createdAt: x.invoice___bill_date?x.invoice___bill_date:null
-                }):null
-                let voucher = {
-                    CompanyId:companyID,
-                    costCenter:"KHI",
-                    type:"Opening Invoice",
-                    vType:x.payable!=0?"OB":"OI",
-                    currency:x.curr,
-                    exRate: x.exchange_rate?x.exchange_rate:"1.00",
-                    payTo:"",
-                    Voucher_Heads:Voucher_Heads
-                }
-                invoice.voucher = voucher
-                invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
+                // let Voucher_Heads = [];
+                // if(x.job__ == "Advance"){
+                //     invoice.recieved = x.balance?parseInt(x.balance*-1).toString():"0"
+                //     invoice.total = x.payable!=0?x.payable.toString():parseInt(x.receivable*-1).toString()
+                    
+                // }
+                // Voucher_Heads.push({
+                //     defaultAmount: "-",
+                //     amount: invoice.total,
+                //     type: invoice.payType=="Payble"?"credit":"debit",
+                //     narration: invoice.invoice_No,
+                //     settlement: "",
+                //     ChildAccountId: ChildAccountId,
+                //     createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                // });
+                // invoice.recieved != "0"?
+                // Voucher_Heads.push({
+                //     defaultAmount: "-",
+                //     amount: invoice.payType=="Payble"?invoice.paid:invoice.recieved,
+                //     type: invoice.payType=="Payble"?"debit":"credit",
+                //     narration: invoice.invoice_No,
+                //     settlement: "",
+                //     ChildAccountId: ChildAccountId,
+                //     createdAt: x.invoice___bill_date?x.invoice___bill_date:null
+                // }):null
+                // let voucher = {
+                //     CompanyId:companyID,
+                //     costCenter:"KHI",
+                //     type:"Opening Invoice",
+                //     vType:x.payable!=0?"OB":"OI",
+                //     currency:x.curr,
+                //     exRate: x.exchange_rate?x.exchange_rate:"1.00",
+                //     payTo:"",
+                //     Voucher_Heads:Voucher_Heads
+                // }
+                // invoice.voucher = voucher
+                invoice.companyId!="0"?invoice.party_Id!=""?invoices.push(invoice):console.log("No party", invoice, x):console.log("No Company")
                 invoice.party_Id==""||companyID=="0"?invoicewoAcc.push(invoice):null
             }
         }
@@ -823,43 +922,43 @@ const Upload_CoA = () => {
                     companyId: companyID,
                     createdAt: x.invoice_date?x.invoice_date:null
                 }:null
-            let Voucher_Heads = [];
+            // let Voucher_Heads = [];
             // console.log(invoice.recieved, invoice.paid)
-            Voucher_Heads.push({
-                defaultAmount: "-",
-                amount: invoice.total,
-                type: invoice.payType=="Payble"?"credit":"debit",
-                narration: invoice.invoice_No,
-                settlement: "",
-                ChildAccountId: ChildAccountId
-            });
-            invoice.recieved != "0"?Voucher_Heads.push({
-                defaultAmount: "-",
-                amount: invoice.recieved,
-                type: invoice.payType=="Payble"?"debit":"credit",
-                narration: invoice.invoice_No,
-                settlement: "",
-                ChildAccountId: ChildAccountId
-            }):null
-            invoice.paid != "0"?Voucher_Heads.push({
-                defaultAmount: "-",
-                amount: invoice.paid,
-                type: invoice.payType=="Payble"?"debit":"credit",
-                narration: invoice.invoice_No,
-                settlement: "",
-                ChildAccountId: ChildAccountId
-            }):null
-            let voucher = {
-                CompanyId:companyID,
-                costCenter:"KHI",
-                type:"Opening Invoice",
-                vType:"OI",
-                currency:x.currency,
-                exRate: x.exchange_rate?x.exchange_rate:"1.00",
-                payTo:"",
-                Voucher_Heads:Voucher_Heads
-            }
-            invoice.voucher = voucher
+            // Voucher_Heads.push({
+            //     defaultAmount: "-",
+            //     amount: invoice.total,
+            //     type: invoice.payType=="Payble"?"credit":"debit",
+            //     narration: invoice.invoice_No,
+            //     settlement: "",
+            //     ChildAccountId: ChildAccountId
+            // });
+            // invoice.recieved != "0"?Voucher_Heads.push({
+            //     defaultAmount: "-",
+            //     amount: invoice.recieved,
+            //     type: invoice.payType=="Payble"?"debit":"credit",
+            //     narration: invoice.invoice_No,
+            //     settlement: "",
+            //     ChildAccountId: ChildAccountId
+            // }):null
+            // invoice.paid != "0"?Voucher_Heads.push({
+            //     defaultAmount: "-",
+            //     amount: invoice.paid,
+            //     type: invoice.payType=="Payble"?"debit":"credit",
+            //     narration: invoice.invoice_No,
+            //     settlement: "",
+            //     ChildAccountId: ChildAccountId
+            // }):null
+            // let voucher = {
+            //     CompanyId:companyID,
+            //     costCenter:"KHI",
+            //     type:"Opening Invoice",
+            //     vType:"OI",
+            //     currency:x.currency,
+            //     exRate: x.exchange_rate?x.exchange_rate:"1.00",
+            //     payTo:"",
+            //     Voucher_Heads:Voucher_Heads
+            // }
+            // invoice.voucher = voucher
             companyID!="0"?invoice.party_Id!=""?invoices.push(invoice):null:null
             !matched?invoicewoAcc.push(x):null
             }
@@ -1234,6 +1333,29 @@ const Upload_CoA = () => {
         setStatus("Uploaded")
     }
 
+    const setExRateVouchers = async() => {
+        console.log("Running API")
+        const invoices = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/getExRateVouchers`)
+        // console.log(voucher_heads.data.result)
+        // console.log(voucherData)
+        // let notPresent = []
+        // voucherData.forEach((x)=>{
+        //     let present = false
+        //     voucher_heads.data.result.forEach((y)=>{
+        //         if(y.Voucher.voucher_Id == x.voucher_no){
+        //             present = true
+        //         }
+        //     })
+        //     !present?notPresent.push(x):null
+        // })
+        // console.log("Not Present in DB", notPresent)
+        // invoices.data.result.forEach((x)=>{
+
+        // })
+
+        console.log(invoices)
+
+    }
     const verifyVouchers = async() => {
         console.log("Running API")
         const invoices = await axios.get("http://localhost:8088/voucher/getAllVoucehrHeads")
@@ -1259,14 +1381,16 @@ const Upload_CoA = () => {
     }
 
     const matchInvoices = async(data, fileInfo) => {
-        console.log(data)
+        console.log("File Data", data)
         console.log(fileInfo)
+        // return data
         let agentInvoices  = false
-        data[0].agent?agentInvoices = true:agentInvoices = false
+        data[0].agent_name?agentInvoices = true:agentInvoices = false
         setStatusInvoiceMatching("File loaded, Fetching data...")
-        const invoices = await axios.get("http://localhost:8088/invoice/invoiceMatching")
+        const invoices = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/invoiceMatching`)
+        // const invoices = await axios.get("http://localhost:8088/invoice/invoiceMatching")
         setStatusInvoiceMatching("Data Fetched, Processing...")
-        console.log(invoices.data.result)
+        console.log("DB Data", invoices.data.result)
         let unmatched = []
         let unmatched1 = []
         let testing = true
@@ -1279,44 +1403,78 @@ const Upload_CoA = () => {
                 invoices.data.result.forEach((y, i)=>{
                     let check = false
                     let check1 = true
-                    if(x.invoice___bill_ == y.invoice_No && x.party.includes(y.party_Name)){
-                        invoiceNo = true
-                        party = true
-                        check = true
-                        index = i
+                    if(fileInfo.name.includes("PYB")){
+                        if(x.bill_no == y.invoice_No && x.vendor.includes(y.party_Name)){
+                            invoiceNo = true
+                            party = true
+                            check = true
+                            index = i
+                        }
+                    }else{
+                        if(x.invoice_no == y.invoice_No && x.client.includes(y.party_Name)){
+                            invoiceNo = true
+                            party = true
+                            check = true
+                            index = i
+                        }
                     }
                     if(check){
-                        // console.log(x.payable, x.receivable, parseFloat(y.total), parseFloat(y.paid), parseFloat(y.recieved))
-                        if(y.payType=="Recievable"){
-                            if(x.payable < 0){
-                                if(Math.abs(x.payable) != parseFloat(y.total) || Math.abs(x.payable)-Math.abs(x.balance) != parseFloat(y.recieved)){
-                                    unmatched1.push(`Payable: ${Math.abs(x.payable)}, ${Math.abs(x.payable)-Math.abs(x.balance)}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`)
+                        if(fileInfo.name.includes("PYB")){
+                            if(x.payable.toString().includes("(")||x.payable.toString().includes("-")){
+                                let payable = parseFloat(x.payable.toString().replace("-","").replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.total) != payable){
                                     check1 = false
                                 }
                             }else{
-                                if(Math.abs(x.receivable) != y.total || Math.abs(x.receivable)-Math.abs(x.balance) != parseFloat(y.recieved)){
-                                    unmatched1.push(`Receivable: ${Math.abs(x.receivable)}, ${Math.abs(x.receivable)-Math.abs(x.balance)}, Total: ${y.total}, Received: ${y.recieved}, Paid: ${y.paid}`)
+                                let payable = parseFloat(x.payable.toString().replace(/,/g, ""))
+                                if(parseFloat(y.total) != payable){
+                                    check1 = false
+                                }
+                            }
+                            if(x.paid.toString().includes("(")||x.paid.toString().includes("-")){
+                                let paid = parseFloat(x.paid.toString().replace("-","").replace("(","").replace(")","").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.recieved) != paid){
+                                    check1 = false
+                                }
+                            }else{
+                                let paid = parseFloat(x.paid.toString().replace("-","").replace("(","").replace(")","").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.paid) != paid){
                                     check1 = false
                                 }
                             }
                         }else{
-                            if(x.receivable<0){
-                                if(Math.abs(x.receivable) != y.total || Math.abs(x.receivable)-Math.abs(x.balance) != parseFloat(y.paid)){
-                                    unmatched1.push(`Receivable: ${Math.abs(x.receivable)}, ${Math.abs(x.receivable)-Math.abs(x.balance)}, Total: ${y.total}, Received: ${y.recieved}, Paid: ${y.paid}`)
+                            if(x.receivable.toString().includes("(")||x.receivable.toString().includes("-")){
+                                let receivable = parseFloat(x.receivable.toString().replace("-","").replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.total) != receivable){
                                     check1 = false
                                 }
                             }else{
-                                if(Math.abs(x.payable) != parseFloat(y.total) || Math.abs(x.payable)-Math.abs(x.balance) != parseFloat(y.paid)){
-                                    unmatched1.push(`Payable: ${Math.abs(x.payable)}, ${Math.abs(x.payable)-Math.abs(x.balance)}, Total: ${y.total}, Paid: ${y.paid}, Received: ${y.recieved}`)
+                                let receivable = parseFloat(x.receivable.toString().replace(/,/g, ""))
+                                if(parseFloat(y.total) != receivable){
+                                    check1 = false
+                                }
+                            }
+                            if(x.received.toString().includes("(")||x.received.toString().includes("-")){
+                                let received = parseFloat(x.received.toString().replace("-","").replace("(","").replace(")","").replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.paid) != received){
+                                    check1 = false
+                                }
+                            }else{
+                                let received = parseFloat(x.received.toString().replace(/,/g, ""))+parseFloat(x.adjust.toString().replace("(","").replace(")","").replace(/,/g, ""))
+                                if(parseFloat(y.recieved) != received){
                                     check1 = false
                                 }
                             }
                         }
                     }
-                    !check1?console.log(`Unmatched Values: ${x.invoice___bill_}, ${x.party}`):null
+                    if(!check1){
+                        unmatched.push(x)
+                        console.log("Unmatched Values:", x, y )
+                    }
+                    // !check1?console.log("Unmatched Values:", x, y ):null
                 })
                 !invoiceNo?unmatched.push(`${x.invoice___bill_}, ${x.party}`):null
-                !party?unmatched1.push(x.party):null
+                !party?console.log("Party Not matched",x):null
             })
         }else{
             let unmatched = []
@@ -1327,28 +1485,28 @@ const Upload_CoA = () => {
                 let invoiceNo = false
                 let amount = false
                 invoices.data.result.forEach((y)=>{
-                    if(x.invoice_no == y.invoice_No && x.agent.includes(y.party_Name)){
+                    if(x.invoice_no == y.invoice_No && x.agent_name.includes(y.party_Name)){
                         invoiceNo = true
-                        if(x.inv_amount != parseFloat(y.total)){
+                        if(x.invoice_amount != parseFloat(y.total)){
                             amount = true
                         }else{
-                            if(x.dn_cn == "Credit"){
-                                if(x.received___paid != parseFloat(y.paid)){
+                            if(x.type_dn_cn == "Credit"){
+                                if(x.rcvd_paid != parseFloat(y.paid)){
                                     amount = true
                                 }
                             }else{
-                                if(x.received___paid != parseFloat(y.recieved)){
+                                if(x.rcvd_paid != parseFloat(y.recieved)){
                                     amount = true
                                 }
                             }
                         }
                     }else{
                         // console.log(x.invoice_no, x.agent, y.invoice_No, y.party_Name)
-                        unmatched.push(`${x.invoice_no}, ${x.agent}`)
+                        unmatched.push(`${x.invoice_no}, ${x.agent_name}`)
                     }
                 })
                 // invoiceNo?unmatched.push(`${x.invoice_no}, ${x.agent}`):null
-                amount?unmatched1.push(`${x.invoice_no}, ${x.agent}`):null
+                amount?unmatched1.push(`${x.invoice_no}, ${x.agent_name}`):null
             })
         }
         console.log(unmatched)
@@ -1377,8 +1535,138 @@ const Upload_CoA = () => {
 
     let invoicewoAcc = []
 
+    const handleCharges = async (data, fileInfo) => {
+        console.log(data)
+        console.log(fileInfo)
+        let type = "Recievable"
+        const charges = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CHARGES)
+        const clients = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
+        const vendors = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
+        const invoices = await axios.get("http://localhost:8088/invoice/invoiceMatching")
+        // console.log(invoices.data.result)
+        let chargesHead = []
+        let job = {
+            jobNo: "",
+            jobId: 0,
+            title: null,
+            shipStatus: "Booked",
+            pcs: "1000",
+            vol: "0",
+            pol: "PKKHI",
+            pod: "AEJEA",
+            fd: "AEJEA",
+            dg: "non-DG",
+            subType: "FCL",
+            shpVol: "0",
+            weight: "1000",
+            weightUnit: "KG",
+            costCenter: "KHI",
+            jobType: "Direct",
+            jobKind: "Current",
+            carrier: null,
+            freightType: "Prepaid",
+            nomination: "Free Hand",
+            jobDate: "2025-01-22T12:59:09.815Z",
+            shipDate: "2025-01-22T12:59:09.815Z",
+            freightPaybleAt: "Karachi, Pakistan",
+            companyId: "1",
+            pkgUnit: "CARTONS",
+            IncoTerms: "CFR",
+            exRate: "1",
+            approved: "false",
+            cwtClient: "0",
+            operation: "SE",
+            createdAt: moment(),
+            updatedAt: moment(),
+            ClientId: 43340,
+            VoyageId: 996354449746919425,
+            salesRepresentatorId: "0a1d9101-0deb-426d-b833-8204cab73c13",
+            overseasAgentId: null,
+            localVendorId: 9325,
+            customAgentId: null,
+            transporterId: null,
+            createdById: "4d7f7cfb-7ace-4655-b6ee-f9ed52f81799",
+            commodityId: 918252774343245825,
+            consigneeId: 41908,
+            forwarderId: null,
+            airLineId: null,
+            shipperId: 40618,
+            vesselId: 996352529733419009,
+            shippingLineId: 9325,
+
+
+        }
+        data.forEach((chargeHead)=>{
+            let partyType = "client"
+            charges.data.result.forEach((charge)=>{
+                if(chargeHead.particular == charge.name){
+                    chargeHead.chargeId = charge.id
+                }
+            })
+            clients.data.result.forEach((client)=>{
+                if(chargeHead.name == client.name){
+                    chargeHead.partyId = client.id
+                }
+            })
+            if(!chargeHead.partyId){
+                partyType="vendor"
+                vendors.data.result.forEach((vendor)=>{
+                    if(chargeHead.name == vendor.name){
+                        if(vendor.types.includes("agent")){
+                            partyType="agent"
+                        }
+                        chargeHead.partyId = vendor.id
+                    }
+                })
+            }
+            if(chargeHead.bill__invoice){
+                invoices.data.result.forEach((invoice)=>{
+                    if(invoice.invoice_No.trim().includes(chargeHead.bill__invoice.trim()))
+                        chargeHead.invoiceId = invoice.id
+                })
+            }
+            let charge = {
+                charge: chargeHead.chargeId,
+                particular: chargeHead.particular,
+                invoice_id: chargeHead.bill__invoice,
+                description: chargeHead.description,
+                name: chargeHead.name,
+                partyId: chargeHead.partyId,
+                invoiceType: chargeHead.bill__invoice?chargeHead.bill__invoice.includes("JI")?"Job Invoice":chargeHead.bill__invoice.includes("JB")?"Job Bill":chargeHead.bill__invoice.includes("AI")?"Agent Invoice":chargeHead.bill__invoice.includes("AB")?"Agent Bill":null:null,
+                type: type,
+                basis: chargeHead.basis.includes("Unit")?"Per Unit":"Per Shipment",
+                pp_cc: chargeHead.pp_cc,
+                size_type: chargeHead.sizetype,
+                dg_type: chargeHead.dg_non_dg=="Non DG"?"non-DG":"DG",
+                qty: chargeHead.qty,
+                rate_charge: chargeHead.rate,
+                currency: chargeHead.currency,
+                amount: chargeHead.amount,
+                discount: chargeHead.discount,
+                taxPerc: parseFloat(chargeHead.tax_amount)>0?(parseFloat(chargeHead.amount)/parseFloat(chargeHead.tax_amount))*100:0,
+                tax_apply: chargeHead.tax_amount!=0?true:false,
+                tax_amount: chargeHead.tax_amount,
+                net_amount: chargeHead.net_amount,
+                ex_rate: chargeHead.ex_rate,
+                local_amount: chargeHead.local_amount,
+                status: chargeHead.bill__invoice?"1":"0",
+                approved_by: chargeHead.approved_by,
+                approved_date: chargeHead.approved_date,
+                partyType: partyType,
+                InvoiceId: chargeHead.invoiceId
+            }
+            if(chargeHead.bill__invoice && chargeHead.invoiceId){
+                chargesHead.push(charge)
+            }else if(!chargeHead.bill__invoice){
+                console.log(charge, chargeHead)
+                chargesHead.push(charge)
+            }
+        })
+        console.log(chargesHead)
+    }
+
     return (
-        <>
+        <div style={{overflow: 'auto', height: '87.5vh'}}>
         <span className="py-2">Chart of Accounts</span>
         <CSVReader onFileLoaded={handleData}/>
         <button onClick={uploadData} style={{maxWidth: 75}} className='btn-custom mt-3 px-3 mx-3'>Upload</button>
@@ -1404,6 +1692,25 @@ const Upload_CoA = () => {
             {statusInvoices}
         </span>
         <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+        <button
+        onClick={async () => {
+            try {
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/updateVouchersWithInvoices`);
+            if (response.data.status === 'success') {
+                alert('Vouchers updated successfully!');
+            } else {
+                alert('Failed to update vouchers: ' + response.data.message);
+            }
+            } catch (error) {
+            console.error('Error updating vouchers:', error);
+            alert('An error occurred while updating vouchers. Please check the console for details.');
+            }
+        }}
+        style={{ width: 'auto' }}
+        className="btn-custom mt-3 px-3 mx-3"
+        >
+        Update Invoices
+        </button>
         <span className="py-2">Invoice Matching, Upload grid csv</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{matchInvoices(data, fileInfo)}}/>
         <span
@@ -1439,10 +1746,14 @@ const Upload_CoA = () => {
         </span>
         <button onClick={uploadVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Vouchers</button>
         <button onClick={verifyVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Verify Vouchers</button>
+        <button onClick={setExRateVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Set Ex-Rate Vouchers</button>
         <span className="py-2">Jobs</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
         <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
-        </>
+        <span className="py-2">Charges</span>
+        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleCharges(data, fileInfo)}}/>
+        <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload & Link Charges</button>
+        </div>
     )
 }
 

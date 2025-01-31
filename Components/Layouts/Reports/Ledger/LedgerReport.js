@@ -14,7 +14,7 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
       let result = voucherData.result
       if(currency!="PKR"){
         console.log("Voucher Data:", voucherData.result)
-        result = voucherData.result.filter((x)=>x.accountType!="Gain/Loss Account")
+        result = voucherData.result.filter( (x) => x.accountType!="Gain/Loss Account" && x.accountType!="General" )
         console.log("Result Data:", result)
       }
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;

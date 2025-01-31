@@ -89,7 +89,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                           }
                         }}
                       >{x.voucher}</td>
-                      <td className="text-center fs-12 grey-txt">{x.date.slice(0, 10)}</td>
+                      <td className="text-center fs-12 grey-txt">{moment(x.date).format("DD-MM-YYYY")}</td>
                       <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{x.narration}</td>
                       <td className="text-end fs-12">{x.type == "debit" && commas(x.amount)}</td>
                       <td className="text-end fs-12">{x.type == "credit" && commas(x.amount)}</td>

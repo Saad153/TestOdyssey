@@ -26,43 +26,108 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   console.log("Query: ", q)
   const dispatch = useDispatch();
   const state = useSelector((state) => state.paymentReciept);
-  const fetchOldVouchers = async () => {
-    console.log("Getting Old Vouchers")
-    await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
-      headers: { companyid: Cookies.get('companyId') }
-    }).then((x) => {
-      console.log(x.data.result)
-      const temp = [];
-      x.data.result.forEach((x)=>{
-        x.invoice.forEach((y)=>{
-          if(y.payType=="Payble"){
-            y.receiving = y.paid
-          }else{
-            y.receiving = y.recieved
-          }
-        })
-      })
-      x.data.result.length>0?temp.push(x.data.result.map((x) => {
-        console.log(x)
-        return {
-          id: x.id,
-          voucherNo: x.voucher_Id,
-          name: x.partyName,
-          party: x.partyType,
-          type: x.vType,
-          data: moment(x.createdAt).format('DD-MM-YYYY'),
-          currency: x.currency,
-          amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount')?x.Voucher_Heads.find((y) => y.accountType=='partyAccount').amount:0.0,
-          partyId: x.partyId,
-          x: x
-        };
-      })):null
-      console.log("Temp>",temp)
 
-      temp.length>0?dispatch(setField({ field: 'oldVouchers', value: temp[0] })):null
-    })
-      
+  const [loading, setLoading] = useState(false);
+
+  const fetchOldVouchers = async (page = 1) => {
+    if (loading) return; // Prevent multiple calls
+    setLoading(true);
+
+    try {
+      const response = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
+        headers: { companyid: Cookies.get('companyId'), page: page, limit: 50 }
+      });
+
+      const result = response.data.result;
+      if (result.length === 0) {
+        console.log("No more vouchers to fetch.");
+        setLoading(false);
+        return;
+      }
+
+      const temp = [];
+      result.forEach((x) => {
+        x.invoice.forEach((y) => {
+          if (y.payType === "Payble") {
+            y.receiving = y.paid;
+          } else {
+            y.receiving = y.recieved;
+          }
+        });
+      });
+
+      if (result.length > 0) {
+        temp.push(
+          result.map((x) => {
+            return {
+              id: x.id,
+              voucherNo: x.voucher_Id,
+              name: x.partyName,
+              party: x.partyType,
+              type: x.vType,
+              data: moment(x.createdAt).format('DD-MM-YYYY'),
+              currency: x.currency,
+              amount: x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General')
+                ? x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General').amount
+                : 0.0,
+              partyId: x.partyId,
+              x: x
+            };
+          })
+        );
+      }
+
+      if (temp.length > 0) {
+        dispatch(setField({ field: 'oldVouchers', value: temp[0] }));
+      }
+
+      if (result.length === 50) {
+        await fetchOldVouchers(page + 1);
+      }
+    } catch (error) {
+      console.error("Error fetching old vouchers:", error);
+    } finally {
+      setLoading(false); // Reset loading state
     }
+  };
+
+  // const fetchOldVouchers = async () => {
+  //   console.log("Getting Old Vouchers")
+  //   await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
+  //     headers: { companyid: Cookies.get('companyId'), page: 1 }
+  //   }).then((x) => {
+  //     console.log(x.data.result)
+  //     const temp = [];
+  //     x.data.result.forEach((x)=>{
+  //       x.invoice.forEach((y)=>{
+  //         if(y.payType=="Payble"){
+  //           y.receiving = y.paid
+  //         }else{
+  //           y.receiving = y.recieved
+  //         }
+  //       })
+  //     })
+  //     x.data.result.length>0?temp.push(x.data.result.map((x) => {
+  //       console.log(x)
+  //       return {
+  //         id: x.id,
+  //         voucherNo: x.voucher_Id,
+  //         name: x.partyName,
+  //         party: x.partyType,
+  //         type: x.vType,
+  //         data: moment(x.createdAt).format('DD-MM-YYYY'),
+  //         currency: x.currency,
+  //         amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount'||y.accountType=='General')?x.Voucher_Heads.find((y) => y.accountType=='partyAccount'||y.accountType=='General').amount:0.0,
+  //         partyId: x.partyId,
+  //         x: x
+  //       };
+  //     })):null
+  //     console.log("Temp>",temp)
+
+  //     temp.length>0?dispatch(setField({ field: 'oldVouchers', value: temp[0] })):null
+  //   })
+      
+  //   }
     const [first, setFirst] = useState(false)
   useEffect(() => {
     if(state.oldVouchers.length == 0 && !first){
@@ -133,12 +198,12 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
         dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
       }
-      if(y.accountType=="partyAccount"){
+      if(y.accountType=="partyAccount"||y.accountType=="General"){
         console.log("party Amount>>", parseFloat(y.amount))
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
         // dispatch(setField({ field: 'selectedAccount', value: y.ChildAccountId }))
       }
-      if(y.accountType=="Gain/Loss Account" && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
+      if((y.accountType=="Gain/Loss Account") && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
         console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
         y.type!='debit'?
         dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) })):
@@ -369,7 +434,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               if(x.currency.toLowerCase().includes(state.search.toLowerCase())){
                 return x
               }
-              if(x.amount.toLowerCase().includes(state.search.toLowerCase())){
+              if(x.amount.toString().toLowerCase().includes(state.search.toLowerCase())){
                 return x
               }
             }else{

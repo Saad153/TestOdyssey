@@ -23,7 +23,7 @@ const JobBalancingReport = ({ result, query }) => {
   const [aging, setAging] = useState(true)
   const dispatch = useDispatch();
   const commas = (a) => a ? parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.0';
-  //console.log(result)
+  console.log("Result:", result)
   const getTotal = (type, list) => {
     //console.log(list)
     let values = 0.00;
@@ -500,8 +500,8 @@ const JobBalancingReport = ({ result, query }) => {
         currency: x.currency,
         party_Name: x.party_Name,
         balance: x.payType == "Recievable" ? commas(x.balance) : `(${commas(x.balance)})`,
-        total: x.payType != "Recievable" ? commas(x.total):"0",
-        total1: x.payType == "Recievable" ? commas(x.total):"0",
+        total: x.payType == "Recievable" ? commas(x.total):"0",
+        total1: x.payType != "Recievable" ? commas(x.total):"0",
         paidRcvd: x.payType != "Recievable" ?commas(x.paid):commas(x.recieved),
         // total: commas(x.total),
       };
@@ -541,7 +541,7 @@ const JobBalancingReport = ({ result, query }) => {
 
       const fieldNamesToFormat = ['Balance', 'Credit', 'Debit', 'Paid/Rcvd']; // Fields to apply formatting
 
-      worksheet.insertRow(1, ['', '', '', '', '','Agent Invoice Balancing Grid']);
+      worksheet.insertRow(1, ['', '', '', '', '','Job Balancing Grid']);
       worksheet.insertRow(1, ['']);
       worksheet.insertRow(1, ['']);
       worksheet.insertRow(1, ['']);
@@ -694,10 +694,11 @@ const JobBalancingReport = ({ result, query }) => {
     await newArray.forEach((y, i) => {
       y.no = i + 1;
       //console.log(y)
-      y.balance = y.total!="0"?parseFloat(y.recieved)!=0 ?
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.recieved)) :
-        (parseFloat(y.total) + parseFloat(y.roundOff) - parseFloat(y.paid)):(y.recieved*-1)
+      y.balance = y.total!="0"?y.payType=="Recievable" ?
+        (parseFloat(y.total) - parseFloat(y.recieved)) :
+        (parseFloat(y.total) - parseFloat(y.paid)):(y.recieved*-1)
       y.total = (parseFloat(y.total)) + parseFloat(y.roundOff)
+      y.total1 = (parseFloat(y.total)) + parseFloat(y.roundOff)
       y.paid = (parseFloat(y.paid)) + parseFloat(y.roundOff)
       y.recieved = (parseFloat(y.recieved)) + parseFloat(y.roundOff)
       y.age = getAge(y.createdAt);
@@ -720,22 +721,23 @@ const JobBalancingReport = ({ result, query }) => {
       })
 
     }
+    console.log(">>>", newArray)
     setRecords(newArray);
     } else {}
   }
 
   // Pagination Variables
-  const [currentPage,setCurrentPage] = useState(0);
+  const [currentPage,setCurrentPage] = useState(1);
   const [recordsPerPage] = useState(20);
   let indexOfLast = currentPage * recordsPerPage ;
   let indexOfFirst = indexOfLast - recordsPerPage;
-  let currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
+  let currentRecords = records ? records.slice(indexOfFirst,indexOfLast) : [];
 
   useEffect(() => {
     indexOfFirst = currentPage * recordsPerPage;
     indexOfLast = indexOfFirst + recordsPerPage;
     console.log(result.result)
-    currentRecords = result.result ? result.result.slice(indexOfFirst,indexOfLast) : [];
+    currentRecords = records ? records.slice(indexOfFirst,indexOfLast) : [];
     console.log(currentRecords)
   },[currentPage])
   const noOfPages = records ? Math.ceil(records.length / recordsPerPage) : 0 ;
@@ -788,18 +790,7 @@ const JobBalancingReport = ({ result, query }) => {
             <tbody>
               {/* without print  */}
               {console.log("Length: ", currentRecords.length)}
-              {overflow ? currentRecords.filter((x) => {
-                //console.log("X..", x)
-                //console.log("QUERY..", query)
-                  if (query.options == 'exclude0') {
-                    //console.log("ASD")
-                    //console.log(x.total, x.paid, x.recieved)
-                    //console.log(x.total - x.paid, x.total - x.recieved)
-                    // const balance = x.payType !== "Recievable" ? (x.total - x.paid) : (x.total - x.recieved);
-                    return x.total -  x.paid != 0 && x.total - x.recieved != 0; // Directly check if balance is not zero
-                  }
-                  return true; // Keep all items if `query.options` is not 'exclude0'
-                }).map((x,i)=>{
+              {overflow ? currentRecords.map((x,i)=>{
                 const date = x.SE_Job?.jobDate;
                 const formattedDate = moment(date).format('DD-MMM-YYYY');
                 const sailDate = x.SE_Job?.shipDate;
@@ -864,7 +855,7 @@ const JobBalancingReport = ({ result, query }) => {
                   <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.total):'-'}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total):'-'}</td>
                   <td style={{ textAlign: 'right' }} >{x.payType == "Recievable" ?commas(x.recieved):commas(x.paid)}</td>
-                  <td style={{ textAlign: 'right' }} >{x.payType != "Recievable" ?commas(x.total-x.paid):commas(x.total-x.recieved)}</td>
+                  <td style={{ textAlign: 'right' }} >{commas(x.balance)}</td>
                   <td style={{ width: 1 }}>{getAge(x.createdAt)+1}</td>
                 </tr>
               )}) : 
@@ -1006,6 +997,12 @@ const JobBalancingReport = ({ result, query }) => {
     },
     {
       headerName: 'Paid/Rcvd', field: 'paid', filter: true,
+      cellRenderer: params => {
+        return <>{commas(params.data.payType == "Payble" ? params.data.paid : params.data.recieved)}</>;
+      }
+    },
+    {
+      headerName: 'Paid/Rcvd', field: 'recieved', filter: true,
       cellRenderer: params => {
         return <>{commas(params.data.payType == "Payble" ? params.data.paid : params.data.recieved)}</>;
       }
