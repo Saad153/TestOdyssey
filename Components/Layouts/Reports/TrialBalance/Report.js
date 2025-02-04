@@ -66,16 +66,28 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
-        // console.log(x)
+        console.log("Query: ",query)
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
-          x.type=="debit"?
-            transactions.trDebit += parseFloat(x.defaultAmount):
-            transactions.trCredit += parseFloat(x.defaultAmount)
+          if(query.currency=="PKR"){
+            x.type=="debit"?
+              transactions.trDebit += parseFloat(x.defaultAmount):
+              transactions.trCredit += parseFloat(x.defaultAmount)
+            }else{
+            x.type=="debit"?
+              transactions.trDebit += parseFloat(x.amount):
+              transactions.trCredit += parseFloat(x.amount)
+          }
         } else {
-          x.type=="debit"?
-            transactions.opDebit += parseFloat(x.defaultAmount):
-            transactions.opCredit += parseFloat(x.defaultAmount)
+          if(query.currency=="PKR"){
+            x.type=="debit"?
+              transactions.opDebit += parseFloat(x.defaultAmount):
+              transactions.opCredit += parseFloat(x.defaultAmount)
+            }else{
+            x.type=="debit"?
+              transactions.opDebit += parseFloat(x.amount):
+              transactions.opCredit += parseFloat(x.amount)
+          }
         }
 
       });
@@ -90,7 +102,7 @@ const Report = ({query, result}) => {
 
     useEffect(() => {
       let temp = [];
-      console.log(result)
+      // console.log(result)
       if(result.result.length>0){
 
         result?.result?.forEach((x)=>{
@@ -213,7 +225,7 @@ const Report = ({query, result}) => {
           vertical: 'middle'
         };
       });
-      console.log(records)
+      // console.log(records)
       const data = records.map((x, i) => ({
         index: i + 1,
         code: x.code,
@@ -356,7 +368,7 @@ const Report = ({query, result}) => {
         link.click();
         window.URL.revokeObjectURL(url);
       }catch(e){
-        console.log(e)
+        // console.log(e)
         console.error(e)
       }
     
@@ -448,6 +460,7 @@ const Report = ({query, result}) => {
                   } else {
                     return (
                       <tr key={i}>
+                        {/* {console.log(x)} */}
                         <td className="blue-txt fs-12 px-5">{x.title}</td>
                         {reportView =="6- Columns Simplified View" && <td className="fs-12">{commas(x.opDebit)}</td> }
                         {reportView =="6- Columns Simplified View" && <td className="fs-12">{commas(x.opCredit)}</td>}

@@ -444,7 +444,7 @@ const Upload_CoA = () => {
     }
 
     const handleOpeningBalances = async (data, fileInfo) => {
-        //console.log(data)
+        console.log(data)
         console.log(fileInfo)
         let currency = "PKR"
         if(fileInfo.name.includes("USD")){
@@ -453,10 +453,16 @@ const Upload_CoA = () => {
         if(fileInfo.name.includes("Euro")){
             currency = "EUR"
         }
+        if(fileInfo.name.includes("GPB")){
+            currency = "GBP"
+        }
+        if(fileInfo.name.includes("CHF")){
+            currency = "CHF"
+        }
         console.log(currency)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
-                id: 1
+                id: Cookies.get("companyId")
             }
         })
         let accountsData = accounts.data.result
@@ -491,21 +497,21 @@ const Upload_CoA = () => {
             if(x.credit){
                 numberString = typeof x.credit === 'string' ? x.credit : x.credit.toString();
                 parsedNumber = numberString?parseFloat(numberString.replace(/,/g, '')):0.0;
-
+                // console.log(parsedNumber)
             }
             let numberString1
             let parsedNumber1
             if(x.debit){
                 numberString1 = typeof x.debit === 'string' ? x.debit : x.debit.toString();
                 parsedNumber1 = numberString1?parseFloat(numberString1.replace(/,/g, '')):0.0;
-
+                // console.log(parsedNumber1)
             }
 
             let Voucher_Heads = [];
 
             if (parsedNumber) {
                 Voucher_Heads.push({
-                    defaultAmount: "-",
+                    defaultAmount: parsedNumber,
                     amount: parsedNumber,
                     type: "credit",
                     narration: "Opening Balance",
@@ -516,13 +522,16 @@ const Upload_CoA = () => {
 
             if (parsedNumber1) {
                 Voucher_Heads.push({
-                    defaultAmount: "-",
+                    defaultAmount: parsedNumber1,
                     amount: parsedNumber1,
                     type: "debit",
                     narration: "Opening Balance",
                     settlement: "",
                     ChildAccountId: x.ChildAccountId
                 });
+            }
+            if(!parsedNumber && !parsedNumber1){
+                console.log("No value", partyname)
             }
             let voucher = {
                 CompanyId:Cookies.get("companyId"),
@@ -540,12 +549,12 @@ const Upload_CoA = () => {
             !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
             if(matched){
                 let result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
-                console.log(result)
-                result.data.status == "success"?null:failed.push(result.data.result)
+                // console.log(result)
+                // result.data.status == "success"?null:failed.push(result.data.result)
             }
             matched?couint++:null
         }
-        console.log(failed)
+        // console.log(failed)
         console.log(balances)
 
     }
@@ -1071,6 +1080,9 @@ const Upload_CoA = () => {
         let settlementVoucher = []
         let creditNote = []
         let debitNote = []
+        let noParty = []
+        const client = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_CLIENTS)
+        const vendor = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_VENDORS)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
                 id: Cookies.get("companyId")
@@ -1078,11 +1090,17 @@ const Upload_CoA = () => {
         })
         console.log(accounts.data.result)
         let accountsData = accounts.data.result
+        let clientData = client.data.result
+        let vendorData = vendor.data.result
+        console.log("Client Data:", clientData)
+        console.log("Vendor Data:",vendorData)
         let partyid = ""
         let partyname = ""
         let accountType = ""
         let matched = false
+        let i = 0
         for(let x of data){
+            matched = false
             if(x.exchangerate == 0){
                 x.exchangerate = 1
             }
@@ -1124,27 +1142,61 @@ const Upload_CoA = () => {
                     console.log(x)
                 }
             }
-            accountsData.forEach((y)=>{
-                y.Parent_Accounts.forEach((z)=>{
-                    z.Child_Accounts.forEach((a)=>{
-                        if(x.accountname){
-                            if(a.title == x.accountname.trim()){
-                                x.partyId = a.id
-                                x.partyName = a.title
-                                x.accountType = a.subCategory
-                                matched = true      
+            clientData.forEach((a)=>{
+                if(x.accountname){
+                    if(x.accountname.includes(a.name.trim())){
+                        // x.partyId = a.id
+                        // x.partyName = a.name
+                        x.accountType = "client"
+                        // matched = true
+                        console.log("Found in Clients", a.name, i)
+                    }
+                }
+            })
+            if(!matched){
+                vendorData.forEach((a)=>{
+                    if(x.accountname){
+                        if(x.accountname.includes(a.name.trim())){
+                            // x.partyId = a.id
+                            // x.partyName = a.name
+                            x.accountType = "vendor"
+                            // matched = true
+                            if(a.types.includes("Agent")){
+                                x.accountType = "agent"
                             }
-                            if(x.accountname.trim() == "ROYAL AIR MARACO" && a.title == "ROYAL AIR MARACO"){
-                                x.partyId = a.id
-                                x.partyName = a.title
-                                x.accountType = a.subCategory
-                                matched = true
-                            }
+                            console.log("Found in Vendors", a.name, i)
                         }
+                    }
+                })
+            }
+            if(!matched){
+                console.log("Checking in Accounts")
+                accountsData.forEach((y)=>{
+                    y.Parent_Accounts.forEach((z)=>{
+                        z.Child_Accounts.forEach((a)=>{
+                            if(x.accountname){
+                                if(a.title == x.accountname.trim()){
+                                    x.partyId = a.id
+                                    x.partyName = a.title
+                                    if(!x.accountType){
+                                        x.accountType = a.subCategory
+                                    }
+                                    matched = true      
+                                }
+                                if(x.accountname.trim() == "ROYAL AIR MARACO" && a.title == "ROYAL AIR MARACO"){
+                                    x.partyId = a.id
+                                    x.partyName = a.title
+                                    if(!x.accountType){
+                                        x.accountType = a.subCategory
+                                    }
+                                    matched = true
+                                }
+                            }
+                        })
                     })
                 })
-            })
-            !matched?console.log("Unmotched>>>", x):null
+            }
+            !matched?console.log("Unmatched>>>", x):null
             let pushed = false
             if(x.voucher_type){
 
@@ -1219,7 +1271,7 @@ const Upload_CoA = () => {
             if(!pushed){
                 misc.push(x)
             }
-
+            i++
         }
         setStatus("Sorted, creating Vouchers...")
 
@@ -1257,13 +1309,8 @@ const Upload_CoA = () => {
         let count = 0
         for(let x of toBeUploaded){
             if(!x.partyName){
-                console.log("No Party>>>>>",x)
-            }
-            if(x.partyId == '21267'){
-                console.log("Party>>>>>",x.partyName)
-                bank += x.debit
-                bank -= x.credit
-
+                // console.log("No Party>>>>>",x)
+                noParty.push(x)
             }
             let Voucher_Heads = []
             let a ={}
@@ -1309,7 +1356,7 @@ const Upload_CoA = () => {
             vouchers.push(voucher)
         }
 
-        // console.log("bank",bank)
+        console.log("No Party:",noParty)
 
         const uniqueVouchers = vouchers.filter((voucher, index, self) =>
             index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)

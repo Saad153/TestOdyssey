@@ -23,7 +23,7 @@ import Cookies from "js-cookie";
 
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 const PaymentsReceipt = ({ id, voucherData, q }) => {
-  console.log("Query: ", q)
+  // console.log("Query: ", q)
   const dispatch = useDispatch();
   const state = useSelector((state) => state.paymentReciept);
 
@@ -183,9 +183,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     console.log("<><><", x);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: x.partyId }))
+    dispatch(setField({ field: 'selectedAccount', value: x.partyId.toString() }))
     dispatch(setField({ field: 'currency', value: x.currency }))
-    dispatch(setField({ field: 'date', value: moment(x.x.data) }))
+    dispatch(setField({ field: 'date', value: x.x.data }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
     dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
     dispatch(setField({ field: 'exRate', value: x.x.exRate }))
@@ -252,7 +252,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     }
   }, [q])
 
-  console.log("State>", state)
+  // console.log("State>", state)
 
   return (
     <div className='base-page-layout'>
@@ -359,7 +359,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           value={state.selectedAccount}
           options={state.accounts.map((account) => ({
             label: `(${account.code}) ${account.name}`,
-            value: account.id,
+            value: account.Client_Associations?account.Client_Associations[0].ChildAccountId:account?.Vendor_Associations[0]?.ChildAccountId,
           }))}
           filterOption={(input, option) =>
             option?.label.toLowerCase().includes(input.toLowerCase())

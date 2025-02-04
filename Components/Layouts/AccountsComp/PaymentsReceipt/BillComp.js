@@ -165,14 +165,14 @@ const BillComp = ({back, companyId, state, dispatch}) => {
 
   const submitTransaction = async () => {
     try{
-        // console.log(state.invoices)
+        // console.log(state)
         await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
           transactions: state.transactions,
           invoices: state.invoices,
           gainLoss: state.gainLossAmount,
           totalReceiving: state.totalReceivable,
           partyId: state.selectedAccount,
-          partyName: state.accounts.find((x)=>x.id==state.selectedAccount).name,
+          partyName: state.type=="client"?state.accounts.find((x) => x.Client_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A":state.accounts.find((x) => x.Vendor_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A",
           partyType: state.type,
           type: state.onAccount,
           transactionMode: state.transactionMode,
@@ -192,12 +192,12 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         }).then((x) => {
           x.data.status=="success"?back():null
           x.data.status=="success"?openNotification('Success', `Transaction Saved`, 'green'):openNotification('Error', `Error saving transaction`, 'red')
+          dispatch(setField({ field: 'modal', value: false }))
         })
 
       }catch(e){
         console.error(e)
       }
-      dispatch(setField({ field: 'modal', value: false }))
   }
 
   useEffect(()=>{
@@ -241,7 +241,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         temp.push({
           partyId: state.selectedAccount,
           accountType: "partyAccount",
-          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          accountName: state.type=="client"?state.accounts.find((x) => x.Client_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A":state.accounts.find((x) => x.Vendor_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A",
           debit: state.totalReceivable<0?state.totalReceivable*-1:0,
           credit: state.totalReceivable>0?state.totalReceivable:0,
           type: state.totalReceivable<0?'debit':'credit'
@@ -744,7 +744,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                       color: calculateColor(invoice),
                     }}
                   >
-                    {console.log("Invoice>>>",invoice)}
+                    {/* {console.log("Invoice>>>",invoice)} */}
                     {invoice.payType=="Recievable"?(state.edit==false?
                     commas(invoice.total - invoice.recieved - invoice.receiving):
                     invoice.receiving==0?
@@ -798,7 +798,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             </tr>
           </thead>
           <tbody>
-            {console.log(state.transactions)}
+            {/* {console.log(state.transactions)} */}
             {state.transactions.map((x)=>(
               <tr key={x.partyId} style={{borderBottom: '1px solid #d7d7d7', padding: '10px 0px'}}>
                 <td style={{width: '2%', paddingLeft: '5px', borderLeft: '1px solid #d7d7d7', padding: '10px 10px'}}>{x.accountType}</td>

@@ -995,12 +995,12 @@ const JobBalancingReport = ({ result, query }) => {
         return <>{params.data.payType == "Payble" ? commas(params.value) : "0"}</>;
       }
     },
-    {
-      headerName: 'Paid/Rcvd', field: 'paid', filter: true,
-      cellRenderer: params => {
-        return <>{commas(params.data.payType == "Payble" ? params.data.paid : params.data.recieved)}</>;
-      }
-    },
+    // {
+    //   headerName: 'Paid/Rcvd', field: 'paid', filter: true,
+    //   cellRenderer: params => {
+    //     return <>{commas(params.data.payType == "Payble" ? params.data.paid : params.data.recieved)}</>;
+    //   }
+    // },
     {
       headerName: 'Paid/Rcvd', field: 'recieved', filter: true,
       cellRenderer: params => {
