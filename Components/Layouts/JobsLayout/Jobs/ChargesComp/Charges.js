@@ -206,7 +206,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       }}>Auto Invoice</div>
       <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
         if(generate){
-          let temp = chargeList.filter((x)=>x.partyType=="vendor"&&x.check)
+          let temp = chargeList.filter((x)=>(x.partyType=="vendor"||x.partyType=="vendors")&&x.check)
           console.log(temp.length)
           if(temp.length==0){
             openNotification('Error', `No Vendor Selected!`, 'red');

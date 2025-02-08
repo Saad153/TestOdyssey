@@ -9,7 +9,7 @@ import ExcelJS from "exceljs";
 const Report = ({query, result}) => {
   const reportView = query.reportType;
   const option = query.options;
-  // console.log(option)
+  // console.log(result)
     const [ records, setRecords ] = useState([]);
     const [ total, setTotal ] = useState({
       opDebit:0,
@@ -66,7 +66,7 @@ const Report = ({query, result}) => {
         clCredit:0,
       }
       data.forEach((x)=>{
-        console.log("Query: ",query)
+        // console.log("Query: ",query)
         const createdAtDate = moment(x.createdAt);
         if (createdAtDate.isBetween(moment(query.from), moment(query.to), "day", "[]") || createdAtDate.isSame(moment(query.to), "day") ){
           if(query.currency=="PKR"){
@@ -113,7 +113,7 @@ const Report = ({query, result}) => {
             });
             let type = "Non-EX"
             x.Child_Accounts.forEach((y)=>{
-              console.log("Accounts", y)
+              // console.log("Accounts", y)
               y.title.includes("EX-CHANGE RATE GAIN / LOSS")?type = "EX":null
               temp.push({
                 title:y.title,

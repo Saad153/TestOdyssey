@@ -516,7 +516,8 @@ const Upload_CoA = () => {
                     type: "credit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: x.ChildAccountId
+                    ChildAccountId: x.ChildAccountId,
+                    createdAt: "2024-06-30 16:17:04.924+05"
                 });
             }
 
@@ -527,7 +528,8 @@ const Upload_CoA = () => {
                     type: "debit",
                     narration: "Opening Balance",
                     settlement: "",
-                    ChildAccountId: x.ChildAccountId
+                    ChildAccountId: x.ChildAccountId,
+                    createdAt: "2024-06-30 16:17:04.924+05"
                 });
             }
             if(!parsedNumber && !parsedNumber1){

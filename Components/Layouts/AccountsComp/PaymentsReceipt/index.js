@@ -246,7 +246,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       console.log(q.partyType)
       dispatch(setField({ field: 'type', value: q.partyType }));
       dispatch(setField({ field: 'payType', value: q.payType }));
-      dispatch(setField({ field: 'selectedAccount', value: parseInt(q.partyId) }));
+      dispatch(setField({ field: 'selectedAccount', value: q.partyId.toString() }));
     }else{
       console.log("No query")
     }
@@ -357,7 +357,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           style={{ width: '90%' }}
           placeholder={`Select ${state.type.toUpperCase()}`}
           value={state.selectedAccount}
-          options={state.accounts.map((account) => ({
+          options={state.accounts?.map((account) => ({
             label: `(${account.code}) ${account.name}`,
             value: account.Client_Associations?account.Client_Associations[0].ChildAccountId:account?.Vendor_Associations[0]?.ChildAccountId,
           }))}
