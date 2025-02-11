@@ -28,7 +28,7 @@ const Voucher = ({ id }) => {
       dispatch(setField({ field: 'voucher_id', value: x.data.result.voucher_Id }))
       dispatch(setField({ field: 'voucher_No', value: x.data.result.voucher_No }))
       x.data.result.chequeDate?dispatch(setField({ field: 'chequeDate', value: moment(x.data.result.chequeDate.toString()) })):null
-      dispatch(setField({ field: 'date', value: moment(x.data.result.createdAt.toString()) }))
+      dispatch(setField({ field: 'date', value: moment(x.data.result.createdAt?.toString()) }))
       dispatch(setField({ field: 'vType', value: x.data.result.vType }))
       setCompanyId(x.data.result.CompanyId)
       dispatch(setField({ field: 'chequeNo', value: x.data.result.chequeNo }))
@@ -84,6 +84,11 @@ const Voucher = ({ id }) => {
           ChildAccountId: undefined,
           createdAt: moment()
         })
+        let temp1 = {
+          ...state.settleVoucherHead,
+          type: Type=="debit"?"credit":"debit"
+        }
+        dispatch(setField({ field: 'settleVoucherHead', value: temp1 }))
         dispatch(setField({ field: 'Voucher_Heads', value: temp }))
       }
     }else{
@@ -116,41 +121,41 @@ const Voucher = ({ id }) => {
     }
   },[state.vType])
 
+  const fetchreceivingAccount = async () => {
+    let y = "";
+  switch (state.vType) {
+    case "BPV":
+    case "BRV":
+      y = "Bank";
+      break;
+    case "CPV":
+    case "CRV":
+      y = "Cash";
+      break;
+    case "TV":
+      y = "Bank";
+      break;
+    default:
+      y = "All"
+      break;
+  }
+    dispatch(setField({ field: 'load', value: true }))
+    try{
+      await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION_VOUCHER, {
+        headers: {
+          type: y,
+          companyid: CompanyId,
+        }
+      }).then((x) => {
+        console.log(x.data.result)
+        dispatch(setField({ field: 'settlementAccounts', value: x.data.result }))
+        dispatch(setField({ field: 'load', value: false }))
+      })
+    }catch(e){
+      console.log(e)
+    }
+  }
   useEffect(() => {
-    const fetchreceivingAccount = async () => {
-      let y = "";
-    switch (state.vType) {
-      case "BPV":
-      case "BRV":
-        y = "Bank";
-        break;
-      case "CPV":
-      case "CRV":
-        y = "Cash";
-        break;
-      case "TV":
-        y = "Bank";
-        break;
-      default:
-        y = "All"
-        break;
-    }
-      dispatch(setField({ field: 'load', value: true }))
-      try{
-        await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ACCOUNT_FOR_TRANSACTION_VOUCHER, {
-          headers: {
-            type: y,
-            companyid: CompanyId,
-          }
-        }).then((x) => {
-          console.log(x.data.result)
-          dispatch(setField({ field: 'settlementAccounts', value: x.data.result }))
-          dispatch(setField({ field: 'load', value: false }))
-        })
-      }catch(e){
-        console.log(e)
-      }
-    }
     fetchreceivingAccount()
   }, [state.vType])
 
@@ -176,11 +181,14 @@ const Voucher = ({ id }) => {
 
   const save = async () => {
     
-    console.log(state.Voucher_Heads)
+    console.log("VoucherHeads:",state.Voucher_Heads)
     console.log(state.settleVoucherHead)
     state.vType==""||state.vType==undefined?openNotification('Error', `Type not Selected`, 'red'):null
     if(state.vType!="JV"&&state.vType!="TV"){
-      state.settlementAccount==""||state.settlementAccount==undefined?openNotification('Error', `Settlement Account not Selected`, 'red'):null
+      if(state.settlementAccount==""||state.settlementAccount==undefined){
+        openNotification('Error', `Settlement Account not Selected`, 'red')
+        return
+      }
     }
     state.debitTotal==0.0||state.debitTotal==undefined?openNotification('Error', `No amount entered`, 'red'):null
     // state.creditTotal==0.0||state.debitTotal==undefined?openNotification('Error', `No amount entered`, 'red'):null
@@ -263,14 +271,16 @@ const Voucher = ({ id }) => {
         })
       })
       if(state.vType!="JV"&&state.vType!="TV"){
-        temp.push({
+        let abc = {
           ...state.settleVoucherHead,
           createdAt: state.date,
           narration: state.voucherNarration==""?narration:state.voucherNarration,
           accountType: 'payAccount',
           defaultAmount: state.settleVoucherHead.amount*state.exRate,
           ChildAccountId: state.settlementAccount.toString()
-        })
+        }
+        console.log("ABC:",abc)
+        temp.push(abc)
       }
       voucher.Voucher_Heads = temp
       console.log("Vouchers", voucher)
@@ -487,10 +497,12 @@ const Voucher = ({ id }) => {
         </Col>
         <Col md={3} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'top', alignItems: 'end'}}>
             <button disabled={state.Voucher_Heads.length==0} onClick={()=>{save()}} style={{width: '35%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Save</button>
+            <button disabled={state.Voucher_Heads.length==0} onClick={()=>{dispatch(resetState()); fetchAccounts(); fetchreceivingAccount()}} style={{marginTop: '10px', width: '35%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>New Voucher</button>
         </Col>
       </Row>
       <Col md={12} style={{marginTop: '15px'}}>
-        {/* <button onClick={()=>{
+        <button
+         disabled={state.vType!="JV"&&state.vType!="TV"} onClick={()=>{
           let temp = [...state.Voucher_Heads]
           let Type = ""
           Type = state.vType=="CPV"||state.vType=="BPV"?"debit":state.vType=="CRV"||state.vType=="BRV"?"credit":"credit"
@@ -505,7 +517,7 @@ const Voucher = ({ id }) => {
             createdAt: moment()
           })
           dispatch(setField({ field: 'Voucher_Heads', value: temp }))
-        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Add Row</button> */}
+        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px', cursor: state.vType=="JV"||state.vType=="TV"?'pointer':'not-allowed'}}>Add Row</button>
         <table style={{width: '100%'}}>
           <thead style={{backgroundColor: '#d7d7d7'}}>
             <tr>
@@ -576,11 +588,20 @@ const Voucher = ({ id }) => {
                       };
                       await dispatch(setField({ field: 'Voucher_Heads', value: updatedInvoiceList }));
                     }else{
-                      const asd = updatedInvoiceList.map((voucherHead) => ({
-                        ...voucherHead,
-                        amount: value,
-                      }));
-                      await dispatch(setField({ field: 'Voucher_Heads', value: asd }));
+                      if(state.Voucher_Heads.length<3){
+                        const asd = updatedInvoiceList.map((voucherHead) => ({
+                          ...voucherHead,
+                          amount: value,
+                        }));
+                        await dispatch(setField({ field: 'Voucher_Heads', value: asd }));
+                      }else{
+                        const asd = updatedInvoiceList.map((voucherHead, i) => ({
+                          ...voucherHead,
+                          amount: i==index?value:voucherHead.amount,
+                        }));
+                        await dispatch(setField({ field: 'Voucher_Heads', value: asd }));
+                        
+                      }
                     }
                     let total = 0.0
                     state.Voucher_Heads.forEach((x, i)=>{

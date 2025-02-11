@@ -281,7 +281,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         temp.push({
           partyId: state.selectedAccount,
           accountType: "Gain/Loss Account",
-          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          accountName: state.type=="client"?state.accounts.find((x) => x.Client_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A":state.accounts.find((x) => x.Vendor_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A",
           debit: state.gainLossAmount>0?state.gainLossAmount/state.exRate:0,
           credit: state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
           type: state.gainLossAmount>0?'debit':'credit'

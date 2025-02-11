@@ -421,10 +421,12 @@ const makeInvoice = async(list, companyId, reset, type, dispatch, state) => {
   let result1, result2;
   // console.log(tempList)
   tempList1.length>0?
+
     result1 = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_INVOICE_NEW,{
       chargeList:tempList1, companyId, type:type
     }).then(async(x)=>{
       if(x.data.status=="success"){
+        console.log("Data given to approve",x.data.result)
         approve(x.data.result)
         await delay(500)
         await getHeadsNew(state.selectedRecord.id, dispatch, reset)
