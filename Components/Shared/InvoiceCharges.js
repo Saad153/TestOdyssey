@@ -348,7 +348,7 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
     //   })
     // }
     console.log(data.resultOne)
-    if(data.resultOne.approved=="0"){
+    if(invoice.approved=="0"){
       await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/approve`,{
         id:data.resultOne.id
       })
