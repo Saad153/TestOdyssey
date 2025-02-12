@@ -48,11 +48,22 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
       const temp = [];
       result.forEach((x) => {
+        console.log("Old Vouchers::", x)
         x.invoice.forEach((y) => {
           if (y.payType === "Payble") {
-            y.receiving = x.Invoice_Transactions[0].amount;
+            // y.receiving = x.Invoice_Transactions[0].amount;
+            x.Invoice_Transactions.forEach((z) => {
+              if(z.InvoiceId == y.id){
+                y.receiving = parseFloat(z.amount)
+              }
+            })
           } else {
-            y.receiving = x.Invoice_Transactions[0].amount;
+            // y.receiving = x.Invoice_Transactions[0].amount;
+            x.Invoice_Transactions.forEach((z) => {
+              if(z.InvoiceId == y.id){
+                y.receiving = parseFloat(z.amount)
+              }
+            })
           }
         });
       });

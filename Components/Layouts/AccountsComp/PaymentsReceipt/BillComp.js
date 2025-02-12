@@ -133,9 +133,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         }
       }
     })
-    if(state.edit && temp == 0){
-      temp = total
-    }
+    // if(state.edit && temp == 0){
+    //   temp = total
+    // }
     console.log("GainLoss Amount: ", gainLoss)
     if(state.invoices.length>0){
       dispatch(setField({ field: 'totalReceivable', value: temp }))
@@ -295,7 +295,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         temp.push({
           partyId: state.selectedAccount,
           accountType: "partyAccount",
-          accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
+          accountName: state.type=="client"?state.accounts.find((x) => x.Client_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A":state.accounts.find((x) => x.Vendor_Associations[0].ChildAccountId === state.selectedAccount)?.name || "N/A",
           debit: state.payType!="Recievable"?state.totalReceivable:0,
           credit: state.payType=="Recievable"?state.totalReceivable:0,
           type: state.payType!="Recievable"?'debit':'credit'
