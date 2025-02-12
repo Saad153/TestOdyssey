@@ -39,6 +39,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       });
 
       const result = response.data.result;
+      console.log("Old Vouchers", result)
       if (result.length === 0) {
         console.log("No more vouchers to fetch.");
         setLoading(false);
@@ -49,9 +50,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       result.forEach((x) => {
         x.invoice.forEach((y) => {
           if (y.payType === "Payble") {
-            y.receiving = y.paid;
+            y.receiving = x.Invoice_Transactions[0].amount;
           } else {
-            y.receiving = y.recieved;
+            y.receiving = x.Invoice_Transactions[0].amount;
           }
         });
       });
@@ -78,6 +79,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       }
 
       if (temp.length > 0) {
+        console.log("Old Vouchers", temp[0])
         dispatch(setField({ field: 'oldVouchers', value: temp[0] }));
       }
 
@@ -91,43 +93,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     }
   };
 
-  // const fetchOldVouchers = async () => {
-  //   console.log("Getting Old Vouchers")
-  //   await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OLD_PAY_REC_VOUCHERS, {
-  //     headers: { companyid: Cookies.get('companyId'), page: 1 }
-  //   }).then((x) => {
-  //     console.log(x.data.result)
-  //     const temp = [];
-  //     x.data.result.forEach((x)=>{
-  //       x.invoice.forEach((y)=>{
-  //         if(y.payType=="Payble"){
-  //           y.receiving = y.paid
-  //         }else{
-  //           y.receiving = y.recieved
-  //         }
-  //       })
-  //     })
-  //     x.data.result.length>0?temp.push(x.data.result.map((x) => {
-  //       console.log(x)
-  //       return {
-  //         id: x.id,
-  //         voucherNo: x.voucher_Id,
-  //         name: x.partyName,
-  //         party: x.partyType,
-  //         type: x.vType,
-  //         data: moment(x.createdAt).format('DD-MM-YYYY'),
-  //         currency: x.currency,
-  //         amount: x.Voucher_Heads.find((y) => y.accountType=='partyAccount'||y.accountType=='General')?x.Voucher_Heads.find((y) => y.accountType=='partyAccount'||y.accountType=='General').amount:0.0,
-  //         partyId: x.partyId,
-  //         x: x
-  //       };
-  //     })):null
-  //     console.log("Temp>",temp)
-
-  //     temp.length>0?dispatch(setField({ field: 'oldVouchers', value: temp[0] })):null
-  //   })
-      
-  //   }
     const [first, setFirst] = useState(false)
   useEffect(() => {
     if(state.oldVouchers.length == 0 && !first){
@@ -180,10 +145,10 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   }
 
   const openOldVouchers = (x) => {
-    console.log("<><><", x);
+    console.log("Selected Account>>", x.partyId);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: x.partyId.toString() }))
+    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
     dispatch(setField({ field: 'currency', value: x.currency }))
     dispatch(setField({ field: 'date', value: x.x.data }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
@@ -370,6 +335,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               fetchOldVouchers();
               fetchAccounts();
             }else{
+              console.log("Selected Account:",e)
               dispatch(setField({ field: 'selectedAccount', value: e }))
             }
           }}

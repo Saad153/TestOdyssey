@@ -31,9 +31,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           // edit: false
         }
       }).then((x) => {
-        x.data.result.forEach((y)=>{
-
-        })
+        console.log("Invoices", x.data.result)
         let temp = []
         !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
         temp = x.data.result
@@ -121,12 +119,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
       x.payType=="Recievable"?
       temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp:
       temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp
-      // temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp+parseFloat(x.recieved):
-      // temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp-parseFloat(x.paid)
       if(x.currency!="PKR"){
         console.log("X:",x)
         const receiving = x.payType=="Recievable"?parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.recieved):parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.paid)
-        // parseFloat(x.receiving)!=0?receiving = parseFloat(x.receiving) : parseFloat(x.recieved)!=0?parseFloat(x.recieved):0;
         console.log(parseFloat(x.receiving), parseFloat(x.recieved), receiving)
         const exRate = parseFloat(x.ex_rate) || 0;
         const stateRate = parseFloat(state.exRate) || 0;
@@ -145,11 +140,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     if(state.invoices.length>0){
       dispatch(setField({ field: 'totalReceivable', value: temp }))
       dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
-      if(!state.edit || state.editing){
-      }
-      // if(!state.edit){
-      //   dispatch(setField({ field: 'payType', value: temp>=0?"Recievable":"Payble" }))
-      // }
+      
     }
   },[state.invoices, state.exRate])
 
@@ -270,14 +261,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           debit: state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
           type: state.gainLossAmount<0?'debit':'credit'
         })
-        // temp.push({
-        //   partyId: state.gainLossAccount,
-        //   accountType: "Gain/Loss Account",
-        //   accountName: state.adjustAccounts.find((x) => x.id === state.gainLossAccount)?.title || "N/A",
-        //   debit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        //   credit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        //   type: state.totalReceivable>0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
-        // })
         temp.push({
           partyId: state.selectedAccount,
           accountType: "Gain/Loss Account",
@@ -286,26 +269,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           credit: state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
           type: state.gainLossAmount>0?'debit':'credit'
         })
-        // temp.push({
-        //   partyId: state.selectedAccount,
-        //   accountType: "Gain/Loss Account",
-        //   accountName: state.accounts.find((x) => x.id === state.selectedAccount)?.name || "N/A",
-        //   debit: state.totalReceivable<0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        //   credit: state.totalReceivable>0?state.gainLossAmount>0?state.gainLossAmount/state.exRate:0:state.gainLossAmount<0?(state.gainLossAmount*-1)/state.exRate:0,
-        //   type: state.totalReceivable<0?state.gainLossAmount>0?'debit':'credit':state.gainLossAmount<0?'debit':'credit'
-        // })
       }
-      // if(x.accountType=="Gain/Loss Account"){
-      //   await Voucher_Heads.create({
-      //     amount: amount,
-      //     defaultAmount: x.currency=="PKR"?amount:amount*req.body.exRate,
-      //     type: x.type=="debit"?"credit":"debit",
-      //     accountType: x.accounType,
-      //     VoucherId: vID,
-      //     ChildAccountId: account.ChildAccountId,
-      //     narration: req.body.narration==""?narration:req.body.narration
-      //   })
-      // }
       if(state.bankChargesAmount!=0){
         temp.push({
           partyId: state.bankChargesAccount,
@@ -315,14 +279,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           credit: 0,
           type: 'debit'
         })
-        // temp.push({
-        //   partyId: state.bankChargesAccount,
-        //   accountType: state.transactionMode=="Cash"?"Cash Charges Account":state.transactionMode=="Cash"?"Bank Charges Account":"Adjust Charges Account",
-        //   accountName: state.adjustAccounts.find((x) => x.id === state.bankChargesAccount)?.title || "N/A",
-        //   debit: state.totalReceivable<0?state.bankChargesAmount:0,
-        //   credit: state.totalReceivable>0?state.bankChargesAmount:0,
-        //   type: state.totalReceivable<0?'debit':'credit'
-        // })
       }
       if(state.taxAmount!=0){
         temp.push({
@@ -333,14 +289,6 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           credit: 0,
           type: 'debit'
         })
-        // temp.push({
-        //   partyId: state.taxAccount,
-        //   accountType: "Tax Account",
-        //   accountName: state.adjustAccounts.find((x) => x.id === state.taxAccount)?.title || "N/A",
-        //   debit: state.totalReceivable>0?state.taxAmount:0,
-        //   credit: state.totalReceivable<0?state.taxAmount:0,
-        //   type: state.totalReceivable>0?'debit':'credit'
-        // })
       }
     }else{
       if(state.totalReceivable!=0){
@@ -747,14 +695,10 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                     {/* {console.log("Invoice>>>",invoice)} */}
                     {invoice.payType=="Recievable"?(state.edit==false?
                     commas(invoice.total - invoice.recieved - invoice.receiving):
-                    invoice.receiving==0?
-                    commas(invoice.total - invoice.recieved):
-                    commas(invoice.total - invoice.receiving)):
+                    commas(invoice.total - invoice.recieved)):
                     (state.edit==false?
                       commas(invoice.total - invoice.paid - invoice.receiving):
-                      invoice.receiving==0?
-                      commas(invoice.total - invoice.paid):
-                      commas(invoice.total - invoice.receiving))
+                      commas(invoice.total - invoice.paid))
                     }
                   </td>
                   <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>
