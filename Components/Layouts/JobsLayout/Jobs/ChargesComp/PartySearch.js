@@ -6,7 +6,7 @@ import { CheckCircleOutlined } from "@ant-design/icons"
 
 const PartySearch = ({state, dispatch, reset, useWatch, control}) => {
 
-  const [partyType, setPartyType] = useState('vendors');
+  const [partyType, setPartyType] = useState('vendor');
   const [searchTerm, setSearchTerm] = useState('');
   const chargeList = useWatch({ control, name: 'chargeList' });
   

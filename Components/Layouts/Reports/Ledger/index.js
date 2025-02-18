@@ -1,24 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Form } from "react-bootstrap";
 import moment from "moment";
-import { Radio, Select } from "antd";
+import { DatePicker, Radio, Select } from "antd";
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import Router from 'next/router';
 import { setFilterValues } from '../../../../redux/filters/filterSlice';
-import { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount, setName } from '../../../../redux/ledger/ledgerSlice';
+import { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount, setName, setFirst } from '../../../../redux/ledger/ledgerSlice';
+import Cookies from 'js-cookie';
 
 const Ledger = () => {
 
   const dispatch = useDispatch();
 
   const filterValues = useSelector(state => state.filterValues);
-  const { from, to, company, currency, records,account, name } = useSelector((state) => state.ledger);
+  const { from, to, company, currency, records,account, name, first } = useSelector((state) => state.ledger);
 
   const filters = filterValues.find(page => page.pageName === "ledgerReport");
   const values = filters ? filters.values : null;
 
+  useEffect(()=>{
+    if(first){
+      // alert("UseEffect Ran")
+      dispatch(setCompany(parseInt(Cookies.get("companyId"))))
+      dispatch(setFirst(false))
+    }
+  },[])
 
   const getAccounts = async () => {
    
@@ -64,8 +72,6 @@ const Ledger = () => {
 
   useEffect(() => { if (company != "") 
     getAccounts();
- 
-
    }, [company,account]);
 
 
@@ -91,11 +97,13 @@ const Ledger = () => {
       <Col md={12}><hr /></Col>
       <Col md={3} className="mt-3">
         <b>From</b>
-        <Form.Control type={"date"} size="sm" value={from} onChange={(e) => dispatch(setFrom(e.target.value))} />
+        {/* <Form.Control type={"date"} size="sm" value={from} onChange={(e) => dispatch(setFrom(e.target.value))} /> */}
+          <DatePicker allowClear={false} format="DD-MM-YYYY" value={from} onChange={(e)=>{dispatch(setFrom(e))}}/>
       </Col>
       <Col md={3} className="mt-3">
         <b>To</b>
-        <Form.Control type={"date"} size="sm" value={to} onChange={(e) => dispatch(setTo(e.target.value))} />
+        {/* <Form.Control type={"date"} size="sm" value={to} onChange={(e) => dispatch(setTo(e.target.value))} /> */}
+        <DatePicker allowClear={false} format="DD-MM-YYYY" value={to} onChange={(e)=>{dispatch(setTo(e))}}/>
       </Col>
       <Col md={6}></Col>
       <Col md={3} className="my-3">
@@ -140,8 +148,7 @@ const Ledger = () => {
         <button className='btn-custom mt-3' onClick={() => {
           // dispatch(setFilterValues({ pageName: "ledgerReport", values: stateValues }));
           if (account != "" && account != null) {
-         
-            Router.push({ pathname: `/reports/ledgerReport/${account}/`, query: { from: from, to: to, name: name, company: company, currency: currency } });
+            Router.push({ pathname: `/reports/ledgerReport/${account}/`, query: { from: moment(from).format("DD-MM-YYYY"), to: moment(to).format("DD-MM-YYYY"), name: name, company: company, currency: currency } });
             dispatch(incrementTab({
               "label": "Ledger Report",
               "key": "5-7",

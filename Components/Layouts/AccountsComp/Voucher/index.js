@@ -457,6 +457,11 @@ const Voucher = ({ id }) => {
                 <Select.Option value="PKR">PKR</Select.Option>
                 <Select.Option value="USD">USD</Select.Option>
                 <Select.Option value="EUR">EUR</Select.Option>
+                <Select.Option value="GBP">GBP</Select.Option>
+                <Select.Option value="AED">AED</Select.Option>
+                <Select.Option value="OMR">OMR</Select.Option>
+                <Select.Option value="BDT">BDT</Select.Option>
+                <Select.Option value="CHF">CHF</Select.Option>
               </Select>
             </Col>
             <Col md={3}>
@@ -524,7 +529,7 @@ const Voucher = ({ id }) => {
               <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Account</th>
               <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Type</th>
               <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Amount</th>
-              {/* <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Amount</th> */}
+              <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Amount (LC)</th>
               <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}>Narration</th>
               <th style={{paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', border: '1px solid grey'}}></th>
             </tr>
@@ -576,7 +581,7 @@ const Voucher = ({ id }) => {
                     <Select.Option value="credit">Credit</Select.Option>
                   </Select>
                 </td>
-                <td style={{ width: '15%', paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', paddingRight: '10px', border: '1px solid grey'}}>
+                <td style={{ width: '10%', paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', paddingRight: '10px', border: '1px solid grey'}}>
                   <InputNumber value={item.amount} onChange={async (e) => {
                     e<0?e = e *-1:null
                     const value = e || 0; 
@@ -625,9 +630,9 @@ const Voucher = ({ id }) => {
                   }
                   style={{width: '100%'}}></InputNumber>
                 </td>
-                {/* <td style={{ width: '15%', paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', paddingRight: '10px', border: '1px solid grey'}}>
-                  <InputNumber value={item.defaultAmount} onChange={(e)=>{dispatch(setField({ field: `Voucher_Heads.${index}.defaultAmount`, value: e }))}} style={{width: '100%'}}></InputNumber>
-                </td> */}
+                <td style={{ width: '10%', paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', paddingRight: '10px', border: '1px solid grey', fontSize: '14px'}}>
+                  {commas(item.amount*state.exRate)}
+                </td>
                 <td style={{ paddingTop: '5px', paddingBottom: '5px', paddingLeft: '10px', paddingRight: '10px', border: '1px solid grey'}}>
                   <Input value={item.narration} onChange={(e)=>{
                     // const updatedInvoiceList = [...state.Voucher_Heads]; 

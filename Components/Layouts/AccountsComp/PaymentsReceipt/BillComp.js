@@ -545,7 +545,11 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             parser={(value) =>
               value?.replace(/,/g, '') // Remove commas for the actual value
             }
-            style={{width: '100%'}} value={state.taxAmount} onChange={(e) => dispatch(setField({ field: 'taxAmount', value: e }))}></InputNumber>
+            style={{width: '100%'}} value={state.taxAmount} onChange={(e) => {
+              // e<0?e = e *-1:null
+              const value = e || 0;
+              dispatch(setField({ field: 'taxAmount', value: value }))
+            }}></InputNumber>
           </Col>
           <Col md={1} style={{ paddingTop: '5%'}}>
             <Checkbox checked={state.percent} onChange={(e) => {dispatch(setField({ field: 'percent', value: e.target.checked })); dispatch(setField({ field: 'taxPercent', value: 0 })); dispatch(setField({ field: 'taxAmount', value: 0 }))}}>%</Checkbox>
@@ -695,10 +699,15 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                     {/* {console.log("Invoice>>>",invoice)} */}
                     {invoice.payType=="Recievable"?(state.edit==false?
                     commas(invoice.total - invoice.recieved - invoice.receiving):
-                    commas(invoice.total - invoice.recieved)):
+                    invoice.receiving==0?
+                    commas(invoice.total - invoice.recieved):
+                    commas(invoice.total - invoice.receiving)):
                     (state.edit==false?
                       commas(invoice.total - invoice.paid - invoice.receiving):
-                      commas(invoice.total - invoice.paid))
+                      invoice.receiving==0?
+                      commas(invoice.total - invoice.paid):
+                      commas(invoice.total - invoice.receiving)
+                    )
                     }
                   </td>
                   <td style={{width: '3%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>

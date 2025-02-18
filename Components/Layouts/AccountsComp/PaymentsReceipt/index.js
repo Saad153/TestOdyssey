@@ -159,9 +159,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     console.log("Selected Account>>", x.partyId);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
-    dispatch(setField({ field: 'selectedAccount', value: parseInt(x.partyId) }))
+    dispatch(setField({ field: 'selectedAccount', value: x.partyId.toString() }))
     dispatch(setField({ field: 'currency', value: x.currency }))
-    dispatch(setField({ field: 'date', value: x.x.data }))
+    dispatch(setField({ field: 'date', value: moment(x.x.data) }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
     dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
     dispatch(setField({ field: 'exRate', value: x.x.exRate }))
@@ -304,7 +304,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                     const map = new Map();
                     temp2.forEach(item => map.set(item.id, item));
                     temp.forEach(item => {
-                      item.receiving = 0.0;
+                      console.log(item)
+                      item.receiving = item.recieved;
                       map.set(item.id, item);
                     });
 
@@ -334,7 +335,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
           placeholder={`Select ${state.type.toUpperCase()}`}
           value={state.selectedAccount}
           options={state.accounts?.map((account) => ({
-            label: `(${account.code}) ${account.name}`,
+            label: `(${account.Client_Associations?account.Client_Associations[0].Child_Account.code:account.Vendor_Associations?account.Vendor_Associations[0].Child_Account.code:account.code}) ${account.name}`,
             value: account.Client_Associations?account.Client_Associations[0].ChildAccountId:account?.Vendor_Associations[0]?.ChildAccountId,
           }))}
           filterOption={(input, option) =>

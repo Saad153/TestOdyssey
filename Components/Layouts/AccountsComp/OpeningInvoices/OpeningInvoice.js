@@ -7,6 +7,7 @@ import axios from 'axios'
 import Router from 'next/router'
 import openNotification from "/Components/Shared/Notification";
 import Cookies from 'js-cookie'
+const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
 const OpeningInvoice = (id) => {
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ const OpeningInvoice = (id) => {
   console.log("ID>>",id.id.id)
 
   const fetchAccounts = async () => {
+    console.log(state.accountType)
     const accounts = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/misc/parties/getPartiesbyType`,
       { headers:{companyId: Cookies.get('companyId'), type: state.accountType} }
     ).then((x) => {
@@ -27,6 +29,7 @@ const OpeningInvoice = (id) => {
         companyid: Cookies.get('companyId'),
       }
     }).then((x) => {
+      console.log("Accounts:", x)
       dispatch(setField({ field: 'creditAccounts', value: x.data.result }));
     })
   }
@@ -69,7 +72,7 @@ const OpeningInvoice = (id) => {
           // dispatch(setField({ field: 'account', value: x.ChildAccountId }));
         }
       })
-      dispatch(setField({ field: 'account', value: parseInt(result.data.result.result.party_Id) }));
+      dispatch(setField({ field: 'account', value: result.data.result.result.party_Id }));
       // dispatch(setField({ field: 'creditAccount', value: parseInt(result.data.result.result.party_Id) }));
       dispatch(setField({ field: 'total', value: parseInt(result.data.result.result.total) }));
       
@@ -100,7 +103,7 @@ const OpeningInvoice = (id) => {
     }else{
       const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/openingInvoice`, {
         party_Id: state.account,
-        party_Name: state.accounts.find((x) => x.id == state.account).name,
+        party_Name: state.accounts[0].Client_Associations?state.accounts.find((x) => x.Client_Associations[0].ChildAccountId === state.account)?.name || "N/A":state.accounts.find((x) => x.Vendor_Associations[0].ChildAccountId === state.account)?.name || "N/A",
         type: state.type,
         date: state.createdAt,
         amount: state.total,
@@ -288,25 +291,29 @@ const OpeningInvoice = (id) => {
             <div style={{width:"30%"}}>
               Account
             </div>
+            {console.log("Accounts>>>", state.accounts)}
             <Select
               allowClear
               showSearch
               style={{ width: '65%' }}
-              placeholder={`Select Account`}
+              placeholder="Select Account"
               value={state.account}
               options={state.accounts.map((account) => ({
                 label: `(${account.code}) ${account.name}`,
-                value: parseInt(account.id),
+                value: account.Client_Associations?account.Client_Associations[0].ChildAccountId:account?.Vendor_Associations[0]?.ChildAccountId,
               }))}
               filterOption={(input, option) =>
-                option?.label.toLowerCase().includes(input.toLowerCase())
+                option?.label?.toLowerCase().includes(input.toLowerCase())
               }
-              onChange={(e) => {dispatch(setField({ field: 'account', value: e }))}}
+              onChange={(e) => {
+                console.log("Selected Value:", e)
+                dispatch(setField({ field: 'account', value: e }))
+              }}
             />
           </Row>
         </Col>
-        <Col style={{ padding: 0}} md={2}>
-          <Row className='' style={{width:"100%", margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
+        <Col style={{ padding: 0}} md={4}>
+          <Row style={{width:"50%", margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'center'}}>
             <div style={{width:"35%"}}>
               Amount
             </div>
@@ -321,6 +328,10 @@ const OpeningInvoice = (id) => {
               }
               onChange={(e) => dispatch(setField({ field: 'total', value: e }))}
             />
+          </Row>
+          <Row style={{width:"50%", margin: 0, display: 'flex', flexDirection: 'row', alignItems: 'center', paddingTop:'10px'}}>
+            {state.currency!="PKR"&&
+              <div>Local Amount: {commas(state.total*state.ex_rate)}</div>}
           </Row>
         </Col>
       </Row>

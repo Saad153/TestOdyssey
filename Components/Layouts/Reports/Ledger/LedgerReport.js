@@ -19,12 +19,15 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
       }
       let openingBalance = 0.0, closingBalance = 0.0, tempArray = [], prevBalance = 0, isDone = false, finalClosing = 0;
       result.forEach((y) => {
+        console.log("TO:",y)
         let exRate = parseFloat(y["Voucher.exRate"])>0?parseFloat(y["Voucher.exRate"]):1;
+        console.log(moment(from, "DD-MM-YYYY"))
         const createdAtDate = moment(y.createdAt);
         if (
-          createdAtDate.isBetween(moment(from),moment(to),"day","[]") ||
-          createdAtDate.isSame(moment(to),"day")
+          createdAtDate.isBetween(moment(from, "DD-MM-YYYY"),moment(to, "DD-MM-YYYY"),"day","[]") ||
+          createdAtDate.isSame(moment(to, "DD-MM-YYYY"),"day")
         ) {
+          console.log("Is between")
           if(!(currency!="PKR" && y.narration && y.narration.includes("Ex-Rate"))){
             closingBalance =
               y.type === "debit" ? 
@@ -32,18 +35,6 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
                 closingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
             
           }
-          // if (y["Voucher.vType"] === "OP") {
-          //   // console.log(y)
-          //   // setOpeningVoucher(y);
-          //   prevBalance =
-          //     y.type === "debit" ? 
-          //       prevBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 
-          //       prevBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
-          //   openingBalance =
-          //     y.type === "debit" ?
-          //       openingBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 
-          //       openingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
-          // } else 
           if(!(currency!="PKR" && y.narration.includes("Ex-Rate"))){
 
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
@@ -62,8 +53,9 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
           }
           
         } else {
-          // console.log(y)
-          setOpeningVoucher(y);
+          console.log("Not in Between")
+          y["Voucher.vType"]=="OP"?
+          setOpeningVoucher(y):null
           openingBalance =
           y.type === "debit" ?
             openingBalance + (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount)): 

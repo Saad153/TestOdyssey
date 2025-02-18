@@ -1,14 +1,16 @@
 import { createSlice } from '@reduxjs/toolkit'
 import moment from 'moment';
+import Cookies from 'js-cookie';
 
   const initialState = {
-    from: "2023-07-01",
-    to: moment().format("YYYY-MM-DD"),
+    from: moment("2023-07-01"),
+    to: moment(),
     company: 1,
     currency: "PKR",
     records: [],
-    account:"",
+    account:null,
     name: "",
+    first: true
   };
 
   export const ledgerSlice = createSlice({
@@ -36,6 +38,9 @@ import moment from 'moment';
     setName(state, action) {
       state.name = action.payload;
     },
+    setFirst(state, action) {
+      state.first = action.payload;
+    },
     ledgerReset(state, action) {
       return initialState;
       // state = initialState
@@ -43,6 +48,6 @@ import moment from 'moment';
   },
 })
 
-export const { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount,setName, ledgerReset } = ledgerSlice.actions
+export const { setFrom, setTo, setCompany, setCurrency, setRecords, setAccount, setName, setFirst, ledgerReset } = ledgerSlice.actions
 
 export default ledgerSlice.reducer

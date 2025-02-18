@@ -25,6 +25,7 @@ export async function getServerSideProps(context) {
             "party":          query.party        ,
         }
         }).then((x)=>x.data)
+        console.log(result)
     return{ 
         props: {
             result,

@@ -7,6 +7,8 @@ import { CloseCircleOutlined } from "@ant-design/icons";
 import openNotification from "/Components/Shared/Notification";
 import Cookies from "js-cookie";
 
+const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
 const OpeningBalance = ({id, voucherData}) => {
 
   const [ voucher_Id, setVoucher_Id ] = useState("");
@@ -142,7 +144,7 @@ const OpeningBalance = ({id, voucherData}) => {
                 if(voucherAccounts.length>0){
                   let tempState = [...voucherAccounts];
                   tempState.forEach((x)=>{
-                    x.amount = parseFloat(x.defaultAmount) * parseFloat(e)
+                    x.defaultAmount = parseFloat(x.amount) * parseFloat(e)
                   })
                   setVoucherAccounts(tempState);
                 }
@@ -183,7 +185,8 @@ const OpeningBalance = ({id, voucherData}) => {
             <th style={{minWidth:300}}>Account</th>
             <th style={{width:100}}>Type</th>
             {currency!="PKR"&&<th style={{width:100}}>{currency}</th>}
-            <th style={{width:140}}>Amount</th>
+            {currency=="PKR"&&<th style={{width:140}}>Amount</th>}
+            {currency!="PKR"&&<th style={{width:140}}>Amount (LC)</th>}
             <th>Narration</th>
           </tr>
         </thead>
@@ -208,9 +211,12 @@ const OpeningBalance = ({id, voucherData}) => {
               {currency!="PKR" &&<td className='p-1'>
                 <InputNumber style={{width:"100%"}} value={x.amount} onChange={(e)=>setVouchers(e,i,'amount',true)} min={"0.0"} />
               </td>}
-              <td className='p-1'>
+              {currency=="PKR"&&<td className='p-1'>
                 <InputNumber style={{width:"100%"}} value={x.amount} onChange={(e)=>setVouchers(e,i,'amount', true)} min={"0.0"} disabled={currency!="PKR"} />
-              </td>
+              </td>}
+              {currency!="PKR"&&<td style={{margin: 0, display: 'flex', alignContent: 'center', justifyContent: 'center', fontSize: '14px'}}>
+                  {commas(x.amount*exRate)}
+                </td>}
               <td className='p-1'>
                 <Input style={{width:"100%"}} value={x.narration} onChange={(e)=>setVouchers(e.target.value,i,'narration')} />
               </td>
