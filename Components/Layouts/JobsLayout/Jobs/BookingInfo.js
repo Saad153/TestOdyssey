@@ -52,7 +52,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
   useEffect(() => {
     const fetchChargeHeads = async () => {
       const result = await getChargeHeads({ id: state.selectedRecord.id });
-      console.log("Charges:", result);
+      // console.log("Charges:", result);
       let check = false
       result.charges.forEach((x)=>{
         x.status=='1'?check = true : null
@@ -140,6 +140,18 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
     dispatchNew(incrementTab(obj));
     Router.push(route);
   };
+
+  useEffect(()=>{
+    console.log("Shipping Line ID:", shippingLineId, typeof(shippingLineId))
+    if(typeof(shippingLineId)=='number'){
+      console.log("Running Dispatch")
+      dispatch({
+        type: "set", payload: {
+          shippingLineId: shippingLineId.toString(),
+        }
+      })
+    }
+  },[shippingLineId])
 
   // console.log(state)
 

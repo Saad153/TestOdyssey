@@ -83,13 +83,8 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
     }});
     getInvoices(tempState.id, dispatch);
     reset({...tempState});
-
-    // console.log(allValues.approved)
-    // console.log(checkEmployeeAccess())
     if(allValues.approved!=1 && checkEmployeeAccess()){
-      // console.log("approved")
       setDeleteAccess(true)
-      // console.log(deleteAccess)
     }else{
       // console.log("Not Approved")
       // console.log(deleteAccess)

@@ -322,6 +322,10 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
               disabled={permissionAssign(permissions, x)}
               onChange={(e) => {
                 let tempChargeList = [...chargeList];
+                let check = false
+                tempChargeList[index].charge ? check = true : check = false
+                console.log("Check:", check)
+
                 state.fields.chargeList.forEach(async (y, i) => {
                   if (y.code == e) {
                     tempChargeList[index] = {
@@ -368,9 +372,11 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     } else {
                       tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Bill";
                     }
-                    tempChargeList[index].name = partyData[0].name;
-                    tempChargeList[index].partyId = partyData[0].id;
-                    tempChargeList[index].partyType = partyType == "Client" ? "client" : "vendor";
+                    if(!check){
+                      tempChargeList[index].name = partyData[0].name;
+                      tempChargeList[index].partyId = partyData[0].id;
+                      tempChargeList[index].partyType = partyType == "Client" ? "client" : "vendor";
+                    }
                     reset({ chargeList: tempChargeList })
                   }
                 })
@@ -391,14 +397,44 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           <td>{x.basis=="Per Shipment"?'P/Shp':'P/Unit'} {/* Basis */}
           </td>
           <td style={{ padding: 3, minWidth: 50 }}> {/* PP?CC */}
-          <SelectComp register={register} name={`chargeList.${index}.pp_cc`} 
+          {/* <SelectComp register={register} name={`chargeList.${index}.pp_cc`} 
             control={control} width={60} font={13} 
             disabled={permissionAssign(permissions, x)}
             options={[
               { id: 'PP', name: 'PP' },
               { id: 'CC', name: 'CC' }
             ]}
-          />
+          /> */}
+          <Select className='table-dropdown' showSearch value={x.pp_cc} style={{ paddingLeft: 0 }}
+              disabled={permissionAssign(permissions, x)}
+              onChange={async (e) => {
+                let tempChargeList = [...chargeList];
+                console.log("Charge:",tempChargeList[index])
+                tempChargeList[index].pp_cc = e
+                let searchPartyId;
+                if(e == 'PP'){
+                  searchPartyId = state.selectedRecord.ClientId
+                }else{
+                  searchPartyId = state.selectedRecord.overseasAgentId
+                }
+                let partyData = e == "PP" ? await getClients(searchPartyId) : await getVendors(searchPartyId);
+                if (state.chargesTab == '1') {
+                  tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Bill" : "Job Invoice";
+                } else {
+                  tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Bill";
+                }
+                tempChargeList[index].name = partyData[0].name;
+                tempChargeList[index].partyId = partyData[0].id;
+                tempChargeList[index].partyType = e == "PP" ? "client" : "agent";
+                reset({ chargeList: tempChargeList })
+              }}
+              optionFilterProp="children"
+              filterOption={(input, option) => (option?.label ?? '').toLowerCase().includes(input.toLowerCase())}
+              options={[
+                {id: 'PP', value: 'PP', name: 'PP'},
+                {id: 'CC', value: 'CC', name: 'CC'}
+              ]}
+            />
           </td>
           {(operationType=="SE"||operationType=="SI") &&<td style={{ padding: 3 }}> {/* Size/Type */}
           <SelectSearchComp register={register} name={`chargeList.${index}.size_type`} control={control} width={100} font={13} 

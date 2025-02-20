@@ -25,14 +25,23 @@ const SeJob = ({id, type}) => {
 
 
     if(dataSuccess && newdata) {
-      // console.log("index: ",data.result)
-      data?.result?.res?.forEach((x)=>{
-        data.result.vendor.sLine.push(x)
-      })
+      console.log("index: ",data.result)
+      console.log("index: ",newdata)
+      // data?.result?.res?.forEach((x)=>{
+      //   data.result.vendor.sLine.push(x)
+      // })
+      let temp
+      if(dataSuccess){
+        temp = {
+          ...newdata.result,
+          shippingLineId: newdata?.result?.shippingLineId?.toString()
+        }
+      }
+      console.log("Temp", temp)
       dispatch({type:'set',
         payload:{
           fields:data.result,
-          selectedRecord:dataSuccess?newdata?.result:{},
+          selectedRecord:dataSuccess?temp:{},
           fetched:true,
           edit:id=="new"?false:true,
           // permissions:tempPerms
@@ -45,7 +54,7 @@ const SeJob = ({id, type}) => {
   <div className='base-page-layout'>
     {state.fetched && 
       <CreateOrEdit
-        jobData={isSuccess?newdata.result:{}}
+        jobData={isSuccess?{...newdata.result, shippingLineId: newdata.result.shippingLineId?newdata.result.shippingLineId.toString():null}:{}}
         companyId={companyId}
         dispatch={dispatch}
         refetch={refetch}
