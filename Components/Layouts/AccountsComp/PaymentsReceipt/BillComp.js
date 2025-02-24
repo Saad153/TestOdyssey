@@ -178,6 +178,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           companyId: companyId,
           tranDate: state.date,
           edit: state.edit,
+          advance: state.advance,
           voucherId: state.voucherId,
           narration: state.voucherNarration
         }).then((x) => {

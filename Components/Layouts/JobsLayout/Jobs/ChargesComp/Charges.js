@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import openNotification from '/Components/Shared/Notification';
 import { checkEditAccess } from "../../../../../functions/checkEditAccess";
 import InputNumberComp from "../../../../Shared/Form/InputNumberComp";
+import { delay } from "/functions/delay";
 
 
 
@@ -22,6 +23,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
   const { permissions } = state;
   const permissionAssign = (perm, x) => x.Invoice?.approved=="1"? true : false;
   const [generate, setGenerate] = useState(false);
+  const [InvoiceBuffer, setInvoiceBuffer] = useState(false);
 
   const commas = (a) =>  { return parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ", ")};
 
@@ -146,6 +148,8 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       setGenerate(false);
     }
   }, [chargeList]);
+
+  let invoicetemp = false
   
 
   const generateInvoice = async () => {
@@ -192,38 +196,50 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           generateInvoice();
         }
       }}>Generate Invoice No</div> */}
-      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
-        if(generate){
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={async ()=>{
+        console.log("Invoice Buffer1:", InvoiceBuffer)
+        if(generate && !InvoiceBuffer){
+          setInvoiceBuffer(true)
+          await delay(500)
+          console.log("Invoice Buffer2:", InvoiceBuffer)
           let temp = chargeList.filter((x)=>x.partyType=="client"&&x.check)
-          console.log(temp.length)
-          console.log(temp)
           if(temp.length==0){
             openNotification('Error', `No Client Selected!`, 'red');
           }else{
-            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+            await autoInvoice(temp, companyId, reset, operationType, dispatch, state, setInvoiceBuffer).then(()=>{
+            });
           }
+        }else{
+          setInvoiceBuffer(false)
         }
       }}>Auto Invoice</div>
-      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
-        if(generate){
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={async ()=>{
+        console.log(state.chargeLoad)
+        if(generate && !InvoiceBuffer){
+          setInvoiceBuffer(true)
+          await delay(500)
           let temp = chargeList.filter((x)=>(x.partyType=="vendor"||x.partyType=="vendors")&&x.check)
-          console.log(temp.length)
           if(temp.length==0){
             openNotification('Error', `No Vendor Selected!`, 'red');
           }else{
-            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+            await autoInvoice(temp, companyId, reset, operationType, dispatch, state, setInvoiceBuffer);
           }
+        }else{
+          setInvoiceBuffer(false)
         }
       }}>Auto Bill</div>
-      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={()=>{
-        if(generate){
+      <div className='div-btn-custom-green fl-right py-1 px-3 mx-1' style={{cursor: !generate? "not-allowed" : "pointer"}} onClick={async ()=>{
+        if(generate && !InvoiceBuffer){
+          setInvoiceBuffer(true)
+          await delay(500)
           let temp = chargeList.filter((x)=>x.partyType=="agent"&&x.check)
-          console.log(temp.length)
           if(temp.length==0){
             openNotification('Error', `No Agent Selected!`, 'red');
           }else{
-            autoInvoice(temp, companyId, reset, operationType, dispatch, state);
+            await autoInvoice(temp, companyId, reset, operationType, dispatch, state, setInvoiceBuffer);
           }
+        }else{
+          setInvoiceBuffer(false)
         }
       }}>Auto Agent Invoice</div>
       <div className='mx-2' style={{float:'right'}}>
@@ -634,7 +650,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    {console.log("STATE:", allValues)}
     {(checkEditAccess() && allValues.approved.length>0) && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>

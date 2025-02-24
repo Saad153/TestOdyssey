@@ -294,7 +294,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                       pay: state.payType,
                       type: state.type,
                       edit: true,
-
                     }
                   }).then((x) => {
                     let temp = []
@@ -304,8 +303,9 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                     const map = new Map();
                     temp2.forEach(item => map.set(item.id, item));
                     temp.forEach(item => {
-                      console.log(item)
-                      item.receiving = item.recieved;
+                      console.log("Item:", item)
+                      console.log("State:", state)
+                      item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
                       map.set(item.id, item);
                     });
 

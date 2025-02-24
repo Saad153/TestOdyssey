@@ -9,9 +9,10 @@ import { setField, resetState } from '/redux/vouchers/voucherSlice';
 import { DatePicker, Input, InputNumber, Select } from "antd";
 import { CloseCircleOutlined } from "@ant-design/icons";
 import moment from "moment";
+import { delay } from "../../../../functions/delay";
 
 const Voucher = ({ id }) => {
-
+  const [voucherBuffer, setVoucherBuffer] = useState(false)
   const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
   const state  = useSelector((state) => state.vouchers);
@@ -180,9 +181,12 @@ const Voucher = ({ id }) => {
   };
 
   const save = async () => {
-    
-    console.log("VoucherHeads:",state.Voucher_Heads)
-    console.log(state.settleVoucherHead)
+    await setVoucherBuffer(true)
+    await delay(500)
+    if(voucherBuffer){
+      openNotification('Error', `Already Saved`, 'red')
+      return
+    }
     state.vType==""||state.vType==undefined?openNotification('Error', `Type not Selected`, 'red'):null
     if(state.vType!="JV"&&state.vType!="TV"){
       if(state.settlementAccount==""||state.settlementAccount==undefined){
@@ -191,7 +195,6 @@ const Voucher = ({ id }) => {
       }
     }
     state.debitTotal==0.0||state.debitTotal==undefined?openNotification('Error', `No amount entered`, 'red'):null
-    // state.creditTotal==0.0||state.debitTotal==undefined?openNotification('Error', `No amount entered`, 'red'):null
     state.Voucher_Heads.forEach((x)=>{
       x.ChildAccountId==""||x.ChildAccountId==undefined?openNotification('Error', `Account not Selected`, 'red'):null
     })
@@ -246,11 +249,6 @@ const Voucher = ({ id }) => {
         chequeNo: state.chequeNo,
         chequeDate: state.chequeDate,
         costCenter: 'KHI',
-        // invoices: invoicesList,
-        // onAccount: state.type,
-        // partyId: state.partyId,
-        // partyName: state.settlementAccounts.find((x) => x.id == state.settlementAccount).title,
-        // partyType: state.partyType,
         tranDate: state.date,
         subType: state.vType=="CPV"||state.vType=="CRV"?"Cash":state.vType=="BPV"||"BRV"?"Bank":state.vType=="JV"?"Journal":"Transfer",
         CompanyId: CompanyId,
@@ -279,7 +277,6 @@ const Voucher = ({ id }) => {
           defaultAmount: state.settleVoucherHead.amount*state.exRate,
           ChildAccountId: state.settlementAccount.toString()
         }
-        console.log("ABC:",abc)
         temp.push(abc)
       }
       voucher.Voucher_Heads = temp
@@ -289,7 +286,6 @@ const Voucher = ({ id }) => {
         result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/updateVoucher`, voucher).then((x) => {
           openNotification('Success', `Voucher Updated Successfully`, 'green')
           dispatch(setField({ field: 'edit', value: true }))
-          console.log(">>>>>>>>",x)
           fetchVoucherData()
           // Router.push(`/accounts/vouchers/${x.data.result[0].id}`);
         });
@@ -297,11 +293,10 @@ const Voucher = ({ id }) => {
         result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/createVoucher`, voucher).then((x) => {
           openNotification('Success', `Voucher Saved Successfully`, 'green')
           dispatch(setField({ field: 'edit', value: true }))
-          console.log(">><<>><<",x)
           Router.push(`/accounts/vouchers/${x.data.result.id}`);
         });
       }
-      console.log(result)
+      await setVoucherBuffer(false)
       // dispatch(incrementTab({ "label": "Voucher", "key": "3-5", "id": `${result.data.result.id}` }));
 
     
@@ -501,7 +496,7 @@ const Voucher = ({ id }) => {
           </Row>
         </Col>
         <Col md={3} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'top', alignItems: 'end'}}>
-            <button disabled={state.Voucher_Heads.length==0} onClick={()=>{save()}} style={{width: '35%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Save</button>
+            <button disabled={state.Voucher_Heads.length==0 && !voucherBuffer} onClick={()=>{save()}} style={{width: '35%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>Save</button>
             <button disabled={state.Voucher_Heads.length==0} onClick={()=>{dispatch(resetState()); fetchAccounts(); fetchreceivingAccount()}} style={{marginTop: '10px', width: '35%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px'}}>New Voucher</button>
         </Col>
       </Row>
