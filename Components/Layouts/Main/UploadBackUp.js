@@ -1,6 +1,6 @@
 import CSVReader from "react-csv-reader";
 import axios from 'axios';
-import Cookies from "js-cookie";
+import Cookies, { set } from "js-cookie";
 import { useEffect, useState } from "react";
 
 
@@ -931,6 +931,47 @@ const Upload_CoA = () => {
         console.log(ACS_SIJ)
         
     }
+    const [commodityFile,setCommodityFile] = useState()
+
+    // useEffect(() => {
+    //     console.log('file',commodityFile);
+    // },[commodityFile])
+
+    
+    // const handleCommodityData = async(data, fileInfo) => {
+    //     console.log(data)
+    //     let commodityList = []
+    //     for(let x of data){
+    //         x.isHazmat = x.ishazmat;
+    //         x.cargoType = x.cargotype;
+    //         x.commodityGroup = x.commoditygroup;
+    //         x.hazmatClass = x.hazmatclass;
+    //         x.hazmatCode = x.hazmatcode;
+    //         x.chemicalName = x.chemicalname;
+    //         x.unoCode = x.unocode;
+    //         x.packageGroup = x.packagegroup;
+    //         delete x.packagegroup
+    //         delete x.hazmatclass
+    //         delete x.hazmatcode
+    //         delete x.chemicalname
+    //         delete x.unocode
+    //         delete x.updatedat
+    //         delete x.commoditygroup
+    //         delete x.createdat
+    //         delete x.cargotype
+    //         delete x.id
+    //         delete x.ishazmat
+    //         commodityList.push({data:x});
+    //     }
+
+    //     // let commodityList = []
+    //     // for(let x of data){
+    //     //     if(x.pct_code !== "None")
+    //     //         commodityList.push( {data:{name:x.description,hs:x.pct_code,isHazmat:0}});
+    //     // }
+    //     setCommodities(commodityList)
+
+    // }
 
     const [vouchers, setVouchers] = useState([])
 
@@ -1244,6 +1285,19 @@ const Upload_CoA = () => {
             //console.log(result)
         }
     }
+
+    const uploadCommodities = async()=>{
+        
+        const formData = new FormData();
+        formData.append('pct_pdf', commodityFile);
+        try{
+            const result = await axios.post('http://192.168.50.33:8003/upload-pct-file/', formData);
+            console.log('result',result.data);
+        }
+        catch(e){
+            console.log(e);
+        }
+    }
     
 
     let accountsList = {
@@ -1304,6 +1358,11 @@ const Upload_CoA = () => {
         <span className="py-2">Jobs</span>
         <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
         <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
+        <span className="py-2">Commodities</span>
+        <input type="file" onChange={(e)=>setCommodityFile(...e.target.files)} accept="application/pdf"/>
+        {/* <CSVReader parserOptions={parserOptions} onFileLoaded={(data,fileInfo)=>{handleCommodityData(data, fileInfo)}}/> */}
+        <button onClick={uploadCommodities} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Commodities</button>
+        <span className="py-2"></span>
         </>
     )
 }
