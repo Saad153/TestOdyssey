@@ -156,7 +156,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   }
 
   const openOldVouchers = (x) => {
-    console.log("Selected Account>>", x.partyId);
+    console.log("Selected Account>>", x.x.invoice);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
     dispatch(setField({ field: 'selectedAccount', value: x.partyId.toString() }))

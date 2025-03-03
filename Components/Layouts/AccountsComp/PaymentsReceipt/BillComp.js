@@ -156,7 +156,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
 
   const submitTransaction = async () => {
     try{
-        // console.log(state)
+        console.log("Make Transaction:", state)
         await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/makeTransaction`, {
           transactions: state.transactions,
           invoices: state.invoices,

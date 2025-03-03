@@ -26,6 +26,7 @@ const Voucher = ({ id }) => {
     }).then((x)=>{
       console.log("Id ka Result:", x.data.result)
       dispatch(setField({ field: 'edit', value: true }))
+      dispatch(setField({ field: 'id', value: x.data.result.id }))
       dispatch(setField({ field: 'voucher_id', value: x.data.result.voucher_Id }))
       dispatch(setField({ field: 'voucher_No', value: x.data.result.voucher_No }))
       x.data.result.chequeDate?dispatch(setField({ field: 'chequeDate', value: moment(x.data.result.chequeDate.toString()) })):null
@@ -169,7 +170,7 @@ const Voucher = ({ id }) => {
   }, [id])
 
   useEffect(() => {
-    console.log(state)
+    console.log("STATE:", state)
   },[state])
 
   const handleDelete = (id) => {
@@ -283,6 +284,10 @@ const Voucher = ({ id }) => {
       console.log("Vouchers", voucher)
       let result
       if(state.edit && id!="new"){
+        voucher = {
+          id: state.id,
+          ...voucher
+        }
         result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/updateVoucher`, voucher).then((x) => {
           openNotification('Success', `Voucher Updated Successfully`, 'green')
           dispatch(setField({ field: 'edit', value: true }))

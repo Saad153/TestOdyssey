@@ -31,6 +31,7 @@ const initialState = {
   debitTotal: 0.0,
   creditTotal: 0.0,
   closingBalance: 0.0,
+  id: '',
   edit: false
 }
 
