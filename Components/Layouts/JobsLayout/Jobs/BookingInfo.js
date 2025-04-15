@@ -23,6 +23,7 @@ import Carrier from './Carrier';
 import AddPort from './AddPort';
 import { FaPlus } from "react-icons/fa6";
 import { getChargeHeads } from '../../../../apis/jobs';
+import { checkEditAccess } from '../../../../functions/checkEditAccess';
 
 const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, errors, state, useWatch, dispatch, reset, id, type }) => {
   const tabs = useSelector((state) => state.tabs.tabs)
@@ -445,7 +446,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
           {state.edit && <Notes state={state} dispatch={dispatch} />}
           {approved == "1" && <img src={'/approve.png'} height={100} />}
         {charges != true && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
-          <CheckGroupComp register={register} name='approved' control={control} label=''
+          <CheckGroupComp register={register} disabled={approved == "1" && !checkEditAccess()} name='approved' control={control} label=''
             options={[{ label: "Approve Job", value: "1" }]}
           />
         </div>}

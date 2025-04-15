@@ -16,6 +16,7 @@ import InvoiceEditor from './InvoiceEditor';
 import PartySearch from '../Layouts/JobsLayout/Jobs/ChargesComp/PartySearch';
 import { set } from 'js-cookie';
 import { DeleteOutlined, PrinterOutlined, RightOutlined } from '@ant-design/icons';
+import { checkEmployeeAccess } from '../../functions/checkEmployeeAccess';
 
 const { TextArea } = Input;
 
@@ -373,6 +374,9 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
   };
   const checkApprovability = (x) => {
     let result = false;
+    if(!checkEmployeeAccess()){
+      return result
+    }
     if(x?.payType=="Recievable" && x?.recieved=="0"){
         result = false;
     }else if(x?.payType=="Recievable" && x?.recieved!="0"){

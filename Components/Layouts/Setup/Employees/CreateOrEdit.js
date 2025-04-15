@@ -17,10 +17,10 @@ const SignupSchema = Yup.object().shape({
   selectDesignation: Yup.string().required('Required'),
   selectDepart: Yup.string().min(1, 'Too Short!').max(30, 'Too Long!').required('Required'),
   //selectCompany: Yup.string().min(1, 'Required!').max(30, 'Too Long!').required('Required'),
-  cnic: Yup.string().min(10, 'Too Short!').max(30, 'Too Long!').required('Required'),
+  cnic: Yup.string().min(10, 'Too Short!').max(30, 'Too Long!'),
   userName: Yup.string().min(3, 'Too Short!').max(30, 'Too Long!').required('Required'),
   pass: Yup.string().min(5, 'Too Short!').max(30, 'Too Long!').required('Required'),
-  phone: Yup.string().min(11, 'Must be 11 Digits!').max(11, 'Must be 11 Digits!').required('Required'),
+  phone: Yup.string().min(11, 'Must be 11 Digits!').max(11, 'Must be 11 Digits!'),
   code: Yup.string().min(1, 'Must be 11 Digits!').max(20, 'Must be 11 Digits!').required('Required'),
 });
 

@@ -404,7 +404,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
         </Col>
         <Col md={2}>
         <span style={{marginLeft: '5px'}}>Date</span>
-          <DatePicker style={{width: '100%'}} value={state.date} onChange={(e) => dispatch(setField({ field: 'date', value: e }))}></DatePicker>
+          <DatePicker allowClear={false} style={{width: '100%'}} value={moment(state.date)} onChange={(e) => {dispatch(setField({ field: 'date', value: moment(e) }))}}></DatePicker>
         </Col>
         <Col md={2}>
         <span style={{marginLeft: '5px'}}>SubType</span>

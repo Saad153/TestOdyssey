@@ -33,7 +33,7 @@ function checkEmployeeAccess(){
   }
   newTemp.forEach((x)=>{
     x = x.trim()
-    if(x == 'admin' || x == 'Delete'){
+    if(x == 'admin'){
       // console.log("admin triggered")
       access = true;
       // console.log(access);

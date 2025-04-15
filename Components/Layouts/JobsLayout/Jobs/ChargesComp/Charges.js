@@ -122,7 +122,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       type:type, description:'', basis:'', key_id:uuidv4(),
       new:true,  ex_rate: parseFloat(state.exRate), pp_cc:'PP', 
       local_amount: 0,  size_type:'40HC', dg_type:state.selectedRecord.dg=="Mix"?"DG":state.selectedRecord.dg, 
-      qty:1, rate_charge:1, currency:'USD', amount:1, check: false, bill_invoice: '', charge: '', particular: '',
+      qty:1, rate_charge:1, currency:'USD', amount:1, check: false, bill_invoice: '', charge: 0, particular: '',
       discount:0, tax_apply:false, taxPerc:0.00, tax_amount:0, net_amount:0, invoiceType:"", name: "", 
       partyId:"", sep:false, status:'0', approved_by:'', approval_date:'', InvoiceId:null, 
       SEJobId:state.selectedRecord.id
@@ -350,7 +350,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                       particular: y.name,
                       basis: y.calculationType,
                       taxPerc: y.taxApply == "Yes" ? parseFloat(y.taxPerc) : 0.00,
-                      qty:(y.calculationType!="Per Unit"||allValues.cwtClient=="")?1:allValues.cwtClient
+                      qty:(y.calculationType!="Per Unit"||allValues.cwtClient==""||allValues.cwtClient==0)?1:allValues.cwtClient
                     }
                     let partyType = "";
                     let choiceArr = ['', 'defaultRecivableParty', 'defaultPaybleParty'];// 0=null, 1=recivable, 2=payble
@@ -475,7 +475,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           <td style={{ padding: 3 }}>{/* QTY */}
           <div style={{border:chargeList[index]?.qty==0?'2px solid red':'silver'}}>
           <InputNumberComp register={register} name={`chargeList.${index}.qty`} control={control} label='' width={20} 
-            disabled={(operationType=="AI"||operationType=="AE")?true:permissionAssign(permissions, x)} onChange={(e)=>{
+            disabled={permissionAssign(permissions, x)} onChange={(e)=>{
               let tempChargeList = [...chargeList];
               tempChargeList[index].qty = e;
               let amount = tempChargeList[index].amount*tempChargeList[index].rate_charge - tempChargeList[index].discount;
@@ -650,7 +650,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       {state.headVisible && <PartySearch state={state} dispatch={dispatch} reset={reset} useWatch={useWatch} control={control} />}
     </Modal>
     </div>
-    {(checkEditAccess() && allValues.approved.length>0) && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
+    {(allValues.approved.length>0) && <div className='div-btn-custom-green text-center py-1 px-3 mt-3 mx-2' style={{float:'right'}} onClick={()=>{approveCharges(chargeList)}}>Approve/Unapprove</div>}
     <div className='div-btn-custom-green text-center py-1 px-3 mt-3' style={{float:'right'}} onClick={()=>{calculate(chargeList)}}>Calculate</div>
   </>
   )

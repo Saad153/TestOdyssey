@@ -77,7 +77,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               name: x.partyName,
               party: x.partyType,
               type: x.vType,
-              data: moment(x.createdAt).format('DD-MM-YYYY'),
+              data: x.createdAt,
               currency: x.currency,
               amount: x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General' || y.accountType === 'Admin Expense')
                 ? x.Voucher_Heads.find((y) => y.accountType === 'partyAccount' || y.accountType === 'General' || y.accountType === 'Admin Expense').amount
@@ -161,7 +161,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     dispatch(setField({ field: 'edit', value: true }))
     dispatch(setField({ field: 'selectedAccount', value: x.partyId.toString() }))
     dispatch(setField({ field: 'currency', value: x.currency }))
-    dispatch(setField({ field: 'date', value: moment(x.x.data) }))
+    dispatch(setField({ field: 'date', value: x.data }))
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
     dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
     dispatch(setField({ field: 'exRate', value: x.x.exRate }))
@@ -428,7 +428,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
                 <td style={{ padding: 10 }}>{x.name}</td>
                 <td style={{ padding: 10 }}>{x.party}</td>
                 <td style={{ padding: 10 }}>{x.type}</td>
-                <td style={{ padding: 10 }}>{x.data}</td>
+                <td style={{ padding: 10 }}>{moment(x.data).format("DD-MM-YYYY")}</td>
                 <td style={{ padding: 10 }}>{x.currency}</td>
                 <td style={{ padding: 10 }}>{commas(x.amount)}</td>
               </tr>

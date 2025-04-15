@@ -14,13 +14,16 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
   const [records, setRecords] = useState([]);
 
   useEffect(() => {
-    setRecords(openingBalancesList.result)
+    getData()
+    // setRecords(openingBalancesList.result)
   }, [])
 
   const getData = async() => {
+    console.log("Get Data Called")
     let openingBalances = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_OPENING_BALANCES,{
       headers:{"id": `${Cookies.get('companyId')}`}
     }).then((x)=>x.data);
+    console.log(openingBalances)
     setRecords(openingBalances.result)
   }
 
@@ -64,8 +67,8 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
         </tr>
       </thead>
       <tbody>
-      {records?.map((x, index) => {
-        console.log("X>>>", x)
+      {/* {records?.map((x, index) => {
+        console.log(x)
       return (
       <tr key={index} className='f table-row-center-singleLine row-hov'
         
@@ -79,7 +82,33 @@ const OpeningBalance = ({sessionData, openingBalancesList}) => {
         <td>{moment(x?.createdAt).format("DD-MM-YYYY")}</td>
         <td><DeleteOutlined onClick={(e) => { e.stopPropagation(); handleDelete(x.id) }} /></td>
       </tr>
-      )})}
+      )})} */}
+      {records?.map((x, index) => {
+        try {
+          return (
+            <tr key={index} className='f table-row-center-singleLine row-hov'>
+              <td>{index+1}</td>
+              <td onClick={() => Router.push(`/accounts/openingBalance/${x.id}`)}>
+                {x?.voucher_Id}
+              </td>
+              <td>{x?.Voucher_Heads?.[0]?.Child_Account?.title.includes("CONTRA")?x?.Voucher_Heads?.[1]?.Child_Account?.title:x?.Voucher_Heads?.[0]?.Child_Account?.title}</td>
+              <td>{x?.currency}</td>
+              <td>{x?.exRate}</td>
+              <td>{commas(x?.Voucher_Heads?.[0]?.amount)}</td>
+              <td>{moment(x?.createdAt).format("DD-MM-YYYY")}</td>
+              <td>
+                <DeleteOutlined onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(x.id);
+                }} />
+              </td>
+            </tr>
+          );
+        } catch (err) {
+          console.error("Skipping record due to error:", err, x);
+          return null; // skip rendering this row
+        }
+      })}
       </tbody>
     </Table>
     </div>

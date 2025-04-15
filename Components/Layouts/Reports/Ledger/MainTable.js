@@ -55,8 +55,8 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                 </tr>
               </thead>
               <tbody>
-                {console.log("Opening Voucher", openingVoucher)}
                 {Object.keys(openingVoucher).length > 0 && <tr>
+                  {console.log("Opening Voucher", openingVoucher)}
                   <td>1</td>
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
                   <td className="text-center fs-12 grey-txt">{moment(openingVoucher.createdAt).format("DD-MM-YYYY")}</td>

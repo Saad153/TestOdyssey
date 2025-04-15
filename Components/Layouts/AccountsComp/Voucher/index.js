@@ -185,13 +185,19 @@ const Voucher = ({ id }) => {
     await setVoucherBuffer(true)
     await delay(500)
     if(voucherBuffer){
-      openNotification('Error', `Already Saved`, 'red')
+      openNotification('Please Wait', `Already Saving`, 'Orange')
       return
     }
-    state.vType==""||state.vType==undefined?openNotification('Error', `Type not Selected`, 'red'):null
+    if(state.vType==""||state.vType==undefined){
+      openNotification('Error', `Type not Selected`, 'red')
+      await setVoucherBuffer(false)
+      return
+    }
+    // state.vType==""||state.vType==undefined?openNotification('Error', `Type not Selected`, 'red'):null
     if(state.vType!="JV"&&state.vType!="TV"){
       if(state.settlementAccount==""||state.settlementAccount==undefined){
         openNotification('Error', `Settlement Account not Selected`, 'red')
+        await setVoucherBuffer(false)
         return
       }
     }
@@ -507,7 +513,8 @@ const Voucher = ({ id }) => {
       </Row>
       <Col md={12} style={{marginTop: '15px'}}>
         <button
-         disabled={state.vType!="JV"&&state.vType!="TV"} onClick={()=>{
+        //  disabled={state.vType!="JV"&&state.vType!="TV"} 
+         onClick={()=>{
           let temp = [...state.Voucher_Heads]
           let Type = ""
           Type = state.vType=="CPV"||state.vType=="BPV"?"debit":state.vType=="CRV"||state.vType=="BRV"?"credit":"credit"
@@ -522,7 +529,7 @@ const Voucher = ({ id }) => {
             createdAt: moment()
           })
           dispatch(setField({ field: 'Voucher_Heads', value: temp }))
-        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px', cursor: state.vType=="JV"||state.vType=="TV"?'pointer':'not-allowed'}}>Add Row</button>
+        }} style={{float: 'right', marginBottom: '10px',width: '7.5%', fontSize: '12px', padding: '2.5px 0px', backgroundColor: '#1d1d1f', color: "#d7d7d7", borderRadius: '15px', cursor: 'pointer'}}>Add Row</button>
         <table style={{width: '100%'}}>
           <thead style={{backgroundColor: '#d7d7d7'}}>
             <tr>

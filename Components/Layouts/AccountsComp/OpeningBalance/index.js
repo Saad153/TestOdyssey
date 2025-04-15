@@ -10,6 +10,7 @@ import Cookies from "js-cookie";
 const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
 const OpeningBalance = ({id, voucherData}) => {
+  console.log(voucherData)
 
   const [ voucher_Id, setVoucher_Id ] = useState("");
   const [ load, setLoad ] = useState(false);
@@ -57,13 +58,26 @@ const OpeningBalance = ({id, voucherData}) => {
       tempState.forEach((x, index)=>{
         tempState[index][name] = e;
         // condition?tempState[index][defaultAmount] = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
-        condition?tempState[index].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+        // condition?tempState[index].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+        if(condition){
+          if(currency!='PKR'){
+            tempState[index].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2)
+          }else{
+            tempState[index].defaultAmount = (parseFloat(e)).toFixed(2)
+          }
+        }
       })
     }else{
       tempState[i][name] = e;
       // condition?tempState[i][defaultAmount] = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
-      condition?tempState[i].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
-
+      // condition?tempState[i].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2):null;
+      if(condition){
+        if(currency!='PKR'){
+          tempState[i].defaultAmount = (parseFloat(e) * parseFloat(exRate)).toFixed(2)
+        }else{
+          tempState[i].defaultAmount = (parseFloat(e)).toFixed(2)
+        }
+      }
     }
     setVoucherAccounts(tempState);
   }
@@ -138,7 +152,7 @@ const OpeningBalance = ({id, voucherData}) => {
       <Col md={2}>
       <div>Ex. Rate</div>
             <InputNumber style={{width:"100%"}} value={exRate} 
-              min='0.0' disabled={currency=="PKR"}
+              min={0} disabled={currency=="PKR"}
               onChange={(e)=>{
                 setExRate(e);
                 if(voucherAccounts.length>0){
@@ -156,7 +170,9 @@ const OpeningBalance = ({id, voucherData}) => {
             <Select style={{width:"100%"}} value={currency} 
               onChange={(e)=>{
                 setCurrency(e);
-                setExRate('1')
+                if(id=='new'){
+                  setExRate('1')
+                }
               }}
               options={[
                 { value:"PKR", label:"PKR"},
@@ -193,7 +209,8 @@ const OpeningBalance = ({id, voucherData}) => {
         <tbody>
           {voucherAccounts.map((x, i)=>{
             return(
-            <tr key={i}>
+              <tr key={i}>
+              {console.log(x)}
               <td className='p-1'>
                 {!load &&<Select style={{width:'100%'}} defaultValue={""} value={x.ChildAccountId} 
                   onChange={(e)=>setVouchers(e,i,'ChildAccountId')}
