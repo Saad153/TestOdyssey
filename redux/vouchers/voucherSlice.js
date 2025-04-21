@@ -16,7 +16,7 @@ const initialState = {
   voucher_No: "",
   date: moment(),
   settlementAccounts: [],
-  accounts: [],
+  cAccounts: [],
   settlementAccount: undefined,
   settleVoucherHead: {
     defaultAmount: 0.0,

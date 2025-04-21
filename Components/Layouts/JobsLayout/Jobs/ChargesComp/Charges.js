@@ -265,6 +265,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       </th>
       <th>Bill/Invoice</th>
       <th>Charge</th>
+      <th>Particular</th>
       <th>Party</th>
       <th>Basis</th>
       <th>PP/CC</th>
@@ -280,7 +281,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
       <th style={{minWidth:100}}>Net Amount</th>
       <th>Ex.Rate</th>
       <th style={{minWidth:110}}>Local Amount</th>
-      <th>Particular</th>
       <th>Status</th>
       <th style={{minWidth:110}}>Approved By</th>
       <th style={{minWidth:120}}>Approval Date</th>
@@ -402,6 +402,7 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
               options={state.fields.chargeList}
             />
           </td>
+          <td>{x.particular}</td>
           <td className='text-center'>{/* Party Selection */}
           {!x.invoice_id && 
             <RightCircleOutlined style={{ position: 'relative', bottom: 3 }}
@@ -625,7 +626,6 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
           {chargeList[index]?.currency=="PKR" && <InputNumber value={1.00} />}
           </td>
           <td>{commas(x.local_amount)}</td>
-          <td>{x.particular}</td>
           <td>{x.status === '1' ? 'Approved' : 'Unapproved'}</td>
           <td></td>
           <td></td>

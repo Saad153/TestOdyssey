@@ -77,7 +77,7 @@ export const stamps = [
     label: "FCL / FCL",
   },
   {
-    value: "LCL",
+    value: "20",
     label: "LCL / LCL",
   },
 ];

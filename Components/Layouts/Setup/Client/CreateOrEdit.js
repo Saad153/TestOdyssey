@@ -113,6 +113,8 @@ const CreateOrEdit = ({state, dispatch, baseValues, clientData, id}) => {
                     openNotification('Success', `Client ${x.data.result.name} Created!`, 'green');
                     refetch();
                     Router.push(`/setup/client/${x.data.result.id}`);
+                }else if(x.data.status == 'exists'){
+                    openNotification('Error', `Client Already Exists`, 'orange')
                 }else{
                     openNotification('Error', `An Error occured Please Try Again!`, 'red')
                 }

@@ -60,7 +60,7 @@ const Voucher = ({ id }) => {
           CompanyId: CompanyId,
         },
       });
-      dispatch(setField({ field: 'accounts', value: response.data.result }));
+      dispatch(setField({ field: 'cAccounts', value: response.data.result }));
     } catch (error) {
       console.error("Error fetching child accounts:", error);
     }
@@ -209,41 +209,41 @@ const Voucher = ({ id }) => {
     if(state.vType=="BPV"){
       narration = `Bank Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY"):""}from `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="BRV"){
       narration = `Bank Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="CPV"){
       narration = `Cash Payment ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="CRV"){
       narration = `Cash Receipt ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}from `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
       narration = narration + `to ${state.settlementAccounts.find(x=>x.id==state.settlementAccount).title}`
     }
     if(state.vType=="JV"){
       narration = `Journal Transaction ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}between `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
     }
     if(state.vType=="TV"){
       narration = `Transfer ${state.chequeNo!=""?"on Cheque No: "+state.chequeNo+", "+"Date: "+moment(state.chequeDate).format("DD-MM-YYYY")+", ":""}between `
       state.Voucher_Heads.forEach((x)=>{
-        narration = narration + `${state.accounts.find(y=>y.id==x.ChildAccountId).title}, `
+        narration = narration + `${state.cAccounts.find(y=>y.id==x.ChildAccountId).title}, `
       })
     }
 
@@ -551,7 +551,7 @@ const Voucher = ({ id }) => {
                   style={{ width: '100%' }}
                   placeholder={`Select Account`}
                   value={item.ChildAccountId}
-                  options={state.accounts.map((account) => ({
+                  options={state.cAccounts.map((account) => ({
                     label: `(${account.code}) ${account.title}`,
                     value: account.id,
                   }))}

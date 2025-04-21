@@ -90,7 +90,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       }
 
       if (temp.length > 0) {
-        console.log("Old Vouchers", temp[0])
+        // console.log("Old Vouchers", temp[0])
         dispatch(setField({ field: 'oldVouchers', value: temp[0] }));
       }
 
@@ -165,22 +165,26 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     dispatch(setField({ field: 'checkNo', value: x.x.chequeNo }))
     dispatch(setField({ field: 'checkDate', value: moment(x.x.chequeDate) }))
     dispatch(setField({ field: 'exRate', value: x.x.exRate }))
+    dispatch(setField({ field: 'subType', value: x.x.subType }))
     dispatch(setField({ field: 'voucherId', value: x.id }))
-    dispatch(setField({ field: 'invoices', value: x.x.invoice }))
-    dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))
+    if(x.x.invoice.length == 0){
+      dispatch(setField({ field: 'advance', value: true }))
+    }else{
+      dispatch(setField({ field: 'invoices', value: x.x.invoice }))
+    }
+    // console.log("Invoice in P/R", x.x.invoice)
+    // dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))
     x.x.Voucher_Heads.forEach((y) => {
-      console.log(y)
       if(y.accountType=="payAccount"){
         dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
         dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
       }
       if(y.accountType=="partyAccount"||y.accountType=="General"||y.accountType=="Admin Expense"){
-        console.log("party Amount>>", parseFloat(y.amount))
+        dispatch(setField({ field: 'voucherNarration', value: y.narration }))
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
         // dispatch(setField({ field: 'selectedAccount', value: parseInt(y.ChildAccountId) }))
       }
       if((y.accountType=="Gain/Loss Account") && y.ChildAccountId != x.x.Voucher_Heads.find((x)=>x.accountType=="partyAccount").ChildAccountId){
-        console.log("Gain Loss Amount: ", parseFloat(y.amount)*parseFloat(x.x.exRate))
         y.type!='debit'?
         dispatch(setField({ field: 'gainLossAmount', value: parseFloat(y.amount)*parseFloat(x.x.exRate) })):
         dispatch(setField({ field: 'gainLossAmount', value: (parseFloat(y.amount)*-1)*parseFloat(x.x.exRate) }))
@@ -217,9 +221,6 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
   useEffect(() => {
     if(q.partyId){
-      console.log(q.partyId)
-      console.log(q.payType)
-      console.log(q.partyType)
       dispatch(setField({ field: 'type', value: q.partyType }));
       dispatch(setField({ field: 'payType', value: q.payType }));
       dispatch(setField({ field: 'selectedAccount', value: q.partyId.toString() }));

@@ -187,6 +187,8 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
           openNotification('Success', `Job Updated!`, 'green')
           createNotification(notification)
           refetch();
+        }else if (x.data.status == 'approved') {
+          openNotification('Error', `Job Already Approved!`, 'orange')
         } else {
           openNotification('Error', `An Error occured Please Try Again!`, 'red')
         }

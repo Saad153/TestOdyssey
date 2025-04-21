@@ -90,6 +90,8 @@ const CreateOrEdit = ({state, dispatch, baseValues, vendorData, id}) => {
           openNotification('Success', `Vendor ${x.data.result.name} Created!`, 'green');
           refetch();
           Router.push(`/setup/vendor/${x.data.result.id}`);
+        } else if (x.data.status == 'exists') {
+          openNotification('Error', `Vendor Already Exists`, 'orange')
         } else {
           openNotification('Error', `An Error occured Please Try Again!`, 'red')
         }
