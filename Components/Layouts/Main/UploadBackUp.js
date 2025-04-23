@@ -2,6 +2,7 @@ import CSVReader from "react-csv-reader";
 import axios from 'axios';
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
+import { Col, Row } from "antd";
 
 
 const Upload_CoA = () => {
@@ -447,11 +448,6 @@ const Upload_CoA = () => {
         console.log(data)
         console.log(fileInfo)
         let currency = "PKR"
-        let contra = 0
-        let company_Id = 1
-        if(fileInfo.name.includes("ACS")){
-            company_Id = 3
-        }
         if(fileInfo.name.includes("USD")){
             currency = "USD"
         }
@@ -467,25 +463,19 @@ const Upload_CoA = () => {
         console.log(currency)
         const accounts = await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_ACCOUNTS, {
             headers: {
-                id: company_Id
+                id: Cookies.get("companyId")
             }
         })
         let accountsData = accounts.data.result
         let couint = 0
         let balances = []
         for(let x of data){
-            if(x.title_of_account.trim() == 'CONTRA ACCOUNT OPENINIG' || x.title_of_account.trim() == 'UNITED CARGO MANAGEMENT, INC.'){
-                continue
-            }
             let partyid = ""
             let partyname = ""
             let matched = false
             accountsData.forEach((y)=>{
                 y.Parent_Accounts.forEach((z)=>{
                     z.Child_Accounts.forEach((a)=>{
-                        if(contra == 0 && a.title == 'CONTRA ACCOUNT OPENINIG'){
-                            contra = a.id
-                        }
                         if(x.title_of_account){
                             if(a.title == x.title_of_account.trim()){
                                 x.ChildAccountId = a.id
@@ -530,15 +520,6 @@ const Upload_CoA = () => {
                     ChildAccountId: x.ChildAccountId,
                     createdAt: "2024-06-30 16:17:04.924+05"
                 });
-                Voucher_Heads.push({
-                    defaultAmount: parsedNumber,
-                    amount: parsedNumber,
-                    type: "debit",
-                    narration: "Opening Balance",
-                    settlement: "",
-                    ChildAccountId: contra,
-                    createdAt: "2024-06-30 16:17:04.924+05"
-                });
             }
 
             if (parsedNumber1) {
@@ -551,32 +532,17 @@ const Upload_CoA = () => {
                     ChildAccountId: x.ChildAccountId,
                     createdAt: "2024-06-30 16:17:04.924+05"
                 });
-                Voucher_Heads.push({
-                    defaultAmount: parsedNumber1,
-                    amount: parsedNumber1,
-                    type: "credit",
-                    narration: "Opening Balance",
-                    settlement: "",
-                    ChildAccountId: contra,
-                    createdAt: "2024-06-30 16:17:04.924+05"
-                });
             }
             if(!parsedNumber && !parsedNumber1){
                 console.log("No value", partyname)
-                continue
             }
-            let ex = '0'
-            if(currency=='PKR'){
-                ex = '1'
-            }
-            console.log("ExChange Rate: ", ex)
             let voucher = {
-                CompanyId:company_Id,
+                CompanyId:Cookies.get("companyId"),
                 costCenter:"KHI",
                 type:"Opening Balance",
                 vType:"OP",
                 currency:currency,
-                exRate:ex,
+                exRate:"0.00",
                 payTo:"",
                 partyId: partyid,
                 partyName: partyname,
@@ -584,7 +550,7 @@ const Upload_CoA = () => {
               }
               matched?balances.push(voucher):null
             !matched&&x.title_of_account?console.log("Not in Child Accounts =>",x.title_of_account.trim()):null
-            if(matched && voucher.Voucher_Heads){
+            if(matched){
                 let result = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_CREATE_VOUCHER,voucher)
                 // console.log(result)
                 // result.data.status == "success"?null:failed.push(result.data.result)
@@ -1015,6 +981,256 @@ const Upload_CoA = () => {
         
     }
 
+    const importCharges = async () => {
+        try{
+            const charges = await axios.post("http://localhost:8081/charges/getAll")
+            console.log(charges)
+            let tempCharges = []
+            charges.data.forEach((x) => {
+                let temp = {
+                    id: x.Id,
+                    code: x.Id,
+                    currency: x.GL_Currencies.CurrencyCode,
+                    name: x.ChargesName,
+                    short: x.ShortName,
+                    calculationType: x.PerUnitFixedId==1?"Per Unit":"Per Shipment",
+                    defaultPaybleParty: "Local-Agent",
+                    defaultRecivableParty: "Client",
+                    taxApply: x.IsTaxable?"Yes":"No",
+                    taxPerc: "0",
+                    fixAmount: 0
+                }
+                tempCharges.push(temp)
+            })
+            console.log(tempCharges)
+            const result = await axios.post("http://localhost:8088/charges/bulkCreate", tempCharges)
+        }catch(err){
+            console.error(err)
+        }
+    
+    }
+    const importCOA = async () => {
+        try{
+            const coa = await axios.post("http://localhost:8081/accounts/getAll")
+            console.log(coa.data)
+            const result = await axios.post("http://localhost:8088/accounts/importAccounts", coa.data)
+        }catch(err){
+            console.error(err)
+        }
+    }
+
+const importVouchers = async () => {
+    try {
+        console.log("🏁 Starting Vouchers API Fetch...");
+
+        // Fetch data from the API
+        const { data } = await axios.post("http://localhost:8081/voucher/getAll");
+        console.log("✅ Data Fetched Successfully", data);
+
+        // Function to create lookup maps
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+        let tempCOA = []
+        data.COA.forEach((a) => {
+            tempCOA.push({
+                ...a,
+                GL_COASubCategory: data.COASubCategory.find((cat) => cat.Id == a.SubCategoryId)
+            })
+        })
+
+        console.log("Creating Lookup Maps...");
+        const lookupMaps = {
+            Currencies: createMap(data.Currencies, "Id"),
+            BankSubType: createMap(data.BankSubType, "Id"),
+            COA: createMap(tempCOA, "Id"),
+            ChequeType: createMap(data.ChequeType, "Id"),
+            InvTaxType: createMap(data.InvTaxType, "Id"),
+            PropertiesLOV: createMap(data.PropertiesLOV, "Id"),
+            SubCompanies: createMap(data.SubCompanies, "Id"),
+            TaxFilerStatus: createMap(data.TaxFilerStatus, "Id"),
+            VoucherType: createMap(data.VoucherType, "Id"),
+            VoucherFormType: createMap(data.VoucherFormType, "Id"),
+        };
+
+        console.log("Processing Voucher Heads...");
+        const Voucher_Heads = data.Voucher_Detail.map(x => ({
+            ...x,
+            GL_BankSubType: lookupMaps.BankSubType.get(x.BankSubTypeId),
+            GL_COA: lookupMaps.COA.get(x.COAAccountId),
+            GL_PropertiesLOV: lookupMaps.PropertiesLOV.get(x.CostCenterId),
+            GL_Currencies: lookupMaps.Currencies.get(x.CurrencyIdVD),
+            GL_InvTaxType: lookupMaps.InvTaxType.get(x.TaxTypeId),
+            Gen_SubCompanies: lookupMaps.SubCompanies.get(x.SubCompanyId),
+        }));
+
+        // Create a Map to group Voucher_Heads by VoucherId
+        const voucherHeadsMap = new Map();
+        Voucher_Heads.forEach(x => {
+            if (!voucherHeadsMap.has(x.VoucherId)) {
+                voucherHeadsMap.set(x.VoucherId, []);
+            }
+            voucherHeadsMap.get(x.VoucherId).push(x);
+        });
+
+        console.log("Processing Vouchers...");
+        const Vouchers = data.Voucher.map(v => ({
+            ...v,
+            Voucher_Heads: voucherHeadsMap.get(v.Id) || [],
+            GL_Voucher: data.Voucher.find(y => y.Id === v.ChequeReturnId),
+            GL_ChequeType: lookupMaps.ChequeType.get(v.ChequeTypeId),
+            GL_Currencies: lookupMaps.Currencies.get(v.CurrencyId),
+            Gen_SubCompanies: lookupMaps.SubCompanies.get(v.SubCompanyId),
+            GL_COA: lookupMaps.COA.get(v.SettlementAccountId),
+            Gen_TaxFilerStatus: lookupMaps.TaxFilerStatus.get(v.FilerStatusId),
+            GL_VoucherType: lookupMaps.VoucherType.get(v.VoucherTypeId),
+            GL_VoucherFormType: lookupMaps.VoucherFormType.get(v.VoucherFormId),
+            Gen_BankSubType: lookupMaps.BankSubType.get(v.BankSubTypeId),
+        }));
+
+        // Create a Map to find Vouchers by Voucher Head Id
+        const voucherHeadToVoucherMap = new Map();
+        Vouchers.forEach(v => {
+            if(v.VoucherNo == 'SNS-BRV-00016/23'){
+                console.log(v)
+            }
+            v.Voucher_Heads.forEach(head => {
+                voucherHeadToVoucherMap.set(head.Id, v);
+            });
+        });
+
+        console.log("Processing Invoice Adjustments...");
+        const InvAdjustment = data.InvAdjustments.map(adj => ({
+            ...adj,
+            voucher: voucherHeadToVoucherMap.get(adj.GVDetailId) || null, // Link Voucher via Voucher Head Id
+        }));
+
+        // Create a Map to group InvAdjustments by InvoiceId
+        const invAdjustmentMap = new Map();
+        InvAdjustment.forEach(adj => {
+            if (!invAdjustmentMap.has(adj.InvoiceId)) {
+                invAdjustmentMap.set(adj.InvoiceId, []);
+            }
+            invAdjustmentMap.get(adj.InvoiceId).push(adj);
+        });
+
+        console.log("Processing Invoices...");
+        const invoice = data.Invoices.map(inv => ({
+            ...inv,
+            GL_Currencies: lookupMaps.Currencies.get(inv.CurrencyId),
+            voucher: voucherHeadToVoucherMap.get(inv.GVDetailId) || null, // Link Voucher via Voucher Head Id
+            InvAdjustments: invAdjustmentMap.get(inv.Id) || [],
+        }));
+
+        console.log("✅ Processing Complete", invoice);
+        const chunkArray = (array, chunkSize) => {
+            const chunks = [];
+            for (let i = 0; i < array.length; i += chunkSize) {
+                chunks.push(array.slice(i, i + chunkSize));
+            }
+            return chunks;
+        };
+        
+        // Batch sending function
+        const sendInvoicesInBatches = async (invoices, batchSize = 100, maxRetries = 3) => {
+            const batches = chunkArray(invoices, batchSize);
+        
+            for (let i = 0; i < batches.length; i++) {
+                let success = false;
+                let retries = 0;
+                
+                while (!success && retries < maxRetries) {
+                    try {
+                        console.log(`🚀 Sending batch ${i + 1}/${batches.length} (${batches[i].length} invoices)`);
+                        
+                        // Send the batch
+                        const response = await axios.post("http://localhost:8088/voucher/importVouchers", batches[i]);
+                        
+                        console.log(`✅ Batch ${i + 1} sent successfully:`, response.data);
+                        success = true; // Mark success to move to the next batch
+                        
+                    } catch (error) {
+                        retries++;
+                        console.error(`❌ Batch ${i + 1} failed (Attempt ${retries}/${maxRetries}):`, error.message);
+                        
+                        if (retries >= maxRetries) {
+                            console.error(`🚨 Skipping batch ${i + 1} after ${maxRetries} failed attempts.`);
+                        } else {
+                            console.log(`🔄 Retrying batch ${i + 1}...`);
+                        }
+                    }
+                }
+            
+                // break;
+            }
+        
+            console.log("🎉 All batches processed!");
+        };
+        
+        // Example Usage
+        // const invoices = [...]; // Your invoices array here
+        await sendInvoicesInBatches(invoice, 100);
+        const usedVoucherIds = new Set();
+
+        // From direct invoice linkage (via GVDetailId)
+        invoice.forEach((inv, i) => {
+            (i/invoice.lenght)*100%10==0?console.log(`${((i/invoice.lenght)*100)}%`):null
+            if (inv.voucher) {
+                usedVoucherIds.add(inv.voucher.Id);
+            }
+            // From adjustments
+            inv.InvAdjustments.forEach(adj => {
+                if (adj.voucher) {
+                    usedVoucherIds.add(adj.voucher.Id);
+                }
+            });
+        });
+
+        // Get vouchers not used anywhere
+        const unlinkedVouchers = Vouchers.filter(v => !usedVoucherIds.has(v.Id));
+
+        console.log("🟡 Unlinked Vouchers Count:", unlinkedVouchers);
+        
+        // New function to send unlinked vouchers
+        const sendUnlinkedVouchersInBatches = async (vouchers, batchSize = 100, maxRetries = 3) => {
+            const batches = chunkArray(vouchers, batchSize);
+        
+            for (let i = 0; i < batches.length; i++) {
+                let success = false;
+                let retries = 0;
+        
+                while (!success && retries < maxRetries) {
+                    try {
+                        console.log(`🚀 Sending unlinked batch ${i + 1}/${batches.length} (${batches[i].length} vouchers)`);
+        
+                        const response = await axios.post("http://localhost:8088/voucher/importV", batches[i]);
+        
+                        console.log(`✅ Unlinked Batch ${i + 1} sent successfully:`, response.data);
+                        success = true;
+        
+                    } catch (error) {
+                        retries++;
+                        console.error(`❌ Unlinked Batch ${i + 1} failed (Attempt ${retries}/${maxRetries}):`, error.message);
+        
+                        if (retries >= maxRetries) {
+                            console.error(`🚨 Skipping unlinked batch ${i + 1} after ${maxRetries} failed attempts.`);
+                        } else {
+                            console.log(`🔄 Retrying unlinked batch ${i + 1}...`);
+                        }
+                    }
+                }
+            }
+        
+            console.log("🎉 All unlinked voucher batches processed!");
+        };
+        
+        // Send the unlinked vouchers
+        await sendUnlinkedVouchersInBatches(unlinkedVouchers, 100);
+        } catch (err) {
+        console.error("❌ Import failed:", err);
+    }
+};
+
+
+
     const uploadInvoices = async() => {
         console.log(invoicesData)
         let count = 0
@@ -1186,7 +1402,7 @@ const Upload_CoA = () => {
                         // x.partyName = a.name
                         x.accountType = "client"
                         // matched = true
-                        // console.log("Found in Clients", a.name, i)
+                        console.log("Found in Clients", a.name, i)
                     }
                 }
             })
@@ -1201,13 +1417,13 @@ const Upload_CoA = () => {
                             if(a.types.includes("Agent")){
                                 x.accountType = "agent"
                             }
-                            // console.log("Found in Vendors", a.name, i)
+                            console.log("Found in Vendors", a.name, i)
                         }
                     }
                 })
             }
             if(!matched){
-                // console.log("Checking in Accounts")
+                console.log("Checking in Accounts")
                 accountsData.forEach((y)=>{
                     y.Parent_Accounts.forEach((z)=>{
                         z.Child_Accounts.forEach((a)=>{
@@ -1395,12 +1611,12 @@ const Upload_CoA = () => {
 
         console.log("No Party:",noParty)
 
-        // const uniqueVouchers = vouchers.filter((voucher, index, self) =>
-        //     index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)
-        // );
+        const uniqueVouchers = vouchers.filter((voucher, index, self) =>
+            index === self.findIndex((v) => v.voucher_Id === voucher.voucher_Id)
+        );
 
-        // console.log(uniqueVouchers)
-        // setVouchers(uniqueVouchers)
+        console.log(uniqueVouchers)
+        setVouchers(uniqueVouchers)
         console.log("Done", count)
         setStatus("Vouchers created, waiting to upload...")
     }
@@ -1750,94 +1966,104 @@ const Upload_CoA = () => {
     }
 
     return (
-        <div style={{overflow: 'auto', height: '87.5vh'}}>
-        <span className="py-2">Chart of Accounts</span>
-        <CSVReader onFileLoaded={handleData}/>
-        <button onClick={uploadData} style={{maxWidth: 75}} className='btn-custom mt-3 px-3 mx-3'>Upload</button>
-        <span className="py-2">Parties</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleDataParties(data, fileInfo)}}/>
-        <button onClick={uploadDataParties}style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Parties</button>
-        <button onClick={uploadDataAssociations} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Create Party Associations</button>
-        <span className="py-2">Opening Balances</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleOpeningBalances(data, fileInfo)}}/>
-        <span className="py-2">Invoices</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleInvoices(data, fileInfo)}}/>
-        <span
-            className="py-2"
-            style={{
-                color: statusInvoices === "Waiting for file" ? "grey" :
-                    statusInvoices === "File loaded, Fetching data..." ? "orange" :
-                    statusInvoices === "Data Fetched, Processing..." ? "blue" :
-                    statusInvoices === "Success, see console for more details" ? "green" :
-                    statusInvoices === "Uploading..." ? "blue" :
-                    "red"
-            }}
-            >
-            {statusInvoices}
-        </span>
-        <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
-        <button
-        onClick={async () => {
-            try {
-            const response = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/updateVouchersWithInvoices`);
-            if (response.data.status === 'success') {
-                alert('Vouchers updated successfully!');
-            } else {
-                alert('Failed to update vouchers: ' + response.data.message);
-            }
-            } catch (error) {
-            console.error('Error updating vouchers:', error);
-            alert('An error occurred while updating vouchers. Please check the console for details.');
-            }
-        }}
-        style={{ width: 'auto' }}
-        className="btn-custom mt-3 px-3 mx-3"
-        >
-        Update Invoices
-        </button>
-        <span className="py-2">Invoice Matching, Upload grid csv</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{matchInvoices(data, fileInfo)}}/>
-        <span
-            className="py-2"
-            style={{
-                color: statusInvoiceMatching === "Waiting for file" ? "grey" :
-                    statusInvoiceMatching === "File loaded, Fetching data..." ? "orange" :
-                    statusInvoiceMatching === "Data Fetched, Processing..." ? "blue" :
-                    // statusInvoiceMatching === "Success, see console for more details" ? "green" :
-                    statusInvoiceMatching === "Complete, check console" ? "green" :
-                    statusInvoiceMatching === "Uploading..." ? "blue" :
-                    "red"
-            }}
-            >
-            {statusInvoiceMatching}
-        </span>
-        <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
-        <span className="py-2">Vouchers</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleVoucher(data, fileInfo)}}/>
-        <span
-            className="py-2"
-            style={{
-                color: status === "Waiting for file" ? "grey" :
-                    status === "Processing..." ? "orange" :
-                    status === "Sorted, creating Vouchers..." ? "blue" :
-                    status === "Vouchers created, waiting to upload..." ? "green" :
-                    status === "Uploading..." ? "blue" :
-                    status === "Uploaded" ? "green" :
-                    "red"
-            }}
-            >
-            {status}
-        </span>
-        <button onClick={uploadVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Vouchers</button>
-        <button onClick={verifyVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Verify Vouchers</button>
-        <button onClick={setExRateVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Set Ex-Rate Vouchers</button>
-        <span className="py-2">Jobs</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
-        <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
-        <span className="py-2">Charges</span>
-        <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleCharges(data, fileInfo)}}/>
-        <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload & Link Charges</button>
-        </div>
+        <Row md={24}>
+            {/* <Col md={12}>
+                <div style={{overflow: 'auto', height: '87.5vh'}}>
+                <span className="py-2">Chart of Accounts</span>
+                <CSVReader onFileLoaded={handleData}/>
+                <button onClick={uploadData} style={{maxWidth: 75}} className='btn-custom mt-3 px-3 mx-3'>Upload</button>
+                <span className="py-2">Parties</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleDataParties(data, fileInfo)}}/>
+                <button onClick={uploadDataParties}style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Parties</button>
+                <button onClick={uploadDataAssociations} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Create Party Associations</button>
+                <span className="py-2">Opening Balances</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleOpeningBalances(data, fileInfo)}}/>
+                <span className="py-2">Invoices</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleInvoices(data, fileInfo)}}/>
+                <span
+                    className="py-2"
+                    style={{
+                        color: statusInvoices === "Waiting for file" ? "grey" :
+                            statusInvoices === "File loaded, Fetching data..." ? "orange" :
+                            statusInvoices === "Data Fetched, Processing..." ? "blue" :
+                            statusInvoices === "Success, see console for more details" ? "green" :
+                            statusInvoices === "Uploading..." ? "blue" :
+                            "red"
+                    }}
+                    >
+                    {statusInvoices}
+                </span>
+                <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+                <button
+                onClick={async () => {
+                    try {
+                    const response = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/invoice/updateVouchersWithInvoices`);
+                    if (response.data.status === 'success') {
+                        alert('Vouchers updated successfully!');
+                    } else {
+                        alert('Failed to update vouchers: ' + response.data.message);
+                    }
+                    } catch (error) {
+                    console.error('Error updating vouchers:', error);
+                    alert('An error occurred while updating vouchers. Please check the console for details.');
+                    }
+                }}
+                style={{ width: 'auto' }}
+                className="btn-custom mt-3 px-3 mx-3"
+                >
+                Update Invoices
+                </button>
+                <span className="py-2">Invoice Matching, Upload grid csv</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{matchInvoices(data, fileInfo)}}/>
+                <span
+                    className="py-2"
+                    style={{
+                        color: statusInvoiceMatching === "Waiting for file" ? "grey" :
+                            statusInvoiceMatching === "File loaded, Fetching data..." ? "orange" :
+                            statusInvoiceMatching === "Data Fetched, Processing..." ? "blue" :
+                            // statusInvoiceMatching === "Success, see console for more details" ? "green" :
+                            statusInvoiceMatching === "Complete, check console" ? "green" :
+                            statusInvoiceMatching === "Uploading..." ? "blue" :
+                            "red"
+                    }}
+                    >
+                    {statusInvoiceMatching}
+                </span>
+                <button onClick={uploadInvoices} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Invoices</button>
+                <span className="py-2">Vouchers</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleVoucher(data, fileInfo)}}/>
+                <span
+                    className="py-2"
+                    style={{
+                        color: status === "Waiting for file" ? "grey" :
+                            status === "Processing..." ? "orange" :
+                            status === "Sorted, creating Vouchers..." ? "blue" :
+                            status === "Vouchers created, waiting to upload..." ? "green" :
+                            status === "Uploading..." ? "blue" :
+                            status === "Uploaded" ? "green" :
+                            "red"
+                    }}
+                    >
+                    {status}
+                </span>
+                <button onClick={uploadVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Vouchers</button>
+                <button onClick={verifyVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Verify Vouchers</button>
+                <button onClick={setExRateVouchers} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Set Ex-Rate Vouchers</button>
+                </div>
+                <span className="py-2">Jobs</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleJobData(data, fileInfo)}}/>
+                <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload Jobs</button>
+                <span className="py-2">Charges</span>
+                <CSVReader parserOptions={parserOptions} onFileLoaded={(data, fileInfo)=>{handleCharges(data, fileInfo)}}/>
+                <button onClick={uploadJobs} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>Upload & Link Charges</button>
+            
+            </Col> */}
+            <Col md={12}>
+                <button onClick={()=>{importCOA()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Import COA from Climax DB</button>
+                <button onClick={()=>{importCharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>2. Import Charges from Climax DB</button>
+                <button onClick={()=>{importVouchers()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Vouchers from Climax DB</button>
+            </Col>
+        </Row>
     )
 }
 

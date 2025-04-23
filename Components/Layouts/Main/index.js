@@ -35,10 +35,10 @@ const Main = ({sessionData, chartData}) => {
   return (
   <div className='home-styles'>
     <Row>
-      {/* <UploadBackUp /> */}
-      {companyId==3 && 
+      {<UploadBackUp />}
+      {/* {companyId==3 && 
         <AWBCalculator/>
-      }
+      } */}
     </Row>
     {/*
     {companyId==1 && 

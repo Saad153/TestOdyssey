@@ -9,6 +9,8 @@ import Pagination from '../../Shared/Pagination';
 import { Input } from 'antd';
 import moment from 'moment';
 import JobsBackupData from './Backup/BackupModal';
+import { delay } from "/functions/delay"
+import axios from 'axios';
 
 const SEJobList = ({ jobsData, sessionData, type }) => {
   const queryClient = useQueryClient();
@@ -40,7 +42,6 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   const noOfPages = Math.ceil(records?.length / recordsPerPage);
 
   useEffect(() => {
-    // console.log('jobsData', jobsData);
     if (jobsData.status == "success") {
       setRecords(jobsData.result);
     }
@@ -50,15 +51,28 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
     setRecords(jobsData.result)
   }, [jobsData])
 
-  const getCounts = async () => {
-    let jobTemp = {}
-    records.forEach((job)=>{
-      jobTemp.push({
-        id: job.id
-      })
-      console.log(jobTemp)
-    })
-  }
+  const [firstCall, setFirstCall] = useState(false)
+
+  useEffect(() => {
+    if (currentRecords.length > 0 && !firstCall) {
+      console.log("Records: ", currentRecords);
+      getCounts(currentRecords);
+      setFirstCall(true);
+    }
+  }, [currentRecords, firstCall]); // Include firstCall here to avoid React warning
+  
+
+  const getCounts = async (data) => {
+    console.log("Job IDs", data);
+    if (data.length > 0) {
+      const result = await axios.post(
+        `${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/getCounts`,
+        { data } // data goes in the body
+      );
+      console.log("Result:", result.data.result);
+      setRecords(result.data.result);
+    }
+  };
 
   return (
     <>
@@ -74,9 +88,9 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
               <Input type="text" placeholder="Enter client,wieght or Job no" size='sm' onChange={e => setQuery(e.target.value)} />
             </Col>
             <Col md={2} className='text-end'>
-              <button className='btn-custom left px-4' onClick={()=>setIsOpen(true)}
+              {/* <button className='btn-custom left px-4' onClick={()=>setIsOpen(true)}
               >Old Jobs</button>
-              {isOpen && <JobsBackupData isOpen={isOpen} onClose={()=>setIsOpen(false)} type={type}/>}
+              {isOpen && <JobsBackupData isOpen={isOpen} onClose={()=>setIsOpen(false)} type={type}/>} */}
             </Col>
             <Col md={1}>
               <button className='btn-custom left px-4'
@@ -168,7 +182,18 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
                           Custom Clearance: <span className='blue-txt fw-5'>{x.customCheck != '' ? 'Yes' : 'No'}</span>
                         </td>
                         <td>
-                          {x.approved == "true" ? <img src={'/approve.png'} height={70} className='' /> : "Not Approved"}
+                        { x.approved === 'true' ? (
+                            x.iLength > 0 || x.bLength > 0 ? (
+                              <>
+                                <img src='/approve.png' height={70} />
+                              </>
+                            ) : (
+                              <span>Approved, Invoices pending</span>
+                            )
+                          ) : (
+                            <span>Not Approved</span>
+                          )
+                        }
                         </td>
                         <td>
                           <span className='blue-txt fw-6'>
@@ -178,6 +203,16 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
                           Created at:{" "} 
                           <span className='grey-txt '>
                             {x.createdAt ? moment(x.createdAt).format("DD-MM-YY") : "-"}
+                          </span>
+                          <br/>
+                          Invoices:{" "} 
+                          <span className='grey-txt '>
+                            {x.iLength ? x.iLength : "0"}
+                          </span>
+                          <br/>
+                          Bills:{" "} 
+                          <span className='grey-txt '>
+                            {x.bLength ? x.bLength : "0"}
                           </span>
                         </td>
                       </tr>
