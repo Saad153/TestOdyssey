@@ -50,6 +50,16 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
     setRecords(jobsData.result)
   }, [jobsData])
 
+  const getCounts = async () => {
+    let jobTemp = {}
+    records.forEach((job)=>{
+      jobTemp.push({
+        id: job.id
+      })
+      console.log(jobTemp)
+    })
+  }
+
   return (
     <>
       {companyId != '' &&

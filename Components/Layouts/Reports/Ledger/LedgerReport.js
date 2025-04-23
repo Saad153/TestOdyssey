@@ -35,14 +35,17 @@ const LedgerReport = ({ voucherData, from, to, name, company, currency }) => {
                 closingBalance - (currency=="PKR"? parseFloat(y.defaultAmount):parseFloat(y.amount))
             
           }
-          if(!(currency!="PKR" && y.narration.includes("Ex-Rate"))){
+          if(!(currency!="PKR" && y.narration?.includes("Ex-Rate"))){
 
             let tempBalance = parseFloat(closingBalance) + parseFloat(prevBalance)
+            // console.log("Voucher Head",y)
+            let chequeTemp = y["Voucher.chequeNo"] + " | " + moment(y["Voucher.chequeDate"]).format("DD-MM-YYYY")
             tempArray.push({
               date: y.createdAt,
               voucherType: y["Voucher.type"],
               voucherId: y["Voucher.id"],
               amount: currency=="PKR" ? parseFloat(y.defaultAmount) : parseFloat(y.amount),
+              checkDets: (chequeTemp.includes("null")||chequeTemp.includes("Invalid"))?"":chequeTemp,
               balance: tempBalance,
               voucher: y["Voucher.voucher_Id"],
               type: y.type,

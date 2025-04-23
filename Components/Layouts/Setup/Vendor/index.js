@@ -4,6 +4,9 @@ import Router from 'next/router';
 import { useDispatch } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import { Input, Select } from 'antd';
+import openNotification from '/Components/Shared/Notification';
+import { DeleteOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
 function recordsReducer(state, action){
   switch (action.type) {
@@ -87,6 +90,19 @@ const Vendor = ({sessionData, vendorData}) => {
     dispatch({type:'toggle', fieldName:'records', payload:data});
   };
 
+  const deleteVendor = async (id, active) => {
+      const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/vendor/deleteVendor`, {id: id})
+      console.log(result)
+      if(result.data.status == 'success'){
+        openNotification('Success', `Vendor Deleted!`, 'green');
+        Router.push('/setup/vendorList')
+      } else if (result.data.status == 'deleted') {
+        openNotification('Error', `Vendor Already Deleted!`, 'Red');
+      } else if(result.data.status == 'transaction') {
+        openNotification('Action Denied', `Transaction exists on vendor!`, 'Orange');
+      }
+    }
+
   return (
   <div className='base-page-layout'>
     <Row>
@@ -122,28 +138,55 @@ const Vendor = ({sessionData, vendorData}) => {
             <th>Contact Persons</th>
             <th>Telephones</th>
             <th>Status</th>
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
         {records.map((x, index) => {
           return (
-          <tr key={index} className='f row-hov'
-            onClick={()=>{
+          <tr key={index} className='f row-hov'>
+            <td onClick={()=>{
               dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
               Router.push(`/setup/vendor/${x.id}`);
-            }}
-          >
-            <td className='blue-txt'>{x.code}</td>
-            <td className='blue-txt fw-6'>{x.name}</td>
-            <td>
+            }} className='blue-txt'>{x.code}</td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
+              Router.push(`/setup/vendor/${x.id}`);
+            }} className='blue-txt fw-6'>{x.name}</td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
+              Router.push(`/setup/vendor/${x.id}`);
+            }}>
               {x.types?.split(", ").map((z, i)=>{
               return(<div key={i} className="party-types">{z}</div>)
               })}
             </td>
-            <td>{x.person1} {x.mobile1}<br/>{x.person2} {x.mobile2}</td>
-            <td>{x.telephone1}<br/>{x.telephone2}</td>
-            <td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
+              Router.push(`/setup/vendor/${x.id}`);
+            }}>{x.person1} {x.mobile1}<br/>{x.person2} {x.mobile2}</td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
+              Router.push(`/setup/vendor/${x.id}`);
+            }}>{x.telephone1}<br/>{x.telephone2}</td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Vendor", "key":"2-8", "id":x.id}));
+              Router.push(`/setup/vendor/${x.id}`);
+            }}>
               <td>{x.active?<b className='green-txt'>Active</b>:<b className='red-txt'>Disabled</b>}</td>
+            </td>
+            <td style={{ textAlign: 'center', verticalAlign: 'middle', height: '40px' }}
+              onClick={()=>{
+                console.log(x.name)
+                if(!x.active){
+                  deleteVendor(x.id, x.active)
+                }else{
+                  openNotification('Error', 'Disable Vendor first', 'Red')
+                }
+              }}
+            >
+              {!x.active?<DeleteOutlined style={{fontSize: '16px', color: '#D11A2A', cursor: 'pointer'}}/>:<DeleteOutlined style={{fontSize: '16px', color: 'grey', cursor: 'pointer'}}/>}
+              
             </td>
           </tr>
           )

@@ -1,11 +1,12 @@
 import { Row, Col, Table } from 'react-bootstrap';
 import React, { useEffect, useReducer, useState } from 'react';
 import Router from 'next/router';
-import { HistoryOutlined } from '@ant-design/icons';
+import { DeleteOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { incrementTab } from '/redux/tabs/tabSlice';
 import axios from 'axios';
 import {Input, Select} from 'antd'
+import openNotification from '/Components/Shared/Notification';
 
 function recordsReducer(state, action){
   switch (action.type) {
@@ -83,6 +84,19 @@ const Client = ({sessionData, clientData}) => {
     dispatch({type:'toggle', fieldName:'allClients', payload:clientData.result});
   }
 
+  const deleteClient = async (id, active) => {
+    const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/clientRoutes/deleteClient`, {id: id})
+    console.log(result)
+    if(result.data.status == 'success'){
+      openNotification('Success', `Client Deleted!`, 'green');
+      Router.push('/setup/clientList')
+    } else if (result.data.status == 'deleted') {
+      openNotification('Error', `Client Already Deleted!`, 'Red');
+    } else if(result.data.status == 'transaction') {
+      openNotification('Action Denied', `Transaction exists on client!`, 'Orange');
+    }
+  }
+
 
   const onSearch = (event) => {
     const searchValue = event.target.value.toLowerCase();
@@ -138,24 +152,49 @@ const Client = ({sessionData, clientData}) => {
             <th>Telephones</th>
             <th>Address</th>
             <th>Status</th>
-            {/* <th>History</th> */}
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
         {records?.map((x, index) => {
           return (
-          <tr key={index} className='f row-hov'
-            onClick={()=>{
+          <tr key={index} className='f row-hov'>
+            <td onClick={()=>{
               dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
               Router.push(`/setup/client/${x.id}`);
-            }}
-          >
-            <td><span className=''>{x.code}</span></td>
-            <td><span className='blue-txt fw-7'>{x.name}</span></td>
-            <td>{x.person1} {x.mobile1}<br/> {x.person2} {x.mobile2}<br/> </td>
-            <td>{x.telephone1}<br/>{x.telephone2}</td>
-            <td>{x.address1?.slice(0,30)}<br/> {x.address2?.slice(0,30)}<br/></td>
-            <td>{x.active?<b className='green-txt'>Active</b>:<b className='red-txt'>Disabled</b>}</td>
+            }}><span className=''>{x.code}</span></td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
+              Router.push(`/setup/client/${x.id}`);
+            }}><span className='blue-txt fw-7'>{x.name}</span></td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
+              Router.push(`/setup/client/${x.id}`);
+            }}>{x.person1} {x.mobile1}<br/> {x.person2} {x.mobile2}<br/> </td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
+              Router.push(`/setup/client/${x.id}`);
+            }}>{x.telephone1}<br/>{x.telephone2}</td>
+            <td onClick={()=>{
+              dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
+              Router.push(`/setup/client/${x.id}`);
+            }}>{x.address1?.slice(0,30)}<br/> {x.address2?.slice(0,30)}<br/></td>
+            <td  style={{ textAlign: 'center', verticalAlign: 'middle', height: '40px', borderRight: '1px solid lightgrey' }} onClick={()=>{
+              dispatchNew(incrementTab({"label":"Client","key":"2-7","id":x.id}));
+              Router.push(`/setup/client/${x.id}`);
+            }}>{x.active?<b className='green-txt'>Active</b>:<b className='red-txt'>Disabled</b>}</td>
+            <td style={{ textAlign: 'center', verticalAlign: 'middle', height: '40px' }}
+              onClick={()=>{
+                if(!x.active){
+                  deleteClient(x.id, x.active)
+                }else{
+                  openNotification('Error', 'Disable Client first', 'Red')
+                }
+              }}
+            >
+              {!x.active?<DeleteOutlined style={{fontSize: '16px', color: '#D11A2A', cursor: 'pointer'}}/>:<DeleteOutlined style={{fontSize: '16px', color: 'grey', cursor: 'pointer'}}/>}
+              
+            </td>
           </tr>
         )})}
         </tbody>

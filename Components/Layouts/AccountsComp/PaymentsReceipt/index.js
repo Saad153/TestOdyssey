@@ -173,14 +173,14 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       dispatch(setField({ field: 'invoices', value: x.x.invoice }))
     }
     // console.log("Invoice in P/R", x.x.invoice)
-    // dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))
+    dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))
     x.x.Voucher_Heads.forEach((y) => {
       if(y.accountType=="payAccount"){
         dispatch(setField({ field: 'receivingAccount', value: y.ChildAccountId }));
         dispatch(setField({ field: 'receivingAmount', value: parseFloat(y.amount) }))
       }
       if(y.accountType=="partyAccount"||y.accountType=="General"||y.accountType=="Admin Expense"){
-        dispatch(setField({ field: 'voucherNarration', value: y.narration }))
+        // dispatch(setField({ field: 'voucherNarration', value: y.narration }))
         dispatch(setField({ field: 'totalReceivable', value: parseFloat(y.amount) }));
         // dispatch(setField({ field: 'selectedAccount', value: parseInt(y.ChildAccountId) }))
       }

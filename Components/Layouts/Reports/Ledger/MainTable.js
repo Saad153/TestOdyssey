@@ -49,6 +49,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                   <th className="text-center class-1">Voucher #</th>
                   <th className="text-center class-1">Date</th>
                   <th className="text-center class-2" style={{ minWidth: 300 }}>Particular</th>
+                  <th className="text-center class-2" style={{ minWidth: 150 }}>Cheque No | Date</th>
                   <th className="text-center class-1" style={{ width: 100 }}>Debit</th>
                   <th className="text-center class-1" style={{ width: 100 }}>Credit</th>
                   <th className="text-center class-1" style={{ width: 120 }}>Balance</th>
@@ -61,6 +62,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                   <td className="row-hov blue-txt text-center fs-12">{openingVoucher["Voucher.voucher_Id"]}</td>
                   <td className="text-center fs-12 grey-txt">{moment(openingVoucher.createdAt).format("DD-MM-YYYY")}</td>
                   <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{openingVoucher.narration}</td>
+                  <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}></td>
                   <td className="text-end fs-12">{openingVoucher.type == "debit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
                   <td className="text-end fs-12">{openingVoucher.type == "credit" && (currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
                   <td className="text-end fs-12 blue-txt">{(currency!="PKR"?commas(openingVoucher.amount):commas(openingVoucher.defaultAmount))}</td>
@@ -91,6 +93,7 @@ const MainTable = ({ ledger, closing, opening, openingVoucher, name, company, cu
                       >{x.voucher}</td>
                       <td className="text-center fs-12 grey-txt">{moment(x.date).format("DD-MM-YYYY")}</td>
                       <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{x.narration}</td>
+                      <td className="fs-12" style={{ minWidth: 70, maxWidth: 70 }}>{x.checkDets}</td>
                       <td className="text-end fs-12">{x.type == "debit" && commas(x.amount)}</td>
                       <td className="text-end fs-12">{x.type == "credit" && commas(x.amount)}</td>
                       <td className="text-end fs-12">{x.balance > 0 ? <span className="blue-txt">{`${commas(x.balance)} dr`}</span> : <span className="grey-txt">{`${commas(x.balance * -1)} cr`}</span>}</td>
