@@ -163,8 +163,8 @@ const Voucher = ({ id }) => {
 
   useEffect(() => {
     if(id!="new"){
-      fetchVoucherData()
       dispatch(resetState())
+      fetchVoucherData()
       dispatch(setField({ field: 'edit', value: true }))
     }
   }, [id])
@@ -199,6 +199,24 @@ const Voucher = ({ id }) => {
         openNotification('Error', `Settlement Account not Selected`, 'red')
         await setVoucherBuffer(false)
         return
+      }
+    }else {
+      if(state.Voucher_Heads.length<2){
+        openNotification('Error', "Must have atleast two accoutns", 'orange')
+        await setVoucherBuffer(false)
+        return
+      }else{
+        let d = false
+        let c = false
+        state.Voucher_Heads.forEach((vh) => {
+          vh.type=='debit'?d=true:null
+          vh.type=='credit'?c=true:null
+        })
+        if(!d && !c){
+          openNotification('Error', 'Must have a credit and debit Account', 'orange')
+          await setVoucherBuffer(false)
+          return
+        }
       }
     }
     state.debitTotal==0.0||state.debitTotal==undefined?openNotification('Error', `No amount entered`, 'red'):null
@@ -290,11 +308,14 @@ const Voucher = ({ id }) => {
       console.log("Vouchers", voucher)
       let result
       if(state.edit && id!="new"){
-        voucher = {
+        // voucher = {
+        //   id: state.id,
+        //   ...voucher
+        // }
+        result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/updateVoucher`, {
           id: state.id,
           ...voucher
-        }
-        result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/voucher/updateVoucher`, voucher).then((x) => {
+        }).then((x) => {
           openNotification('Success', `Voucher Updated Successfully`, 'green')
           dispatch(setField({ field: 'edit', value: true }))
           fetchVoucherData()

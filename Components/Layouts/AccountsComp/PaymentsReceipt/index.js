@@ -143,6 +143,45 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     fetchAccounts();
   }
 
+  const refresh = async () =>{
+    try{
+      await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
+        headers: {
+          id: state.selectedAccount,
+          companyid: Cookies.get('companyId'),
+          invoicecurrency: state.currency,
+          pay: state.payType,
+          type: state.type,
+          edit: true,
+        }
+      }).then((x) => {
+        let temp = []
+        state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+        temp = x.data.result;
+        let temp2 = [...state.invoices];
+        console.log("TEMP>>", temp)
+        console.log("TEMP2>>", temp2)
+        const map = new Map();
+        temp2.forEach(item => map.set(item.id, item));
+        temp.forEach(item => {
+          console.log("Item:", item)
+          console.log("State:", state)
+          item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
+          map.set(item.id, item);
+        });
+
+        // Get the union as an array
+        const union = Array.from(map.values());
+        console.log(union)
+        dispatch(setField({ field: 'editing', value: true }))
+        dispatch(setField({ field: 'advance', value: false }))
+        dispatch(setField({ field: 'invoices', value: union }))
+      })
+    }catch(e){
+      console.log(e)
+    }
+  }
+
   const deleteVoucher = () => {
     axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_PAY_REC,{
       id: state.voucherId
@@ -285,40 +324,41 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
               <button onClick={()=>{dispatch(setField({ field: 'advance', value: true }))}} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#1f2937", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Advance Tran.</span> <DollarOutlined  style={{ fontSize: 16 }}/></button>
             </Col>}
             {(!(state.selectedAccount==""||state.selectedAccount==undefined)&&state.edit)&&<Col md={2}>
-              <button onClick={async () =>{
-                try{
-                  await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
-                    headers: {
-                      id: state.selectedAccount,
-                      companyid: Cookies.get('companyId'),
-                      invoicecurrency: state.currency,
-                      pay: state.payType,
-                      type: state.type,
-                      edit: true,
-                    }
-                  }).then((x) => {
-                    let temp = []
-                    state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
-                    temp = x.data.result;
-                    let temp2 = [...state.invoices];
-                    const map = new Map();
-                    temp2.forEach(item => map.set(item.id, item));
-                    temp.forEach(item => {
-                      console.log("Item:", item)
-                      console.log("State:", state)
-                      item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
-                      map.set(item.id, item);
-                    });
+              <button onClick={() =>{
+                refresh()
+                // try{
+                //   await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
+                //     headers: {
+                //       id: state.selectedAccount,
+                //       companyid: Cookies.get('companyId'),
+                //       invoicecurrency: state.currency,
+                //       pay: state.payType,
+                //       type: state.type,
+                //       edit: true,
+                //     }
+                //   }).then((x) => {
+                //     let temp = []
+                //     state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
+                //     temp = x.data.result;
+                //     let temp2 = [...state.invoices];
+                //     const map = new Map();
+                //     temp2.forEach(item => map.set(item.id, item));
+                //     temp.forEach(item => {
+                //       console.log("Item:", item)
+                //       console.log("State:", state)
+                //       item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
+                //       map.set(item.id, item);
+                //     });
 
-                    // Get the union as an array
-                    const union = Array.from(map.values());
-                    console.log(union)
-                    dispatch(setField({ field: 'editing', value: true }))
-                    dispatch(setField({ field: 'invoices', value: union }))
-                  })
-                }catch(e){
-                  console.log(e)
-                }
+                //     // Get the union as an array
+                //     const union = Array.from(map.values());
+                //     console.log(union)
+                //     dispatch(setField({ field: 'editing', value: true }))
+                //     dispatch(setField({ field: 'invoices', value: union }))
+                //   })
+                // }catch(e){
+                //   console.log(e)
+                // }
               }} style={{ fontSize: 14, width: "100%", display: "flex", justifyContent: "center", alignItems: "center", height: "100%", backgroundColor: "#438995", color: "white", borderRadius: 20 }}><span style={{marginRight: 5}}>Refresh</span> <SyncOutlined style={{ fontSize: 16 }}/></button>
             </Col>}
             {!(state.selectedAccount==""||state.selectedAccount==undefined)&&<Col md={2}>

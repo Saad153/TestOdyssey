@@ -56,7 +56,7 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   useEffect(() => {
     if (currentRecords.length > 0 && !firstCall) {
       console.log("Records: ", currentRecords);
-      getCounts(currentRecords);
+      getCounts(records);
       setFirstCall(true);
     }
   }, [currentRecords, firstCall]); // Include firstCall here to avoid React warning
