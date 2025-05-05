@@ -1,169 +1,253 @@
 import { Row, Col } from 'react-bootstrap';
-import React from "react";
-import { Form, Input, Checkbox, Switch, Select, notification } from 'antd';
+import React, { useEffect, useState } from "react";
+import { Form, Input, Checkbox, Switch, Select, notification, Button } from 'antd';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import openNotification from '/Components/Shared/Notification';
 
-const CreateOrEdit = ({state, dispatch, getAccounts}) => {
-    // console.log(state)
+const CreateOrEdit = ({state, dispatch, getAccounts, accounts, visible, getCOATree }) => {
     const companyId = useSelector((state) => state.company.value);
 
-    const handleSubmit = async() => {
-        if(state.isParent){
-            await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_PARENT_ACCOUNT,{
-                title:state.title,
-                AccountId:state.selectedMainId,
-                CompanyId:companyId
-            }).then((x)=>{
-                if(x.data.status=='success'){
-                    getAccounts(x.data);
-                    state.visible = false
-                    openNotification('Success', `Account ${state.title} Created!`, 'green')
-                }else{
-                    openNotification('Failure', `A Similar Account With Name ${state.title} Already Exists!`, 'red')
-                }
-            })
-        }else{
-            await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CREATE_CHILD_ACCOUNT,{
-                title:state.title,
-                AccountId:state.selectedMainId,
-                ParentAccountId:state.selectedParentId,
-                CompanyId:companyId
-            }).then((x)=>{
-                if(x.data.status=='success'){
-                    getAccounts(x.data);
-                    state.visible = false
-                    openNotification('Success', `Account ${state.title} Created!`, 'green')
-                }else{
-                    openNotification('Failure', `A Similar Account With Name ${state.title} Already Exists!`, 'red')
-                }
-            })
-        }
-    }
-    const handleEdit = async() => {
-        if(state.isParent){
-            await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_EDIT_PARENT_ACCOUNT,{
-                id: state.selectedRecord.id,
-                title: state.selectedRecord.title,
-                AccountId: state.selectedRecord.AccountId,
-                CompanyId: companyId
-            }).then((x)=>{
-                // console.log(x.data)
-                if(x.data.status=='success'){
-                    getAccounts(x.data);
-                    openNotification('Success', `Account ${state.selectedRecord.title} Updated!`, 'green')
-                }else{
-                    openNotification('Failure', `A Similar Account With Name ${state.selectedRecord.title} Already Exists!`, 'red')
-                }
-            })
-        }else{
-            await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_EDIT_CHILD_ACCOUNT,{
-                id: state.selectedRecord.id,
-                title: state.selectedRecord.title,
-                ParentAccountId: state.selectedRecord.ParentAccountId,
-                CompanyId: companyId
-            }).then((x)=>{
-                // console.log(x.data)
-                if(x.data.status=='success'){
-                    getAccounts(x.data);
-                    openNotification('Success', `Account ${state.selectedRecord.title} Updated!`, 'green')
-                }else{
-                    openNotification('Failure', `A Similar Account With Name ${state.selectedRecord.title} Already Exists!`, 'red')
-                }
-            })
-        }
-    }
+    const [ selectedParent, setSelectedParent ] = useState({})
+    const [ selectedParentCode, setSelectedParentCode ] = useState()
+    const [ selectedParentTitle, setSelectedParentTitle ] = useState(null)
+    const [ accountTitle, setAccountTitle ] = useState("")
+    const [ voucherTran, setVoucherTran ] = useState(false)
+    const [ subCategory, setSubCategory ] = useState(undefined)
 
-    const openNotification = (title, message, color) => {
-        notification.open({
-          message: title,
-          description: message,
-          icon: <ExclamationCircleOutlined style={{ color: color }} />,
-          onClick: () => {
-            // console.log('Notification Clicked!');
-          },
-        });
+    useEffect(()=>{
+        console.log("Account: ", selectedParentTitle)
+    },[selectedParentTitle])
+
+    useEffect(()=>{
+        console.log("Account Title: ", accountTitle)
+    },[accountTitle])
+
+    useEffect(()=>{
+        setSelectedParent({});
+        setSelectedParentCode(undefined);
+        setSelectedParentTitle('');
+        setAccountTitle('');
+        setSubCategory(undefined);
+        setVoucherTran(false);
+    },[visible])
+
+      const findAccountByCode = (accounts, targetCode) => {
+        for (const account of accounts) {
+          if (account.code == targetCode) {
+            return account;
+          }
+      
+          if (account.children && account.children.length > 0) {
+            const found = findAccountByCode(account.children, targetCode);
+            if (found) return found;
+          }
+        }
+      
+        return null; // Not found
+      };
+
+      const findAccountBytitle = (accounts, title) => {
+        for (const account of accounts) {
+          if (account.title == title) {
+            return account;
+          }
+      
+          if (account.children && account.children.length > 0) {
+            const found = findAccountByCode(account.children, title);
+            if (found) return found;
+          }
+        }
+      
+        return null; // Not found
+      };
+
+      const handleSubmit = async () => {
+        console.log(selectedParent)
+        if(Object.keys(selectedParent).length !== 0){
+            const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/coa/createAccount`,
+               {
+                   parentId: selectedParent.id,
+                   accountTitle: accountTitle,
+                   subCategory: subCategory,
+                   parentCode: selectedParentCode
+               }
+            ).then((res)=>{
+                console.log(res.data)
+                if(res.data.status == "success"){
+                    openNotification('Success', `Account Created Successfully`, 'Green')
+                    setSelectedParent({});
+                    setSelectedParentCode(undefined);
+                    setSelectedParentTitle('');
+                    setAccountTitle('');
+                    setSubCategory(undefined);
+                    setVoucherTran(false);
+                    getCOATree()
+                    dispatch({ type: 'toggle', fieldName: 'visible', payload: false })
+                }else if(res.data.status == 'duplicate'){
+                    openNotification('Duplicate', `Account Already Exists`, 'Orange')
+                }else{
+                    openNotification('Error', `Some Error Occured, Try Again!`, 'Red')
+                }
+            })
+        }else{
+            openNotification('Error', `Parent Account Not Selected`, 'Red')
+        }
+      }
+
+      const flattenAccounts = (accounts, level = 0) => {
+        let options = [];
+      
+        accounts.sort((a, b) => parseInt(a.code) - parseInt(b.code));
+      
+        for (const acc of accounts) {
+          options.push({
+            label: `${'— '.repeat(level)}${acc.title} (${acc.code})`,
+            value: acc.code,
+          });
+      
+          // Only recurse if we haven't hit level 2 yet (i.e., allow levels 0 and 1 only)
+          if (level < 2 && acc.children && acc.children.length > 0) {
+            options = options.concat(flattenAccounts(acc.children, level + 1));
+          }
+        }
+      
+        return options;
       };
 
   return (
     <div className='employee-styles'>
-    <Form name="basic" onFinish={state.edit?handleEdit:handleSubmit}>
-        <h6>Create Account</h6>
-        <hr/>
-    <Row>
-        <Col md={4}>
-            <Form.Item>
-            <span>Account Category</span>
-            <Select placeholder="Select" value={state.selectedMainId} disabled={state.edit} onChange={(e)=>{
-                dispatch({ type: 'toggle', fieldName: 'selectedMainId', payload: e })
-            }}>
-            {state.records.map((x, index)=>{
-                return(<Select.Option key={index} value={x.id}>{x.title}</Select.Option>)
-            })}
-            </Select>
-            </Form.Item>
-        </Col>
-        <Col md={4}>
-            <Form.Item>
-            <span>Sub Account</span>
-            <Select placeholder="Select" disabled={state.isParent||state.edit} value={state.selectedParentId} onChange={(e)=>{
-                dispatch({type:'toggle', fieldName:'selectedParentId', payload:e})
-            }}>
-                {state.parentRecords.filter((x)=>{
-                    return x.AccountId==state.selectedMainId
-                }).map((x, index)=>{
-                    return(
-                        <Select.Option key={index} value={x.id}>{x.title}</Select.Option>
-                    )
-                })}
-            </Select>
-            </Form.Item>
-        </Col>
-        <Col md={4}>
-            <Form.Item>
-            <span>Sub Category</span>
-            <Select placeholder="Select Sub Category" disabled={state.isParent||state.edit} value={state.subCategory} onChange={(e)=>{
-                dispatch({type:'toggle', fieldName:'subCategory', payload:e})
-            }}>
-                <Select.Option value={"General"}>General</Select.Option>
-                <Select.Option value={"Cash"}>Cash</Select.Option>
-                <Select.Option value={"Bank"}>Bank</Select.Option>
-                <Select.Option value={"COGS"}>COGS</Select.Option>
-                <Select.Option value={"Admin Expense"}>Admin Expense</Select.Option>
-            </Select>
-            </Form.Item>
-        </Col>
-        <Col md={4}>
-         <Form.Item label='Parent'>
-            <Switch  disabled={state.edit}
-                checked={state.isParent}
-                onChange={(e)=> dispatch({type:'toggle', fieldName:'isParent', payload:!state.isParent}) }
-            />
-        </Form.Item>
-        <Form.Item>
-            <span>Title</span>
-            <Input type='text' required value={state.edit?state.selectedRecord.title:state.title} 
-                onChange={(e)=> 
-                    {
-                        if(state.edit){
-                            let tempState = {...state.selectedRecord}
-                            tempState.title = e.target.value;
-                            dispatch({type:'toggle', fieldName:'selectedRecord', payload:tempState})
-                        }else{
-                            dispatch({type:'toggle', fieldName:'title', payload:e.target.value})
+        <Row>
+
+            <Col md={4}>
+                <label style={{paddingLeft: '5%'}}>Parent Code</label>
+                <Input
+                    style={{border: '1px solid #b3b3b3'}}
+                    placeholder='Parent Code...'
+                    required
+                    type='number'
+                    value={selectedParentCode}
+                    onChange={(e) => {
+                        setSelectedParent({})
+                        console.log(findAccountByCode(accounts, e.target.value))
+                        const temp = findAccountByCode(accounts, e.target.value)
+                        setSelectedParent(temp||{})
+                        setSelectedParentCode(temp?.code||e.target.value)
+                        setSelectedParentTitle(flattenAccounts(accounts).filter((a)=> a.value == e.target.value))
+                    }}
+                ></Input>
+            </Col>
+            <Col md={1}></Col>
+            <Col md={7}>
+            <label style={{paddingLeft: '5%'}}>Parent Account Title</label>
+                    <Select
+                        className="custom-select-border"
+                        required
+                        style={{ width: '100%' }}
+                        allowClear
+                        showSearch
+                        placeholder="Parent Account Title..."
+                        value={selectedParentTitle || undefined}
+                        onChange={(value) => {
+                            setSelectedParent({})
+                            setSelectedParentTitle(value)
+                            const temp = findAccountByCode(accounts, value)
+                            setSelectedParent(temp||{})
+                            setSelectedParentCode(temp?.code||null)
+                        }} // update as needed
+                        filterOption={(input, option) =>
+                            option?.label?.toLowerCase().includes(input.toLowerCase())
                         }
-                    }
-                }
+                        options={flattenAccounts(accounts)}
+                    />
+            </Col>
+        </Row>
+        <Row style={{marginTop: '2.5%'}}>
+            <Col md={6}>
+                <label style={{paddingLeft: '5%'}}>Account Title</label>
+                <Input
+                    style={{border: '1px solid #b3b3b3'}}
+                    required
+                    placeholder='Enter New Account Name...'
+                    type='text'
+                    value={accountTitle}
+                    onChange={(e)=>{
+                        setAccountTitle(e.target.value)
+                    }}
+                >
+                </Input>
+            </Col>
+            <Col md={1}></Col>
+            <Col md={5}>
+            <label style={{paddingLeft: '5%'}}>Sub Category</label>
+            <Select
+                className="custom-select-border"
+                disabled={!voucherTran}
+                style={{ width: '100%' }}
+                placeholder="Select Sub Category..."
+                value={subCategory||undefined}
+                onChange={(e) => {
+                    console.log(e)
+                    setSubCategory(e)
+                }}
+                options={[
+                    {
+                    label: 'Vendor',
+                    value: 'Vendor', // Capitalized to match the label
+                    },
+                    {
+                    label: 'COGS',
+                    value: 'COGS',
+                    },
+                    {
+                    label: 'Customer/Vendor',
+                    value: 'Customer/Vendor',
+                    },
+                    {
+                    label: 'Admin Expense',
+                    value: 'Admin Expense',
+                    },
+                    {
+                    label: 'General',
+                    value: 'General',
+                    },
+                    {
+                    label: 'Customer',
+                    value: 'Customer',
+                    },
+                    {
+                    label: 'Cash',
+                    value: 'Cash',
+                    },
+                    {
+                    label: 'Bank',
+                    value: 'Bank',
+                    },
+                    // Add more sub-categories as needed
+                ]}
             />
-        </Form.Item>
-        </Col>
-        <Col md={12}><hr/></Col>
-        <Col md={12}>
-            <button className='btn-custom' type="submit">Submit</button>
-        </Col>
-    </Row>
-    </Form>
+            </Col>
+        </Row>
+        <Row style={{marginTop: '2.5%'}}>
+            <Col md={7}>
+                <Checkbox value={voucherTran} className="custom-checkbox" style={{ textWrap: 'nowrap' }}
+                onChange={(e)=>{
+                    console.log(e.target.checked)
+                    setVoucherTran(e.target.checked)
+                }}
+                >
+                    Enable Voucher Transactions
+                </Checkbox>
+            </Col>
+            <Col md={5}>
+                <button
+                onClick={()=>{handleSubmit()}}
+                 className='btn-custom right'
+                >Save</button>
+            </Col>
+
+        </Row>
     </div>
   )
 }

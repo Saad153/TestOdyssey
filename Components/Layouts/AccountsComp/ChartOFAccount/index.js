@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import { Row, Col } from 'react-bootstrap';
 import CreateOrEdit from './CreateOrEdit';
 import axios from 'axios';
@@ -62,77 +62,30 @@ const ChartOFAccount = ({accountsData}) => {
 
     const [ state, dispatch ] = useReducer(recordsReducer, initialState);
     const { records, visible } = state;
+    const [ accounts, setAccounts ] = useState([])
+    const [searchTerm, setSearchTerm] = useState('');
+
     useEffect(() => { 
-        getAccounts(accountsData)
+        getCOATree()
      }, []);
 
-    async function getAccounts(data){
-        let tempState = [];
-        let tempStateTwo = [];
-        data.result.forEach((x, index) => {
-            tempState[index]={
-                ...x,
-                check:false
-            }
-            x.Parent_Accounts.forEach((y, indexTwo) => {
-                tempState[index].Parent_Accounts[indexTwo]={
-                    ...y,
-                    check:false
-                }
-                tempStateTwo.push(y)
-            })
-        });
-        dispatch({ type: 'toggle', fieldName: 'records', payload: tempState })
-        dispatch({ type: 'toggle', fieldName: 'parentRecords', payload: tempStateTwo })
-    }
-
-    const updateCodeParents = async () => {
-        let tempState = [...state.records];
-        let p = 0;
-        let c = 0;
-    
-        for (let x of tempState) {
-            p = parseInt(x.id * 100);
-            for (let y of x.Parent_Accounts) {
-                p++;
-                let codeP = Cookies.get('companyId').toString() + p.toString();
-                try {
-                    const response = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CODE_PARENT_ACCOUNT, {
-                        id: y.id,
-                        title: y.title,
-                        AccountId: y.AccountId,
-                        CompanyId: Cookies.get('companyId'),
-                        code: codeP.toString()
-                    });
-                } catch (error) {
-                    console.error("Error updating parent account:", error);
-                }
-    
-    
-                c = p * 10000;
-                for (let z of y.Child_Accounts) {
-                    c++;
-                    let codeC = Cookies.get('companyId').toString() + c.toString();
-                    try {
-                        const response = await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_CODE_CHILD_ACCOUNT, {
-                            id: z.id,
-                            title: z.title,
-                            ParentAccountId: y.id,
-                            CompanyId: Cookies.get('companyId'),
-                            code: codeC.toString()
-                        });
-                    } catch (error) {
-                        console.error("Error updating child account:", error);
-                    }
-                }
-    
-                c = 0;
-            }
-    
-            p = 0;
+     const getCOATree = async () => {
+        try {
+          const res = await axios.get("http://localhost:8088/coa/getCOATree");
+          console.log("getCOATree response:", res.data);
+      
+          const data = res.data?.result;
+          if (!Array.isArray(data)) {
+            console.error("Expected an array in result but got:", data);
+            setAccounts([]);
+            return;
+          }
+      
+          setAccounts(data);
+        } catch (err) {
+          console.error("getCOATree error:", err);
         }
-    
-    };
+      };
 
     const ImageToBlob = (imageUrl) => {
         return new Promise((resolve, reject) => {
@@ -270,20 +223,83 @@ const ChartOFAccount = ({accountsData}) => {
         }
       
         
+      };      
+
+      const toggleAccount = (accountId) => {
+        const updatedRecords = [...accounts];
+      
+        const toggleCheck = (accounts) => {
+          for (const account of accounts) {
+            if (account.id === accountId) {
+              account.check = !account.check;
+            }
+            if (account.children && account.children.length > 0) {
+              toggleCheck(account.children); // Recurse through children only
+            }
+          }
+        };
+      
+        toggleCheck(updatedRecords);
+        setAccounts(updatedRecords);
       };
-
-    console.log(records)
-
+      const renderAccountHierarchy = (accounts, level = 0) => {
+        const sortedAccounts = [...accounts].sort((a, b) => parseInt(a.code) - parseInt(b.code));
+      
+        return sortedAccounts
+          .filter(account => {
+            // This function checks recursively if the account or any of its children match
+            const matches = (acc) => {
+              const titleMatch = acc.title?.toLowerCase().includes(searchTerm);
+              const codeMatch = acc.code?.toLowerCase().includes(searchTerm);
+              const childMatch = acc.children?.some(matches);
+              return titleMatch || codeMatch || childMatch;
+            };
+            return matches(account);
+          })
+          .map(account => (
+            <div key={account.id} style={{ marginLeft: `${level * 20}px` }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="child icon" onClick={() => toggleAccount(account.id)}>
+                  {account.children && account.children.length > 0
+                    ? account.check
+                      ? <MinusCircleOutlined />
+                      : <PlusCircleOutlined />
+                    : <RightOutlined />}
+                </div>
+                <div className="child title">{account.code} {account.title}</div>
+              </div>
+      
+              {(account.check || searchTerm) && account.children && account.children.length > 0 && (
+                renderAccountHierarchy(account.children, level + 1)
+              )}
+            </div>
+          ));
+      };
+      
+      
+    
 return (
     <div className='dashboard-styles'>
     <div className='base-page-layout'>
     <div className='account-styles'>
         <Row>
             <Col><h5>Accounts</h5></Col>
+            <Col>
+            <input
+            type="text"
+            placeholder="Search by name or code..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+            style={{
+                width: '100%',
+                padding: '8px',
+                marginBottom: '10px',
+                border: '1px solid #ccc',
+                borderRadius: '6px'
+            }}
+            />
+            </Col>
             <Col>   
-                {/* <button className='btn-custom right' onClick={()=>updateCodeParents()}>
-                    Update Codes
-                </button>            */}
                 <button className='btn-custom right' onClick={()=>{ dispatch({ type: 'create'}) }}>
                     Create
                 </button>
@@ -294,80 +310,18 @@ return (
         </Row>
         <hr className='my-2' />
         <Row style={{maxHeight:'69vh',overflowY:'auto', overflowX:'hidden'}}>
-        {
-        records.map((x, index)=>{
-        return(
-            <div key={x.id} className='parent'>
-            <div className='child icon' onClick={()=>{
-                let tempState = [...records];
-                tempState.forEach((i)=>{
-                    if(i.id==x.id){
-                        i.check=!i.check
-                    }
-                })
-                dispatch({ type: 'toggle', fieldName: 'records', payload: tempState })
-            }}>
-                {x.check?<MinusCircleOutlined />:<PlusCircleOutlined />}
-            </div>
-            <div className='child title'>{x.id +" "+ x.title}</div>
-            {x.check &&
-            <>{x.Parent_Accounts.map((y, indexTwo)=>{
-                return(
-                <div key={y.id} className='mx-4 parent'>
-                <div className='child icon' onClick={()=>{
-                    let tempState = [...records];
-                    tempState[index].Parent_Accounts.forEach((j)=>{
-                        if(j.id==y.id){
-                            j.check=!j.check
-                        }
-                    })
-                    dispatch({ type: 'toggle', fieldName: 'records', payload: tempState })
-                }}>
-                    {y.check?<MinusCircleOutlined />:<PlusCircleOutlined />}
-                </div>
-                    <div className='child title'>{y.code+" "+ y.title}</div>
-
-                    {y.editable==1&&<div className='child edit-icon' onClick={()=>{
-                        dispatch({ type: 'toggle', fieldName: 'selectedRecord', payload: y })
-                        dispatch({ type: 'toggle', fieldName: 'isParent', payload: true })
-                        dispatch({ type: 'edit'})
-                    }}
-                    ><EditOutlined />
-                    </div>}
-                    {y.check && <>
-                    {
-                    y.Child_Accounts.map((z)=>{
-                        return(
-                        <div key={z.id} className='mx-4 parent'>
-                            <div className='child icon'><RightOutlined /></div>
-                            <div className='child title'>{z.code+" "+ z.title}</div>
-                            {z.editable==1&&<div className='child edit-icon' onClick={()=>{
-                                dispatch({ type: 'toggle', fieldName: 'selectedRecord', payload: z })
-                                dispatch({ type: 'toggle', fieldName: 'isParent', payload: false })
-                                dispatch({ type: 'edit'})
-                                }}><EditOutlined /></div>}
-                        </div>
-                        )
-                    })
-                    }
-                    </>}
-                </div>
-                )
-                })
-            }</>
-            }
-            </div>
-        )
-        })}
+        {renderAccountHierarchy(accounts)}
+        
         </Row>
         <Modal open={visible} 
+            title="Create Account"
             onOk={() => dispatch({ type: 'modalOff' })} 
             onCancel={() => dispatch({ type: 'modalOff' })}
             width={600}
             footer={false}
             centered={false}
         >
-            <CreateOrEdit state={state} dispatch={dispatch} getAccounts={getAccounts} />
+            <CreateOrEdit state={state} dispatch={dispatch} accounts={accounts} visible={visible} getCOATree={getCOATree} />
         </Modal>
     </div>
     </div>

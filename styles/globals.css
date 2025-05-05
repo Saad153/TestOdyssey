@@ -23,3 +23,28 @@ a {
 .edit-charge-body{
   border: 1px solid grey;
 }
+
+.custom-checkbox .ant-checkbox-inner {
+  border: 1.5px solid #b3b3b3; /* Make border slightly darker and thicker */
+}
+
+.custom-select-border .ant-select-selector {
+  border: 1.5px solid #b3b3b3 !important; /* Darker border */
+  border-radius: 6px; /* Optional: smoother look */
+}
+
+.custom-select-border.ant-select-disabled .ant-select-selector {
+  background-color: #d7d7d7 !important; /* Light grey */
+  border-color: #b3b3b3 !important;    /* Default disabled border */
+  cursor: not-allowed;
+  color: #999; /* Optional: greyed out text */
+}
+
+.ant-select-item-option-active {
+  background-color: #e0e0e0 !important; /* Light gray, but darker than the default */
+}
+
+/* Optional: Darker background when option is selected */
+.ant-select-item-option-selected {
+  background-color: #d0d0d0 !important;
+}

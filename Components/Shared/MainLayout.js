@@ -182,6 +182,12 @@ const MainLayout = ({children}) => {
     if(newRouter.pathname==="/setup/clientList"){
       setToggleState('2-2');
     }
+    if(newRouter.pathname==="/setup/parties"){
+      setToggleState('2-20');
+    }
+    if(newRouter.pathname==="/setup/party/[id]"){
+      setToggleState('2-21');
+    }
     if(newRouter.pathname==="/setup/client/[id]"){
       setToggleState('2-7');
     }
@@ -208,6 +214,7 @@ const MainLayout = ({children}) => {
     employee:false,
     clientList:false,
     client:false,
+    parties:false,
     accounts:false,
     history:false,
     vendorList:false,
@@ -279,6 +286,8 @@ const MainLayout = ({children}) => {
         else if(tabs.key=='1-2'){ tempTabActive.requests=true }
         else if(tabs.key=='2-1'){ tempTabActive.employee=true }
         else if(tabs.key=='2-2'){ tempTabActive.clientList=true }
+        else if(tabs.key=='2-20'){ tempTabActive.parties=true }
+        else if(tabs.key=='2-21'){ tempTabActive.party=true }
         else if(tabs.key=='2-7'){ tempTabActive.client=true }
         else if(tabs.key=='2-3'){ tempTabActive.commodity=true }
         else if(tabs.key=='2-4'){ tempTabActive.voyage=true }
@@ -367,6 +376,8 @@ const MainLayout = ({children}) => {
     else if(x.key=='1-2'){ Router.push('/dashboard/requests') }
     else if(x.key=='2-1'){ Router.push('/employees') }
     else if(x.key=='2-2'){ Router.push('/setup/clientList') }
+    else if(x.key=='2-20'){ Router.push('/setup/parties') }
+    else if(x.key=='2-21'){ Router.push(`/setup/party/${setKey(x)}`) } //these routes are also settled in 2nd useEffect
     else if(x.key=='2-10'){ Router.push('/setup/ports') }
     else if(x.key=='2-7'){ Router.push(`/setup/client/${setKey(x)}`) } //these routes are also settled in 2nd useEffect
     else if(x.key=='2-3'){ Router.push('/commodity') }
