@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import openNotification from '/Components/Shared/Notification';
+import Cookies from 'js-cookie';
 
 const CreateOrEdit = ({state, dispatch, getAccounts, accounts, visible, getCOATree }) => {
     const companyId = useSelector((state) => state.company.value);
@@ -71,7 +72,8 @@ const CreateOrEdit = ({state, dispatch, getAccounts, accounts, visible, getCOATr
                    parentId: selectedParent.id,
                    accountTitle: accountTitle,
                    subCategory: subCategory,
-                   parentCode: selectedParentCode
+                   parentCode: selectedParentCode,
+                   companyId: Cookies.get("companyId"),
                }
             ).then((res)=>{
                 console.log(res.data)

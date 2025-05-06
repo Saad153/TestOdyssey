@@ -7,6 +7,7 @@ import { incrementTab } from '/redux/tabs/tabSlice';
 import { Input, Select } from 'antd';
 import openNotification from '/Components/Shared/Notification';
 import Pagination from '/Components/Shared/Pagination';
+import { resetPartyState } from '../../../../redux/parties/partiesSlice';
 
 const Parties = ({ sessionData, partiesData }) => {
   const dispatchNew = useDispatch();
@@ -71,6 +72,7 @@ const Parties = ({ sessionData, partiesData }) => {
         <Col md={2}>
           <button className='btn-custom right'
             onClick={() => {
+              dispatchNew(resetPartyState());
               dispatchNew(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
               Router.push(`/setup/party/new`);
             }}

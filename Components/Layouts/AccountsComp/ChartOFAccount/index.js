@@ -71,7 +71,7 @@ const ChartOFAccount = ({accountsData}) => {
 
      const getCOATree = async () => {
         try {
-          const res = await axios.get("http://localhost:8088/coa/getCOATree");
+          const res = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/coa/getCOATree`, { headers: { companyId: Cookies.get("companyId") } });
           console.log("getCOATree response:", res.data);
       
           const data = res.data?.result;

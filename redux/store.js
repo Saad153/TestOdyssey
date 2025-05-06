@@ -12,6 +12,7 @@ import profitLossReducer from './profitLoss/profitLossSlice'
 import openingInvoiceSlice from './openingInvoices/openingInvoicesSlice';
 import paymentRecieptSlice from './paymentReciept/paymentRecieptSlice';
 import voucherSlice from './vouchers/voucherSlice';
+import partiesReducer from './parties/partiesSlice';
 export const store = configureStore({
   reducer: {
     [seJobValues.reducerPath]: seJobValues.reducer,
@@ -27,6 +28,7 @@ export const store = configureStore({
     openingInvoice:openingInvoiceSlice,
     paymentReciept:paymentRecieptSlice,
     vouchers:voucherSlice,
+    parties: partiesReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(seJobValues.middleware),

@@ -1,12 +1,12 @@
 import React from 'react';
 import axios from "axios";
 import Cookies from 'cookies';
-import CreateOrEditComp from '/Components/Layouts/Setup/Client/CreateOrEditComp';
+import CreateOrEdit from '/Components/Layouts/Setup/Parties/CreateOrEdit';
 
 const client = ({id, representativeData, clientData}) => {
   return (
     <>
-        <CreateOrEditComp id={id}  representativeData={representativeData} clientData={clientData} />
+        <CreateOrEdit id={id}  representativeData={representativeData} clientData={clientData} />
     </>
   )
 }

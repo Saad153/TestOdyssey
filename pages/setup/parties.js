@@ -23,7 +23,7 @@ export async function getServerSideProps({req,res}){
 //   }).then((x)=>x.data);
 
   const partiesRequest = await axios.get(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/parties/getAll`,{
-    // headers:{"id": `${cookies.get('companyId')}`}
+    headers:{"companyid": `${cookies.get('companyId')}`}
   }).then((x)=>x.data);
   return{
       props: { sessionData:sessionRequest, partiesData:partiesRequest }

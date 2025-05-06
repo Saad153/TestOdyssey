@@ -1011,6 +1011,7 @@ const Upload_CoA = () => {
     }
     const importCOA = async () => {
         try{
+            const companyId = Cookies.get("companyId")
             const coa = await axios.post("http://localhost:8081/accounts/getAll")
             console.log(coa.data)
             const result = await axios.post("http://localhost:8088/coa/importAccounts", coa.data.temp)
