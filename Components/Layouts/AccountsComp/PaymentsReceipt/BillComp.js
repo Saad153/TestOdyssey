@@ -19,6 +19,45 @@ const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace
 const BillComp = ({back, companyId, state, dispatch}) => {
   const [firstCall, setFirstCall] = useState(true);
   const router =  useRouter()
+
+  useEffect(() => {
+    let remaining = state.knockOffAmount;
+  
+    const updatedInvoices = state.invoices.map((invoice, index) => {
+      // Calculate max receivable based on type
+      const maxReceivable = invoice.payType === "Recievable"
+        ? parseFloat(invoice.total) - parseFloat(invoice.recieved)
+        : parseFloat(invoice.total) - parseFloat(invoice.paid);
+  
+      let receiving = 0;
+  
+      if (remaining > 0) {
+        // If last invoice, assign all remaining
+        if (index === state.invoices.length - 1) {
+          receiving = remaining;
+          remaining = 0;
+        } else {
+          receiving = Math.min(maxReceivable, remaining);
+          remaining -= receiving;
+        }
+      }
+  
+      return {
+        ...invoice,
+        receiving
+      };
+    });
+  
+    dispatch(setField({ field: 'invoices', value: updatedInvoices }));
+  }, [state.knockOffAmount]);
+  
+
+  useEffect(() => {
+    console.log("STATE: ", state)
+  }, [state])
+  
+  
+
   const fetchInvoices = async () => {
     try{
       await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
@@ -505,10 +544,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           </Col>
           <Col md={4}>
           {state.totalReceivable<0||(state.advance&&state.payType=='Payble')?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
-          {!state.advance&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
-          {state.advance&&<InputNumber
-          value={state.totalReceivable}
-          onChange={(e) => dispatch(setField({ field: 'totalReceivable', value: e }))}
+          {!state.advance&&!state.autoKnockOff&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
+          {state.advance||state.autoKnockOff&&<InputNumber
+          value={state.autoKnockOff?state.knockOffAmount:state.totalReceivable}
+          onChange={(e) => {
+            console.log(state.advance)
+            console.log(state.autoKnockOff)
+            if(state.advance){
+              dispatch(setField({ field: 'totalReceivable', value: e }))
+            }else if(state.autoKnockOff){
+              dispatch(setField({ field: 'knockOffAmount', value: e }))
+            }
+          }}
           style={{width: '100%'}}
           formatter={(value) =>
             `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
@@ -528,8 +575,8 @@ const BillComp = ({back, companyId, state, dispatch}) => {
             <Checkbox style={{marginTop: '25px'}} onChange={(e) => {dispatch(setField({ field: 'autoKnockOff', value: e.target.checked }))}} checked={state.autoKnockOff}>Auto KnockOff</Checkbox>
           </Col>
           <Col md={6}>
-            <span style={{marginLeft: '5px'}}>Amount</span>
-            <InputNumber disabled={!state.autoKnockOff} style={{width: '100%'}}></InputNumber>
+            {/* <span style={{marginLeft: '5px'}}>Amount</span> */}
+            {/* <InputNumber disabled={!state.autoKnockOff} value={state.knockOffAmount} onChange={(e) => dispatch(setField({ field: 'knockOffAmount', value: e }))} style={{width: '100%'}}></InputNumber> */}
           </Col>
         </Row>
         <Row>

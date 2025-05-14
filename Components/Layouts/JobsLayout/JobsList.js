@@ -4,26 +4,24 @@ import { incrementTab } from '/redux/tabs/tabSlice';
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Table } from 'react-bootstrap';
 import Router from 'next/router';
-import { useQueryClient } from '@tanstack/react-query';
 import Pagination from '../../Shared/Pagination';
 import { Input } from 'antd';
 import moment from 'moment';
 import JobsBackupData from './Backup/BackupModal';
 import { delay } from "/functions/delay"
 import axios from 'axios';
+import Cookies from 'js-cookie';
 
 const SEJobList = ({ jobsData, sessionData, type }) => {
-  const queryClient = useQueryClient();
-  const changedValues = useSelector((state) => state.persistValues);
-  const companyId = useSelector((state) => state.company.value);
+  const state = useSelector((state) => state);
+  const companyId = Cookies.get('companyId');
   const [records, setRecords] = useState([]);
   const dispatch = useDispatch();
-  const [isOpen,setIsOpen] = useState(false);
   //search state
   const [query, setQuery] = useState(null);
   //pagination states
   const [currentPage,setCurrentPage] = useState(1);
-  const [recordsPerPage] = useState(20);
+  const [recordsPerPage] = useState(30);
 
   const indexOfLast = currentPage * recordsPerPage;
   const indexOfFirst = indexOfLast - recordsPerPage;
@@ -49,12 +47,13 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   
   useEffect(() => {
     setRecords(jobsData.result)
+    console.log("Jobs Data: ", jobsData)
   }, [jobsData])
 
   const [firstCall, setFirstCall] = useState(false)
 
   useEffect(() => {
-    if (currentRecords.length > 0 && !firstCall) {
+    if (currentRecords?.length > 0 && !firstCall) {
       console.log("Records: ", currentRecords);
       getCounts(records);
       setFirstCall(true);
@@ -76,10 +75,10 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
 
   return (
     <>
-      {companyId != '' &&
+      {companyId &&
         <div className='base-page-layout'>
           <Row>
-            <Col md={4}>
+            <Col md={2}>
               <h5>
                 {type == "SE" ? "SEA Export" : type == "SI" ? "SEA Import" : type == "AE" ? "AIR Export" : type == "AI" ? "AIR Import" : ""} Job List
               </h5>
@@ -87,25 +86,14 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
             <Col md={4}>
               <Input type="text" placeholder="Enter client,wieght or Job no" size='sm' onChange={e => setQuery(e.target.value)} />
             </Col>
-            <Col md={2} className='text-end'>
-              {/* <button className='btn-custom left px-4' onClick={()=>setIsOpen(true)}
-              >Old Jobs</button>
-              {isOpen && <JobsBackupData isOpen={isOpen} onClose={()=>setIsOpen(false)} type={type}/>} */}
-            </Col>
-            <Col md={1}>
-              <button className='btn-custom left px-4'
-                onClick={() => {
-                  Router.push(`/seaJobs/jobList`)
-                }}
-              >List</button>
-            </Col>
+            <Col md={5}></Col>
             <Col md={1}>
               <button className='btn-custom left'
                 onClick={() => {
-                  queryClient.removeQueries({ queryKey: ['jobData', { type }] })
-                  let obj = { ...changedValues.value }
-                  obj[type] = ""
-                  dispatch(addValues(obj));
+                  // queryClient.removeQueries({ queryKey: ['jobData', { type }] })
+                  // let obj = { ...changedValues.value }
+                  // obj[type] = ""
+                  // dispatch(addValues(obj));
                   dispatch(incrementTab({
                     "label": type == "SE" ? "SE JOB" : type == "SI" ? "SI JOB" : type == "AE" ? "AE JOB" : "AI JOB",
                     "key": type == "SE" ? "4-3" : type == "SI" ? "4-6" : type == "AE" ? "7-2" : "7-5",
@@ -226,6 +214,11 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
             <Pagination noOfPages={noOfPages} currentPage={currentPage} setCurrentPage={setCurrentPage}/>
           </div>}
         </div>
+      }
+      {!companyId &&
+      <div className='base-page-layout text-center'>
+        Please select company to view jobs list
+      </div>
       }
     </>
   )

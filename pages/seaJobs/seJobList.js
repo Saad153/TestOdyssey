@@ -18,7 +18,7 @@ export async function getServerSideProps({req,res}){
   const jobsData = await fetch(process.env.NEXT_PUBLIC_CLIMAX_GET_ALL_SEAJOB, {
     headers:{ companyid: `${cookies.get('companyId')}`, operation:"SE"}
   }).then((x)=>x.json());
-
+  // console.log("Test>>", jobsData)
   return {
     props: {
       sessionData:sessionRequest,

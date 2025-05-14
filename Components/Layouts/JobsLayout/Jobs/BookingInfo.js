@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Popover, Tag, Modal } from "antd";
+import { Popover, Tag, Modal, Input, Select, DatePicker } from "antd";
+import { checkEmployeeAccess} from '/functions/checkEmployeeAccess';
 import SelectComp from '/Components/Shared/Form/SelectComp';
 import SelectSearchComp from '/Components/Shared/Form/SelectSearchComp';
 import CheckGroupComp from '/Components/Shared/Form/CheckGroupComp';
@@ -24,493 +25,613 @@ import AddPort from './AddPort';
 import { FaPlus } from "react-icons/fa6";
 import { getChargeHeads } from '../../../../apis/jobs';
 import { checkEditAccess } from '../../../../functions/checkEditAccess';
+import { Option } from 'antd/lib/mentions';
+import { resetPartyState } from '../../../../redux/parties/partiesSlice';
 
-const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, errors, state, useWatch, dispatch, reset, id, type }) => {
-  const tabs = useSelector((state) => state.tabs.tabs)
-  //const companyId = useSelector((state) => state.company.value);
-  const dispatchNew = useDispatch();
-  const transportCheck = useWatch({ control, name: "transportCheck" });
-  const transporterId = useWatch({ control, name: "transporterId" });
-  const customCheck = useWatch({ control, name: "customCheck" });
-  const customAgentId = useWatch({ control, name: "customAgentId" });
-  const vesselId = useWatch({ control, name: "vesselId" });
-  const VoyageId = useWatch({ control, name: "VoyageId" });
-  const ClientId = useWatch({ control, name: "ClientId" });
-  const shipperId = useWatch({ control, name: "shipperId" });
-  const consigneeId = useWatch({ control, name: "consigneeId" });
-  const overseasAgentId = useWatch({ control, name: "overseasAgentId" });
-  const airLineId = useWatch({ control, name: "airLineId" });
-  const forwarderId = useWatch({ control, name: "forwarderId" });
-  const shippingLineId = useWatch({ control, name: "shippingLineId" });
-  const localVendorId = useWatch({ control, name: "localVendorId" });
-  const approved = useWatch({ control, name: "approved" });
-  let allValues = useWatch({ control });
-  const [isOpen, setIsOpen] = useState(false);
-  const Space = () => <div className='mt-2' />
-  const approved1 = useSelector((state) => state.invoice);
-  const [charges, setCharges] = useState(false)
+const BookingInfo = (state) => {
 
+  const [ deleteAccess, setDeleteAccess ] = useState(false);
+
+  const dispatch = useDispatch();
   useEffect(() => {
-    const fetchChargeHeads = async () => {
-      const result = await getChargeHeads({ id: state.selectedRecord.id });
-      // console.log("Charges:", result);
-      let check = false
-      result.charges.forEach((x)=>{
-        x.status=='1'?check = true : null
-      })
-      setCharges(check)
-    };
-  
-    fetchChargeHeads();
-  });
-
-  useEffect(() => {
-    if (allValues.freightType == "Prepaid") {
-      reset({ ...allValues, freightPaybleAt: 'Karachi, Pakistan' });
-    } else {
-      reset({ ...allValues, freightPaybleAt: 'Destination' });
+    if(checkEmployeeAccess()){
+      setDeleteAccess(true)
+    }else{
+      // console.log("Not Approved")
+      // console.log(deleteAccess)
     }
-  }, [allValues.freightType])
-
-  const handleOk = () => {
-    allValues.approved = approved
-    handleSubmit(onEdit(allValues))
-    dispatch({
-      type: "set", payload: {
-        isModalOpen: false,
-      }
-    })
-  };
-
-  const handleCancel = () => {
-    dispatch({
-      type: "set", payload: {
-        isModalOpen: false,
-      }
-    })
-    reset({ ...allValues, approved: approved[0] != 1 ? ['1'] : [] })
-  };
-
-  const pageLinking = (pageType, value) => {
-    let route = "";
-    let obj = {};
-
-    if (pageType === "client") {
-      // Checking if id is defined and not null
-      if (value !== undefined && value !== null && value !== "") {
-        route = `/setup/client/${value}`;
-        obj = {
-          label: "Client",
-          key: "2-7",
-          id: value,
-        };
-      } else {
-        // Navigating to a default/new page if id is undefined or null
-        route = "/setup/client/new";
-        obj = {
-          label: "Client",
-          key: "2-7",
-          id: "new",
-        };
-      }
-    } else if (pageType === "vendor") {
-      // Checking if id is defined and not null
-      if (value !== undefined && value !== null && value !== "") {
-        route = `/setup/vendor/${value !== "" && value !== null ? value : "new"}`;
-        obj = {
-          label: "Vendor",
-          key: "2-8",
-          id: value !== "" && value !== null ? value : "new",
-        };
-      } else {
-        // Navigating to a default/new page if id is undefined or null
-        route = "/setup/vendor/new";
-        obj = {
-          label: "Vendor",
-          key: "2-8",
-          id: "new"
-        }
-      }
-    } else if (pageType === "vessel") {
-      route = "/setup/voyage/";
-      obj = {
-        label: "Voyages",
-        key: "2-4",
-      };
-    }
-    dispatchNew(incrementTab(obj));
-    Router.push(route);
-  };
-
-  useEffect(()=>{
-    console.log("Shipping Line ID:", shippingLineId, typeof(shippingLineId))
-    if(typeof(shippingLineId)=='number'){
-      console.log("Running Dispatch")
-      dispatch({
-        type: "set", payload: {
-          shippingLineId: shippingLineId.toString(),
-        }
-      })
-    }
-  },[shippingLineId])
-
-  // console.log(state)
-
-
-  const ShipperComp = () => {
-
-    return (
-      <>
-        <div className='custom-link mt-2' onClick={() => pageLinking("client", shipperId)}>
-          Shipper *
-        </div>
-        <SelectSearchComp register={register}
-          name='shipperId'
-
-          control={control}
-          clear={true}
-          label=''
-          disabled={getStatus(approved)} width={"100%"}
-          options={state.fields.party.shipper}
-        />
-        <Space />
-      </>
-    )
-  }
+    console.log("STATE>>", state.state)
+  }, [state])
   return (
-    <>
-      <Row style={{ fontSize: 12 }}>
-        <Col md={2} className=''>
-          <div className="mt-1">Job No.</div>
-          <div className="dummy-input">
-            {state.edit ? (state.selectedRecord?.jobNo) : <span style={{ color: 'white' }}>.</span>}
-          </div>
+    <div style={{fontSize: '12px'}}>
+      <Row>
+        <Col md={2}>
+          <Row>
+            <label>Job No.</label>
+          </Row>
+          <Input disabled></Input>
         </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='jobType' control={control} label='Job Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Direct', name: 'Direct' },
-              { id: 'Coloaded', name: 'Coloaded' },
-              { id: 'Cross Trade', name: 'Cross Trade' },
-              { id: 'Liner Agency', name: 'Liner Agency' },
-            ]} />
+        <Col md={2}>
+          <Row>
+            <label>Job Type</label>
+          </Row>
+          <Select value={'direct'} style={{width :'100%'}}>
+              <Select.Option value={'direct'}>Direct</Select.Option>
+              <Select.Option value={'coloaded'}>Coloaded</Select.Option>
+              <Select.Option value={'cross trade'}>Cross Trade</Select.Option>
+              <Select.Option value={'liner agency'}>Liner Agency</Select.Option>
+          </Select>
         </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='jobKind' control={control} label='Job Kind' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Current', name: 'Current' },
-              { id: 'Opening', name: 'Opening' },
-            ]} />
+        <Col md={2}>
+          <Row>
+            <label>Job Kind</label>
+          </Row>
+          <Select value={'current'} style={{width :'100%'}}>
+              <Select.Option value={'current'}>Current</Select.Option>
+              <Select.Option value={'opening'}>Opening</Select.Option>
+          </Select>
         </Col>
-        <Col md={2} className='py-1'>
-          <DateComp register={register} name='jobDate' control={control} label='Job Date' width={"100%"} disabled={getStatus(approved)} />
-          {errors.registerDate && <div className='error-line'>Required*</div>}
+        <Col md={2}>
+          <Row>
+            <label>Job Date</label>
+          </Row>
+          <DatePicker
+          style={{width :'100%'}} 
+          // value={moment(state.registerDate)} 
+          // onChange={(e) => dispatch(setField({ field: 'registerDate', value: e }))}
+          ></DatePicker>
         </Col>
-        <Col md={2} className='py-1'>
-          <DateComp register={register} name='shipDate' control={control} label='Ship Date' disabled={getStatus(approved)} width={"100%"} />
-          {errors.registerDate && <div className='error-line'>Required*</div>}
+        <Col md={2}>
+          <Row>
+            <label>Ship Date</label>
+          </Row>
+          <DatePicker
+          style={{width :'100%'}} 
+          // value={moment(state.registerDate)} 
+          // onChange={(e) => dispatch(setField({ field: 'registerDate', value: e }))}
+          ></DatePicker>
         </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='shipStatus' control={control} label='Ship Status:' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Hold', name: 'Hold' },
-              { id: 'Booked', name: 'Booked' },
-              { id: 'Delivered', name: 'Delivered' },
-              { id: 'Shipped', name: 'Shipped' },
-              { id: 'Closed', name: 'Closed' }
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='costCenter' control={control} label='C. Center' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'FSD', name: 'FSD' },
-              { id: 'KHI', name: 'KHI' }
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          {(type == "SE" || type == "SI") && <SelectComp register={register} name='subType' control={control} disabled={getStatus(approved)}
-            label='Sub Type' width={"100%"}
-            options={[
-              { id: 'FCL', name: 'FCL' },
-              { id: 'LCL', name: 'LCL' },
-            ]} />}
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='dg' control={control} label='DG Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'DG', name: 'DG' },
-              { id: 'non-DG', name: 'non-DG' },
-              { id: 'Mix', name: 'Mix' },
-            ]} />
-        </Col>
-        <Col md={1} className='py-1'>
-          <SelectComp register={register} name='freightType' control={control} label='Fr. Type' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Prepaid', name: 'Prepaid' },
-              { id: 'Collect', name: 'Collect' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='nomination' control={control} label='Nomination' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'Free Hand', name: 'Free Hand' },
-              { id: 'Nominated', name: 'Nominated' },
-              { id: 'B2B', name: 'B2B' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <SelectComp register={register} name='incoTerms' control={control} label='Inco Terms' width={"100%"} disabled={getStatus(approved)}
-            options={[
-              { id: 'EXW', name: 'EXW' },
-              { id: 'FCP', name: 'FCP' },
-              { id: 'FAS', name: 'FAS' },
-              { id: 'FOB', name: 'FOB' },
-              { id: 'CFR', name: 'CFR' },
-              { id: 'CIF', name: 'CIF' },
-              { id: 'CIP', name: 'CIP' },
-              { id: 'CPT', name: 'CPT' },
-              { id: 'DAP', name: 'DAP' },
-              { id: 'DPU', name: 'DPU' },
-              { id: 'DDP', name: 'DDP' },
-              { id: 'CNI', name: 'CNI' },
-              { id: 'DTP', name: 'DTP' },
-              { id: 'DPP', name: 'DPP' },
-              { id: 'DAT', name: 'DAT' },
-              { id: 'DDU', name: 'DDU' },
-              { id: 'DES', name: 'DES' },
-              { id: 'DEQ', name: 'DEQ' },
-              { id: 'DAF', name: 'DAF' },
-              { id: 'CNF', name: 'CNF' },
-            ]} />
-        </Col>
-        <Col md={2} className='py-1'>
-          <InputComp register={register} name='customerRef' control={control} label='Customer Ref#' width={"100%"} disabled={getStatus(approved)} />
-        </Col>
-        <Col md={2} className='pt-1 mb-0 pb-0'>
-          <InputComp register={register} name='fileNo' control={control} label='File #' width={"100%"} disabled={getStatus(approved)} />
-        </Col>
-        <Col className='py-0 my-0'>
-          <BLInfo blValues={state.selectedRecord?.Bl} />
+        <Col md={2}>
+          <Row>
+            <label>Ship Status</label>
+          </Row>
+          <Select value={'booked'} style={{width :'100%'}}>
+              <Select.Option value={'hold'}>Hold</Select.Option>
+              <Select.Option value={'booked'}>Booked</Select.Option>
+              <Select.Option value={'delivered'}>Delivered</Select.Option>
+              <Select.Option value={'shipped'}>Shipped</Select.Option>
+              <Select.Option value={'closed'}>Closed</Select.Option>
+          </Select>
         </Col>
       </Row>
-      <hr className='mb-0' />
-      <Row style={{ fontSize: 12 }}>
-        <Col md={3} className=''>
-          <div className='custom-link mt-2' onClick={() => pageLinking("client", ClientId)} >Client *</div>
-          <SelectSearchComp register={register}
-            clear={true}
-            name='ClientId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.party.client} />
-          {(type == "SE" || type == "AE") && <ShipperComp />}
-          <div className='custom-link mt-2'
-            onClick={() => pageLinking("client", consigneeId)} >Consignee *</div>
-          <SelectSearchComp register={register} clear={true}
-
-            name='consigneeId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.party.consignee} /><Space />
-          {(type == "SI" || type == "AI") && <ShipperComp />}
-          {(type == "SE" || type == "SI") && <>
-            <SelectSearchComp register={register}
-              name='pol'
-              clear={true}
-              control={control} label='Port Of Loading' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports} /><Space />
-            <SelectSearchComp register={register}
-              clear={true}
-              name='pod' control={control} label='Port Of Discharge *' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports} />
-            <FaPlus onClick={() => setIsOpen(true)} style={{ cursor: "pointer" }} />
-            <Space />
-            {isOpen && <AddPort isOpen={isOpen} onClose={() => setIsOpen(false)} />}
-          </>
-          }
-          {(type == "AE" || type == "AI") && <>
-            {type == "AI" && <>
-              <SelectSearchComp register={register}
-                clear={true}
-                name='pol' control={control} label='Air Port Of Loading' disabled={getStatus(approved)} width={"100%"}
-                options={airports} /><Space />
-              <SelectSearchComp register={register}
-                clear={true}
-                name='pod' control={control} label='Air Port Of Discharge *' disabled={getStatus(approved)} width={"100%"}
-                options={airports} />
-
-              <FaPlus onClick={() => setIsOpen(true)} style={{ cursor: "pointer" }} />
-              <Space />
-              {isOpen && <AddPort isOpen={isOpen} onClose={() => setIsOpen(false)} />}
-            </>}
-          </>}
-          {(type == "AE" || type == "AI") && <>
-            <SelectSearchComp register={register}
-              clear={true}
-              name='fd' control={control} label='Final Destination *' disabled={getStatus(approved)} width={"100%"}
-              options={destinations}
-            />
-          </>}
-          {(type == "SE" || type == "SI") && <>
-            <SelectSearchComp register={register}
-              clear={true}
-              name='fd' control={control} label='Final Destination *' disabled={getStatus(approved)} width={"100%"}
-              options={ports.ports}
-            />
-          </>}
-          <Space />
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", forwarderId)} >Forwarder/Coloader *</div>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='forwarderId' control={control} label='' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.vendor.forwarder} /><Space />
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='salesRepresentatorId' control={control} label='Sales Representator' disabled={getStatus(approved)}
-            options={state.fields.sr} width={"100%"} />
-        </Col>
-        <Col md={3}><Space />
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", overseasAgentId)} >Overseas Agent *</div>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='overseasAgentId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.overseasAgent} width={"100%"} />
-
-          <div className='custom-link mt-2' onClick={() => pageLinking("vendor", localVendorId)} >Local Vendor *</div>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='localVendorId' control={control} label=''
-            disabled={getStatus(approved)} options={state.fields.vendor.localVendor} width={"100%"}
-          />
-          {(type == "SE" || type == "SI") && <>
-            <div className='custom-link mt-2' onClick={() => pageLinking("vendor", shippingLineId)} >Sline/Carrier</div>
-            <SelectSearchComp register={register}
-              clear={true} name='shippingLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.sLine} width={"100%"} />
-          </>}
-          {(type == "AE" || type == "AI") && <>
-            <div className='custom-link mt-2' onClick={() => pageLinking("vendor", airLineId)} >Air line *</div>
-            <SelectSearchComp register={register}
-              clear={true}
-
-              name='airLineId' control={control} label='' disabled={getStatus(approved)} options={state.fields.vendor.airLine} width={"100%"} />
-          </>}
-          <Carrier state={state} register={register} control={control} pageLinking={pageLinking} dispatch={dispatch}
-            getStatus={getStatus} approved={approved} VoyageId={VoyageId} vesselId={vesselId} type={type}
-          />
-        </Col>
-        <Col md={3}><Space />
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='commodityId' control={control} label='Commodity *' disabled={getStatus(approved)} width={"100%"}
-            options={state.fields.commodity}
-          />
-          <div className='mt-2' />
+      <Row style={{marginTop: '10px'}}>
+        <Col md={1}>
           <Row>
-            <Col md={1}>
-              <CheckGroupComp register={register} name='transportCheck' control={control} label='' disabled={getStatus(approved)}
-                options={[{ label: "", value: "Transport" }]} />
-            </Col>
-            <Col md={3}>
-              <div className='custom-link' onClick={() => pageLinking("vendor", transporterId)} >Transport</div>
-            </Col>
-            <Col>.</Col>
+            <label>C. Center</label>
           </Row>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='transporterId' control={control} label=''
-            options={state.fields.vendor.transporter} disabled={getStatus(approved) || transportCheck.length == 0} width={"100%"} />
-          <div className='mt-2'></div>
+          <Select value={'khi'} style={{width :'100%'}}>
+              <Select.Option value={'khi'}>KHI</Select.Option>
+              <Select.Option value={'fsd'}>FSD</Select.Option>
+          </Select>
+        </Col>
+        <Col md={1}>
           <Row>
-            <Col md={1}>
-              <CheckGroupComp register={register} name='customCheck' control={control} label='' disabled={getStatus(approved)}
-                options={[{ label: "", value: "Custom Clearance" }]} />
+            <label>Sub Type</label>
+          </Row>
+          <Select value={'fcl'} style={{width :'100%'}}>
+              <Select.Option value={'fcl'}>FCL</Select.Option>
+              <Select.Option value={'lcl'}>LCL</Select.Option>
+          </Select>
+        </Col>
+        <Col md={1}>
+          <Row>
+            <label>DG Type</label>
+          </Row>
+          <Select value={'nondg'} style={{width :'100%'}}>
+              <Select.Option value={'nondg'}>non-DG</Select.Option>
+              <Select.Option value={'dg'}>DG</Select.Option>
+              <Select.Option value={'mix'}>Mix</Select.Option>
+          </Select>
+        </Col>
+        <Col md={1}>
+          <Row>
+            <label>Fr. Type</label>
+          </Row>
+          <Select value={'prepaid'} style={{width :'100%'}}>
+              <Select.Option value={'prepaid'}>Prepaid</Select.Option>
+              <Select.Option value={'collect'}>Collect</Select.Option>
+          </Select>
+        </Col>
+        <Col md={2}>
+          <Row>
+            <label>Nomination</label>
+          </Row>
+          <Select value={'freehand'} style={{width :'100%'}}>
+              <Select.Option value={'freehand'}>Free Hand</Select.Option>
+              <Select.Option value={'nominated'}>Nominated</Select.Option>
+              <Select.Option value={'b2b'}>B2B</Select.Option>
+          </Select>
+        </Col>
+        <Col md={2}>
+          <Row>
+            <label>Inco Terms</label>
+          </Row>
+          <Select value={'EXW'} style={{ width: '100%' }}>
+            <Option value="EXW">EXW</Option>
+            <Option value="FCP">FCP</Option>
+            <Option value="FAS">FAS</Option>
+            <Option value="FOB">FOB</Option>
+            <Option value="CFR">CFR</Option>
+            <Option value="CIF">CIF</Option>
+            <Option value="CIP">CIP</Option>
+            <Option value="CPT">CPT</Option>
+            <Option value="DAP">DAP</Option>
+            <Option value="DPU">DPU</Option>
+            <Option value="DDP">DDP</Option>
+            <Option value="CNI">CNI</Option>
+            <Option value="DTP">DTP</Option>
+            <Option value="DPP">DPP</Option>
+            <Option value="DAT">DAT</Option>
+            <Option value="DDU">DDU</Option>
+            <Option value="DES">DES</Option>
+            <Option value="DEQ">DEQ</Option>
+            <Option value="DAF">DAF</Option>
+            <Option value="CNF">CNF</Option>
+          </Select>
+        </Col>
+        <Col md={2}>
+          <Row>
+            <label>Customer Ref#</label>
+          </Row>
+          <Input></Input>
+        </Col>
+        <Col md={2}>
+          <Row>
+            <label>File #</label>
+          </Row>
+          <Input></Input>
+        </Col>
+      </Row>
+      <Row style={{marginTop: '10px'}}>
+        <Col style={{border: '1px solid silver', height: '20px', borderRadius: '5px', margin: '0px 10px', fontSize: '12px', color: 'grey'}}>
+          No BL Attached
+        </Col>
+      </Row>
+      <hr/>
+      <Row>
+        <Col md={3} style={{ paddingRight: '20px' }}>
+          <Row>
+            <Row>
+              <label style={{ cursor: 'default', color: '#007bff' }}>
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    dispatch(resetPartyState());
+                    dispatch(incrementTab({ label: 'Party', key: '2-21', id: 'new' }));
+                    Router.push(`/setup/party/new`);
+                  }}
+                >
+                  Client*
+                </span>
+              </label>
+            </Row>
+            <Select
+              placeholder="Select a Client"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Consignee") || x.types.includes("Shipper") || x.types.includes("Notify")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label style={{ cursor: 'default', color: '#007bff' }}>
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    dispatch(resetPartyState());
+                    dispatch(incrementTab({ label: 'Party', key: '2-21', id: 'new' }));
+                    Router.push(`/setup/party/new`);
+                  }}
+                >
+                  Shipper*
+                </span>
+              </label>
+            </Row>
+            <Select
+              placeholder="Select a Shipper"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Shipper")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label style={{ cursor: 'default', color: '#007bff' }}>
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    dispatch(resetPartyState());
+                    dispatch(incrementTab({ label: 'Party', key: '2-21', id: 'new' }));
+                    Router.push(`/setup/party/new`);
+                  }}
+                >
+                  Consignee*
+                </span>
+              </label>
+            </Row>
+            <Select
+              placeholder="Select a Consignee"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Consignee")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label
+              >Port of Loading</label>
+            </Row>
+            <Select></Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label
+              >Port of Discharge*</label>
+            </Row>
+            <Select></Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label
+              >Final Destination*</label>
+            </Row>
+            <Select></Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label style={{ cursor: 'default', color: '#007bff' }}>
+                <span
+                  style={{ cursor: 'pointer' }}
+                  onClick={() => {
+                    dispatch(resetPartyState());
+                    dispatch(incrementTab({ label: 'Party', key: '2-21', id: 'new' }));
+                    Router.push(`/setup/party/new`);
+                  }}
+                >
+                  Forwarder/Coloader*
+                </span>
+              </label>
+            </Row>
+            <Select
+              placeholder="Select a Forwarder / Coloader"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Forwarder/Coloader")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label
+              >Sales Representator</label>
+            </Row>
+            <Select
+              placeholder="Select a Sales Representator"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.sr?.map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+        </Col>
+        <Col md={3} style={{ paddingRight: '20px', paddingLeft: '20px' }}>
+          <Row>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >Overseas Agent*</label>
+            </Row>
+            <Select
+              placeholder="Select a Overseas Agent"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Overseas Agent")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >Local Vendor*</label>
+            </Row>
+            <Select
+              placeholder="Select a Local Vendor"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Local Vendor")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >SLine / Carrier*</label>
+            </Row>
+            <Select
+              placeholder="Select a SLine / Carrier"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Shipping Line")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row>
+            <Carrier state={state} dispatch={dispatch} />
+          </Row>
+        </Col>
+        <Col md={3} style={{ paddingRight: '20px', paddingLeft: '20px' }}>
+          <Row>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >Commodity*</label>
+            </Row>
+            <Select
+              showSearch
+              placeholder="Select a Commodity"
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.commodity?.map((c) => (
+                <Select.Option key={c.id} value={c.id}>
+                  {c.name}
+                </Select.Option>
+              ))}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >Transport*</label>
+            </Row>
+            <Select
+              placeholder="Select a Transporter"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client?.filter((x) => x.types.includes("Transporter")).map((c) => {
+                return (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                );
+              })}
+            </Select>
+          </Row>
+          <Row style={{marginTop: '10px'}}>
+            <Row>
+              <label 
+              style={{cursor: 'pointer', color: '#007bff'}}
+              onClick={() => {
+                dispatch(resetPartyState());
+                dispatch(incrementTab({ "label": "Party", "key": "2-21", "id": "new" }));
+                Router.push(`/setup/party/new`);
+              }}
+              >Custom Clearance*</label>
+            </Row>
+            <Select
+              placeholder="Select a Custom Clearance party"
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option?.children?.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {state?.state?.party?.client
+                ?.filter((x) => x.types.includes("CHA/CHB"))
+                .map((c) => (
+                  <Select.Option key={c.id} value={c.id}>
+                    {c.name}
+                  </Select.Option>
+                ))}
+            </Select>
+          </Row>
+          
+        </Col>
+        <Col md={3} style={{ paddingLeft: '20px' }}>
+          <Row>
+            <Col md={4}>
+              <button
+                type="submit"
+                disabled={state.load}
+                className="btn-custom mt-1 px-3"
+              >
+                {state.load ? (
+                  <Spinner animation="border" size="sm" className="mx-3" />
+                ) : (
+                  'Save Job'
+                )}
+              </button>
             </Col>
             <Col md={6}>
-              <div className='custom-link' onClick={() => pageLinking("vendor", customAgentId)} >Custom Clearance</div>
-            </Col>
-            <Col>.</Col>
-          </Row>
-          <SelectSearchComp register={register}
-            clear={true}
-
-            name='customAgentId' control={control} label='' width={"100%"}
-            options={state.fields.vendor.chaChb} disabled={getStatus(approved) || customCheck.length == 0}
-          />
-          <div style={{ marginTop: 13 }}></div>
-          <Weights state={state} register={register} control={control} equipments={state.equipments}
-            type={type} approved={approved} useWatch={useWatch}
-          />
-        </Col>
-        <Col md={3}>
-          {state.edit && <Notes state={state} dispatch={dispatch} />}
-          {approved == "1" && <img src={'/approve.png'} height={100} />}
-        {charges != true && <div onClick={() => dispatch({ type: "set", payload: { isModalOpen: true, } })}>
-          <CheckGroupComp register={register} disabled={approved == "1" && !checkEditAccess()} name='approved' control={control} label=''
-            options={[{ label: "Approve Job", value: "1" }]}
-          />
-        </div>}
-          <hr />
-          {id != "new" && <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
-            <button className='btn-custom px-4' type="button"
-              onClick={
-                async () => {
-                  if (id != "new") {
-                    let oldTabs = await type == "SE" ? tabs.filter((x) => { return x.key != "4-3" }) :
-                      await type == "SI" ? tabs.filter((x) => { return x.key != "4-6" }) :
-                        await type == "AE" ? tabs.filter((x) => { return x.key != "7-2" }) :
-                          await tabs.filter((x) => { return x.key != "7-5" })
-                    dispatchNew(await removeTab(oldTabs)); // First deleting Job Tab
-                    dispatchNew(await incrementTab({ // Then Re adding Job Tab with updated info
-                      "label": `${type} JOB`,
-                      "key": type == "SE" ? "4-3" : type == "SI" ? "4-6" : type == "AE" ? "7-2" : "7-5",
-                      "id": state.selectedRecord.id
-                    }));
-                    dispatchNew(await addBlCreationId(id)); // Sending JobId to Bl
-                    dispatchNew(await incrementTab({ // Now Adding a BL Tab
-                      "label": `${type} ${type == "SE" || type == "SI" ? "" : "AW"}BL`,
-                      "key": type == "SE" ? "4-4" : type == "SI" ? "4-7" : type == "AE" ? "7-3" : "7-6",
-                      "id": state.selectedRecord.Bl != null ? `${state.selectedRecord.Bl.id}` : "new"
-                    }));
-                    await Router.push(`${type == "SE" ? "/seaJobs/export/bl/" : type == "SI" ? "/seaJobs/import/bl/" : type == "AE" ? "/airJobs/export/bl/" : "/airJobs/import/bl/"}${state.selectedRecord.Bl != null ? state.selectedRecord.Bl.id : "new"}`);
-                  }
+              <button
+                type="button"
+                className={
+                  !true
+                    ? 'btn-red-disabled px-3 mt-1 disabled'
+                    : 'btn-red mt-1 px-3'
+                }
+                style={{ cursor: true ? 'pointer' : 'not-allowed' }}
+                onClick={() => {
+                  PopConfirm(
+                    'Confirmation',
+                    'Are You Sure You Want To Delete This Job?',
+                    () => {
+                      axios
+                        .post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_JOBS, {
+                          id: allValues.id,
+                        })
+                        .then(async (x) => {
+                          let oldTabs =
+                            (await type) == 'SE'
+                              ? tabs.filter((x) => x.key != '4-3')
+                              : (await type) == 'SI'
+                              ? tabs.filter((x) => x.key != '4-6')
+                              : (await type) == 'AE'
+                              ? tabs.filter((x) => x.key != '7-2')
+                              : tabs.filter((x) => x.key != '7-5');
+                          dispatchNew(await removeTab(oldTabs));
+                          Router.push(
+                            type == 'SE'
+                              ? '/seaJobs/seJobList'
+                              : type == 'SI'
+                              ? '/seaJobs/siJobList'
+                              : type == 'AE'
+                              ? '/airJobs/aeJobList'
+                              : '/airJobs/aiJobList'
+                          );
+                        });
+                    }
+                  );
                 }}
-            >{(type == "SE" || type == "SI") ? "BL" : "AWBL"}</button>
-            <Popover
-              content={
-                <>{state.InvoiceList?.map((x, i) =>
-                (<div key={i} className='my-1'>
-                  <Tag color="geekblue" style={{ fontSize: 15, cursor: "pointer", width: 130, textAlign: 'center' }}
-                    onClick={() => {
-                      dispatch({
-                        type: 'set',
-                        payload: { selectedInvoice: x.invoice_No, tabState: "5" }
-                      })
-                    }}>
-                    {x.invoice_No}
-                  </Tag>
-                </div>))}
-                </>}>
-              <button type="button" className="btn-custom">Invoice/Bills {`(${state.InvoiceList.length})`}</button>
-            </Popover>
-
-            {(type == "AE" || type == "SE") &&
-              <button className='btn-custom px-4' type='button' onClick={() => dispatch({ type: 'set', payload: { loadingProgram: 1, tabState: "6" } })}
-              >Loading Program</button>}
-
-            {(type == "AI" || type == "SI") && <button className='btn-custom px-4' type='button' onClick={() => dispatch({ type: 'set', payload: { do: 1, tabState: "7" } })}>
-              DO
-            </button>}
-          </div>}
+              >
+                Delete Job
+              </button>
+            </Col>
+          </Row>
+            <label className='mt-3'>Tracing Notes</label>
+            <hr className='my-1'/>
+            <Row>
+              <Col md={5}>
+                <button className="btn-custom mt-1 px-3">Add Notes</button>
+              </Col>
+              <Col md={5}>
+                <button className="btn-custom mt-1 px-3">View Notes</button>
+              </Col>
+            </Row>
+            <hr/>
+            <Row>
+              <Col md={2}>
+                <button className="btn-custom mt-1 px-3">BL</button>
+              </Col>
+              <Col md={3}>
+                <button className="btn-custom mt-1 px-3">Inv/Bill</button>
+              </Col>
+              <Col md={6}>
+                <button className="btn-custom mt-1 px-3">Loading Program</button>
+              </Col>
+            </Row>
         </Col>
       </Row>
-      {(state.voyageVisible && approved[0] != "1") &&
-        <CustomBoxSelect reset={reset} useWatch={useWatch} control={control} state={state} dispatch={dispatch} />
-      }
-      <Modal open={state.isModalOpen} onOk={handleOk} onCancel={handleCancel} maskClosable={false}>
-        {approved == "1" ? "Are You Sure You Want To Approve This Job? " : "Are You Sure You Want To Disapprove This Job?"}
-      </Modal>
-    </>
+    </div>
   )
 }
 export default React.memo(BookingInfo)

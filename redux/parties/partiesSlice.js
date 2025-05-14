@@ -53,6 +53,10 @@ const initialState = {
     zip: '',
     companyId: '',
     partyType: '',
+    AccRepId: '',
+    SalesRepId: '',
+    DocRepId: '',
+    selectedCompany: ''
 };
 
 export const partiesSlice = createSlice({

@@ -11,6 +11,7 @@ import invoiceReducer from './invoice/invoiceSlice';
 import profitLossReducer from './profitLoss/profitLossSlice'
 import openingInvoiceSlice from './openingInvoices/openingInvoicesSlice';
 import paymentRecieptSlice from './paymentReciept/paymentRecieptSlice';
+import jobSlice from './Job/jobSlice';
 import voucherSlice from './vouchers/voucherSlice';
 import partiesReducer from './parties/partiesSlice';
 export const store = configureStore({
@@ -27,6 +28,7 @@ export const store = configureStore({
     persistValues: persistValuesReducer,
     openingInvoice:openingInvoiceSlice,
     paymentReciept:paymentRecieptSlice,
+    job:jobSlice,
     vouchers:voucherSlice,
     parties: partiesReducer,
   },
