@@ -1279,6 +1279,44 @@ const importVouchers = async () => {
     }
 };
 
+const importJobs = async () => {
+    try{
+        const { data } = await axios.get("http://localhost:8081/jobs/getAll");
+        console.log("Job Data:", data)
+
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+
+        const lookupMaps = {
+            UNAirportMap: createMap(data.UNAirport, "Id"),
+            UNLocation: createMap(data.UNLocation, "UNLocCode"),
+            Dimension: createMap(data.Dimension, "Id"),
+            Commodity: createMap(data.Commodity, "Id"),
+        };
+
+        const AEJobs = data.AirExportJob.map(x => ({
+            ...x,
+            AirPortOfTranshipment: lookupMaps.UNAirportMap.get(x.AirPortOfTranshipmentId),
+            AirPortOfDischarge: lookupMaps.UNAirportMap.get(x.AirPortOfDischargeId),
+            AirPortOfTranshipment1: lookupMaps.UNAirportMap.get(x.AirPortOfTranshipment1Id),
+            AirPortOfTranshipment2: lookupMaps.UNAirportMap.get(x.AirPortOfTranshipment2Id),
+            AirPortOfLoading: lookupMaps.UNAirportMap.get(x.AirPortOfLoadingId),
+            FinalDestination: lookupMaps.UNLocation.get(x.FinalDestinationCode),
+            PortOfReceipt: lookupMaps.UNLocation.get(x.PortOfReceiptCode),
+            PortOfFinalDest: lookupMaps.UNLocation.get(x.PortOfFinalDestCode),
+            Dimention: lookupMaps.Dimension.get(x.DimentionId),
+            Commodity: lookupMaps.Commodity.get(x.CommodityId),
+        }));
+
+        console.log(AEJobs)
+
+
+
+        
+    }catch(e){
+        console.error(e)
+    }
+}
+
 
 
     const uploadInvoices = async() => {
@@ -2110,10 +2148,11 @@ const importVouchers = async () => {
             </Col> */}
             <Col md={12}>
                 <button onClick={()=>{importCOA()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Import COA from Climax DB</button>
-                <button onClick={()=>{getCOATree()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Console COA from Odyssey DB</button>
-                <button onClick={()=>{importCharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>2. Import Charges from Climax DB</button>
-                <button onClick={()=>{importVouchers()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Vouchers from Climax DB</button>
-                <button onClick={()=>{importParties()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Parties from Climax DB</button>
+                <button onClick={()=>{getCOATree()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>2. Console COA from Odyssey DB</button>
+                <button onClick={()=>{importCharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Charges from Climax DB</button>
+                <button onClick={()=>{importVouchers()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>4. Import Vouchers from Climax DB</button>
+                <button onClick={()=>{importParties()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>5. Import Parties from Climax DB</button>
+                <button onClick={()=>{importJobs()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>5. Import Jobs from Climax DB</button>
             </Col>
         </Row>
     )

@@ -4,7 +4,7 @@ import DateComp from '/Components/Shared/Form/DateComp';
 import TimeComp from '/Components/Shared/Form/TimeComp';
 import InputComp from '/Components/Shared/Form/InputComp';
 import Dates from './Dates';
-import { Popover, Select } from "antd";
+import { DatePicker, Popover, Select, TimePicker } from "antd";
 import { Row, Col } from "react-bootstrap";
 
 const Carrier = ({state, dispatch}) => {
@@ -36,6 +36,42 @@ const Carrier = ({state, dispatch}) => {
               >Voyage*</label>
             </Row>
             <Select style={{margin: '1% 5%', width: '90%'}} placeholder='Select Voyage'></Select>
+        </Row>
+        <Row className='mt-2'>
+          <Col md={6}>
+          <Row>
+            <label 
+              style={{marginLeft: '7.5px'}}
+              >ETD</label>
+          </Row>
+          <DatePicker style={{margin: '1% 5%', width: '90%'}} placeholder='Select Date'></DatePicker>
+          </Col>
+          <Col md={6}>
+          <Row>
+            <label 
+              style={{marginLeft: '7.5px'}}
+              >ETA</label>
+          </Row>
+          <DatePicker style={{margin: '1% 5%', width: '90%'}} placeholder='Select Date'></DatePicker>
+          </Col>
+        </Row>
+        <Row className='mt-2'>
+          <Col md={6}>
+          <Row>
+            <label 
+              style={{marginLeft: '7.5px'}}
+              >Cut Off</label>
+          </Row>
+          <DatePicker style={{margin: '1% 5%', width: '90%'}} placeholder='Select Date'></DatePicker>
+          </Col>
+          <Col md={6}>
+          <Row>
+            <label 
+              style={{marginLeft: '7.5px'}}
+              >Time</label>
+          </Row>
+          <TimePicker style={{margin: '1% 5%', width: '90%'}} placeholder='Select Time'></TimePicker>
+          </Col>
         </Row>
     </div> 
   )}

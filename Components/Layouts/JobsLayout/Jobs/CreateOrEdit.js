@@ -8,7 +8,7 @@ import Cookies from 'js-cookie';
 import Router from "next/router";
 import { Spinner } from 'react-bootstrap';
 import { checkEmployeeAccess} from '/functions/checkEmployeeAccess';
-import { setField, setFullJobState } from '../../../../redux/Job/jobSlice';
+import { setJobField, setFullJobState } from '../../../../redux/Job/jobSlice';
 
 const Invoice = dynamic(() => import('./Invoice'), {loading: () => <p>Loading...</p>,})
 const BookingInfo = dynamic(() => import('./BookingInfo'), {loading: () => <p>Loading...</p>,})
@@ -37,7 +37,8 @@ const CreateOrEdit = ({id}) => {
       }
     }).then((x) => x.data);
     result.then((x) => {
-      dispatch(setFullJobState(x.result));
+      console.log(x)
+      dispatch(setJobField({ field: 'parties', value: x.result.party.client }));
       setLoading(false);
     })
   }
@@ -48,15 +49,21 @@ const CreateOrEdit = ({id}) => {
       setFirst(false);
     }
   }, [id])
+
+  useEffect(() => {
+    console.log("STATE: ", state)
+  }, [state])
   return(
     <div  className='client-styles'  style={{overflowY:'auto', overflowX:'hidden'}}>
       {loading ? <Spinner animation="border" /> : <Tabs  defaultActiveKey={"1"}>
         <Tabs.TabPane tab="Booking Info" key={"1"}>
-          <BookingInfo dispatch={dispatch} state={state} />
+          <BookingInfo setJobField={setJobField} state={state} />
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Equipment" key={"1"}>
+        <Tabs.TabPane tab="Equipment" key={"2"}>
+          <EquipmentInfo setJobField={setJobField} state={state} />
         </Tabs.TabPane>
-        <Tabs.TabPane tab="Routing" key={"1"}>
+        <Tabs.TabPane tab="Routing" key={"3"}>
+          <Routing setJobField={setJobField} state={state} />
         </Tabs.TabPane>
       </Tabs>}
     </div>

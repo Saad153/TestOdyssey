@@ -28,7 +28,7 @@ import { checkEditAccess } from '../../../../functions/checkEditAccess';
 import { Option } from 'antd/lib/mentions';
 import { resetPartyState } from '../../../../redux/parties/partiesSlice';
 
-const BookingInfo = (state) => {
+const BookingInfo = ({ setJobField, state }) => {
 
   const [ deleteAccess, setDeleteAccess ] = useState(false);
 
@@ -40,10 +40,10 @@ const BookingInfo = (state) => {
       // console.log("Not Approved")
       // console.log(deleteAccess)
     }
-    console.log("STATE>>", state.state)
   }, [state])
+  console.log("STATE>>", state)
   return (
-    <div style={{fontSize: '12px'}}>
+    <div style={{fontSize: '12px', padding: '5px'}}>
       <Row>
         <Col md={2}>
           <Row>
@@ -55,7 +55,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Job Type</label>
           </Row>
-          <Select value={'direct'} style={{width :'100%'}}>
+          <Select value={state.jobType} style={{width :'100%'}}>
               <Select.Option value={'direct'}>Direct</Select.Option>
               <Select.Option value={'coloaded'}>Coloaded</Select.Option>
               <Select.Option value={'cross trade'}>Cross Trade</Select.Option>
@@ -66,7 +66,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Job Kind</label>
           </Row>
-          <Select value={'current'} style={{width :'100%'}}>
+          <Select value={state.jobKind} style={{width :'100%'}}>
               <Select.Option value={'current'}>Current</Select.Option>
               <Select.Option value={'opening'}>Opening</Select.Option>
           </Select>
@@ -76,6 +76,7 @@ const BookingInfo = (state) => {
             <label>Job Date</label>
           </Row>
           <DatePicker
+          value={state.jobDate}
           style={{width :'100%'}} 
           // value={moment(state.registerDate)} 
           // onChange={(e) => dispatch(setField({ field: 'registerDate', value: e }))}
@@ -86,6 +87,7 @@ const BookingInfo = (state) => {
             <label>Ship Date</label>
           </Row>
           <DatePicker
+          value={state.shipDate}
           style={{width :'100%'}} 
           // value={moment(state.registerDate)} 
           // onChange={(e) => dispatch(setField({ field: 'registerDate', value: e }))}
@@ -95,7 +97,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Ship Status</label>
           </Row>
-          <Select value={'booked'} style={{width :'100%'}}>
+          <Select value={state.shipStatus} style={{width :'100%'}}>
               <Select.Option value={'hold'}>Hold</Select.Option>
               <Select.Option value={'booked'}>Booked</Select.Option>
               <Select.Option value={'delivered'}>Delivered</Select.Option>
@@ -109,7 +111,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>C. Center</label>
           </Row>
-          <Select value={'khi'} style={{width :'100%'}}>
+          <Select value={state.costCenter} style={{width :'100%'}}>
               <Select.Option value={'khi'}>KHI</Select.Option>
               <Select.Option value={'fsd'}>FSD</Select.Option>
           </Select>
@@ -118,7 +120,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Sub Type</label>
           </Row>
-          <Select value={'fcl'} style={{width :'100%'}}>
+          <Select value={state.subType} style={{width :'100%'}}>
               <Select.Option value={'fcl'}>FCL</Select.Option>
               <Select.Option value={'lcl'}>LCL</Select.Option>
           </Select>
@@ -127,7 +129,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>DG Type</label>
           </Row>
-          <Select value={'nondg'} style={{width :'100%'}}>
+          <Select value={state.dg} style={{width :'100%'}}>
               <Select.Option value={'nondg'}>non-DG</Select.Option>
               <Select.Option value={'dg'}>DG</Select.Option>
               <Select.Option value={'mix'}>Mix</Select.Option>
@@ -137,7 +139,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Fr. Type</label>
           </Row>
-          <Select value={'prepaid'} style={{width :'100%'}}>
+          <Select value={state.freightType} style={{width :'100%'}}>
               <Select.Option value={'prepaid'}>Prepaid</Select.Option>
               <Select.Option value={'collect'}>Collect</Select.Option>
           </Select>
@@ -146,7 +148,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Nomination</label>
           </Row>
-          <Select value={'freehand'} style={{width :'100%'}}>
+          <Select value={state.nomination} style={{width :'100%'}}>
               <Select.Option value={'freehand'}>Free Hand</Select.Option>
               <Select.Option value={'nominated'}>Nominated</Select.Option>
               <Select.Option value={'b2b'}>B2B</Select.Option>
@@ -156,7 +158,7 @@ const BookingInfo = (state) => {
           <Row>
             <label>Inco Terms</label>
           </Row>
-          <Select value={'EXW'} style={{ width: '100%' }}>
+          <Select value={state.incoTerms} style={{ width: '100%' }}>
             <Option value="EXW">EXW</Option>
             <Option value="FCP">FCP</Option>
             <Option value="FAS">FAS</Option>
@@ -183,13 +185,13 @@ const BookingInfo = (state) => {
           <Row>
             <label>Customer Ref#</label>
           </Row>
-          <Input></Input>
+          <Input value={state.customerRef}></Input>
         </Col>
         <Col md={2}>
           <Row>
             <label>File #</label>
           </Row>
-          <Input></Input>
+          <Input value={state.fileNo}></Input>
         </Col>
       </Row>
       <Row style={{marginTop: '10px'}}>
@@ -199,7 +201,7 @@ const BookingInfo = (state) => {
       </Row>
       <hr/>
       <Row>
-        <Col md={3} style={{ paddingRight: '20px' }}>
+        <Col md={3} style={{ padding: '0px 20px 0px 25px' }}>
           <Row>
             <Row>
               <label style={{ cursor: 'default', color: '#007bff' }}>
@@ -216,14 +218,19 @@ const BookingInfo = (state) => {
               </label>
             </Row>
             <Select
+            // style={{width: '90%'}}
               placeholder="Select a Client"
               showSearch
+              value={state.PartyId}
+              onChange={(e) => {
+                dispatch(setJobField({ field: 'PartyId', value: e }));
+              }}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Consignee") || x.types.includes("Shipper") || x.types.includes("Notify")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Consignee") || x.types.includes("Shipper") || x.types.includes("Notify")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -250,12 +257,16 @@ const BookingInfo = (state) => {
             <Select
               placeholder="Select a Shipper"
               showSearch
+              value={state.shipperId}
+              onChange={(e) => {
+                dispatch(setJobField({ field: 'shipperId', value: e }));
+              }}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Shipper")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Shipper")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -282,12 +293,16 @@ const BookingInfo = (state) => {
             <Select
               placeholder="Select a Consignee"
               showSearch
+              value={state.consigneeId}
+              onChange={(e) => {
+                dispatch(setJobField({ field: 'consigneeId', value: e }));
+              }}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Consignee")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Consignee")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -335,12 +350,16 @@ const BookingInfo = (state) => {
             <Select
               placeholder="Select a Forwarder / Coloader"
               showSearch
+              value={state.forwarderId}
+              onChange={(e) => {
+                dispatch(setJobField({ field: 'forwarderId', value: e }));
+              }}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Forwarder/Coloader")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Forwarder/Coloader")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -387,12 +406,16 @@ const BookingInfo = (state) => {
             <Select
               placeholder="Select a Overseas Agent"
               showSearch
+              value={state.overseasAgentId}
+              onChange={(e) => {
+                dispatch(setJobField({ field: 'overseasAgentId', value: e }));
+              }}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Overseas Agent")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Overseas Agent")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -420,7 +443,7 @@ const BookingInfo = (state) => {
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Local Vendor")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Local Vendor")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -448,7 +471,7 @@ const BookingInfo = (state) => {
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Shipping Line")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Shipping Line")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -507,7 +530,7 @@ const BookingInfo = (state) => {
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client?.filter((x) => x.types.includes("Transporter")).map((c) => {
+              {state.parties?.filter((x) => x.types.includes("Transporter")).map((c) => {
                 return (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
@@ -535,14 +558,16 @@ const BookingInfo = (state) => {
                 option?.children?.toLowerCase().includes(input.toLowerCase())
               }
             >
-              {state?.state?.party?.client
-                ?.filter((x) => x.types.includes("CHA/CHB"))
+              {state.parties?.filter((x) => x.types.includes("CHA/CHB"))
                 .map((c) => (
                   <Select.Option key={c.id} value={c.id}>
                     {c.name}
                   </Select.Option>
                 ))}
             </Select>
+          </Row>
+          <Row>
+            <Weights state={state} dispatch={dispatch} />
           </Row>
           
         </Col>
