@@ -154,7 +154,7 @@ const BookingInfo = ({ handleSubmit, onEdit, companyId, register, control, error
     }
   },[shippingLineId])
 
-  // console.log(state)
+  console.log("ALLVALUES:", allValues)
 
 
   const ShipperComp = () => {

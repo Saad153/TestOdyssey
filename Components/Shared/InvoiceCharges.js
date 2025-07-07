@@ -405,7 +405,7 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
   );
   const updateNote = async() => {
     await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_INVOICE_NOTE_UPDATE,{
-      id:invoice.id, note:invoice.note, currency:invoice.currency
+      id:invoice.id, note:invoice.note, currency:invoice.currency, total: invoice.total
     }).then((x)=>{
       if(x.data.status=="success"){
         openNotification("Success", "Note Saved!", "green")
@@ -449,6 +449,20 @@ const InvoiceCharges = ({data, state, dispatch, companyId, reload}) => {
       {shallow:true}
     );
   };
+
+  const changeCurrency = async (invoice, currency) => {
+    console.log(invoice.ex_rate)
+    console.log(invoice.currency)
+    console.log(currency)
+
+    if(invoice.currency != 'PKR' && currency =='PKR'){
+      setInvoice({...invoice, currency: currency, total: (parseFloat(invoice.total)*parseFloat(invoice.ex_rate))})
+    }else if(invoice.currency == 'PKR' && currency != 'PKR'){
+      setInvoice({...invoice, currency: currency, total: (parseFloat(invoice.total)/parseFloat(invoice.ex_rate))})
+    }else{
+      setInvoice({...invoice, currency: currency})
+    }
+  }
 
 
 return (
@@ -508,7 +522,10 @@ return (
             {" "}
             <Select
               size='small'
-                value={invoice?.currency} onChange={(e)=>setInvoice({...invoice, currency:e})}
+                value={invoice?.currency} onChange={(e)=>{
+                  changeCurrency(invoice, e)
+                  // setInvoice({...invoice, currency:e})
+                }}
                 style={{ width: 80 }}
                 options={[
                   {value: 'PKR', label: 'PKR'},

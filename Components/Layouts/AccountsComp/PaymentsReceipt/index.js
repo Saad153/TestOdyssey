@@ -39,7 +39,7 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
       });
 
       const result = response.data.result;
-      console.log("Old Vouchers", result)
+      // console.log("Old Vouchers", result)
       if (result.length === 0) {
         console.log("No more vouchers to fetch.");
         setLoading(false);
@@ -48,23 +48,29 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
 
       const temp = [];
       result.forEach((x) => {
-        console.log("Old Vouchers::", x)
+        // console.log("Old Vouchers::", x.voucher_Id)
         x.invoice.forEach((y) => {
           if (y.payType === "Payble") {
             // y.receiving = x.Invoice_Transactions[0].amount;
+            y.receiving = 0
             x.Invoice_Transactions.forEach((z) => {
               if(z.InvoiceId == y.id){
-                y.receiving = parseFloat(z.amount)
+                y.receiving += parseFloat(z.amount)
               }
             })
           } else {
             // y.receiving = x.Invoice_Transactions[0].amount;
-            x.Invoice_Transactions.forEach((z) => {
+            y.receiving = 0
+            x.Invoice_Transactions.forEach((z, i) => {
               if(z.InvoiceId == y.id){
-                y.receiving = parseFloat(z.amount)
+                console.log(z)
+                y.receiving += parseFloat(z.amount)
               }
             })
           }
+          y.constReceiving = y.receiving
+          console.log("Const Receiving:", y.constReceiving)
+          console.log("RECEIVING: ", y.receiving, y.payType, y.invoice_No, x.voucher_Id)
         });
       });
 
@@ -166,7 +172,15 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
         temp.forEach(item => {
           console.log("Item:", item)
           console.log("State:", state)
-          item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
+          item.receiving = 0
+          item.Invoice_Transactions.forEach((tran)=>{
+            if(tran.VoucherId.toString()==state.voucherId){
+              item.receiving += parseFloat(tran.amount)
+            }
+          })
+          item.constReceiving = item.receiving
+          console.log("ITEM: ", item)
+          // item.receiving = item.Invoice_Transactions[0]?.VoucherId.toString()==state.voucherId?item.Invoice_Transactions[0]?.amount:0;
           map.set(item.id, item);
         });
 
@@ -195,6 +209,8 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
   }
 
   const openOldVouchers = (x) => {
+
+    console.log("CONSOLE: ", x.x)
     console.log("Selected Account>>", x.x.invoice);
     dispatch(setField({ field: 'type', value: x.party }))
     dispatch(setField({ field: 'edit', value: true }))
@@ -209,7 +225,17 @@ const PaymentsReceipt = ({ id, voucherData, q }) => {
     if(x.x.invoice.length == 0){
       dispatch(setField({ field: 'advance', value: true }))
     }else{
-      dispatch(setField({ field: 'invoices', value: x.x.invoice }))
+      let temp = x.x.invoice.map((inv) => {
+      let newInv = { ...inv } // create a shallow copy
+      x.x.Invoice_Transactions.forEach((invT) => {
+        if (invT.InvoiceId == inv.id) {
+          newInv.Invoice_Transactions = invT
+        }
+      })
+        return newInv
+      })
+      console.log("TEMP: ", temp)
+      dispatch(setField({ field: 'invoices', value: temp }))
     }
     // console.log("Invoice in P/R", x.x.invoice)
     dispatch(setField({ field: 'voucherNarration', value: x.x.voucherNarration }))

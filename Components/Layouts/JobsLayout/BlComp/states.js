@@ -268,8 +268,10 @@ const setJob = (set, x, state, reset, allValues, dispatch, id) => {
     reset(allValues)
 }
 
-const calculateContainerInfos=(state, set, reset, allValues)=>{
+const calculateContainerInfos = async (state, set, reset, allValues)=>{
+  console.log("Running Calculation")
   let tempContainers = state.Container_Infos, cbm = 0.0, tare = 0.0, net = 0.0, gross = 0.0, pkgs = 0, unit = "", wtUnit = "";
+  console.log("Containers:", tempContainers)
   tempContainers.forEach((x,i)=>{
     if(i==0){
       unit= x.unit; wtUnit= x.wtUnit;
@@ -277,8 +279,26 @@ const calculateContainerInfos=(state, set, reset, allValues)=>{
     cbm = cbm + parseFloat(x.cbm||0); tare = tare + parseFloat(x.tare||0); net = net + parseFloat(x.net||0); gross = gross + parseFloat(x.gross||0); pkgs = pkgs + parseInt(x.pkgs||0);
   })
   set('saveContainers',false);
+  console.log("GROSS", gross)
   allValues = {...allValues, gross:""+gross, net:""+net, tare:""+tare, wtUnit, pkgs:""+pkgs, unit, cbm:""+cbm}
-  reset(allValues);
+  await reset(allValues);
+}
+
+const calculateContainerInfosCopy = async (state, set, reset, allValues)=>{
+  console.log("Running Calculation")
+  let tempContainers = state.Container_Infos, cbm = 0.0, tare = 0.0, net = 0.0, gross = 0.0, pkgs = 0, unit = "", wtUnit = "";
+  console.log("Containers:", tempContainers)
+  tempContainers.forEach((x,i)=>{
+    if(i==0){
+      unit= x.unit; wtUnit= x.wtUnit;
+    }
+    cbm = cbm + parseFloat(x.cbm||0); tare = tare + parseFloat(x.tare||0); net = net + parseFloat(x.net||0); gross = gross + parseFloat(x.gross||0); pkgs = pkgs + parseInt(x.pkgs||0);
+  })
+  set('saveContainers',false);
+  console.log("GROSS", gross)
+  allValues = {...allValues, gross:""+gross, net:""+net, tare:""+tare, wtUnit, pkgs:""+pkgs, unit, cbm:""+cbm}
+  return allValues
+  // await reset(allValues);
 }
 
 const calculateItemInfos=(state, set, reset, allValues)=>{
@@ -377,4 +397,5 @@ export {
   initialState,
   baseValues,
   setJob,
+  calculateContainerInfosCopy
 }

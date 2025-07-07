@@ -384,10 +384,11 @@ const ChargesList = ({state, dispatch, type, append, reset, fields, chargeList, 
                     }
                     let partyData = partyType == "Client" ? await getClients(searchPartyId) : await getVendors(searchPartyId);
                     if (state.chargesTab == '1') {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Bill" : "Job Invoice";
+                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Invoice";
                     } else {
-                      tempChargeList[index].invoiceType = partyData[0].types.includes("Overseas Agent") ? "Agent Invoice" : "Job Bill";
+                      tempChargeList[index].invoiceType =  partyData[0].types.includes("Overseas Agent") ? "Agent Bill" : "Job Bill";
                     }
+                    console.log(tempChargeList)
                     if(!check){
                       tempChargeList[index].name = partyData[0].name;
                       tempChargeList[index].partyId = partyData[0].id;

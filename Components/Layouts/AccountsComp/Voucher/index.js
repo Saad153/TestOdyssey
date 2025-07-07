@@ -394,7 +394,7 @@ const Voucher = ({ id }) => {
             </Col>
             <Col md={4}>
               <span>Date:</span>
-              <DatePicker value={state.date} onChange={(e)=>{dispatch(setField({ field: 'date', value: e }))}} style={{width: '100%'}}></DatePicker>
+              <DatePicker value={moment(state.date)} onChange={(e)=>{dispatch(setField({ field: 'date', value: e }))}} style={{width: '100%'}}></DatePicker>
             </Col>
             <Col md={3}>
               <span>Type</span>
@@ -476,7 +476,7 @@ const Voucher = ({ id }) => {
             </Col>
             <Col md={3}>
               <span>Cheque Date</span>
-              <DatePicker disabled={state.vType=="CRV"||state.vType=="CPV"} value={state.chequeDate} onChange={(e)=>{dispatch(setField({ field: 'chequeDate', value: e }))}} style={{width: '100%'}}></DatePicker>
+              <DatePicker disabled={state.vType=="CRV"||state.vType=="CPV"} value={moment(state.chequeDate)} onChange={(e)=>{dispatch(setField({ field: 'chequeDate', value: e }))}} style={{width: '100%'}}></DatePicker>
             </Col>
             <Col md={3}>
               <span>Currency</span>

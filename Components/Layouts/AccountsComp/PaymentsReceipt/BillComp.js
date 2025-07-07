@@ -19,8 +19,61 @@ const commas = (a) => a == 0 ? '0' : parseFloat(a).toFixed(2).toString().replace
 const BillComp = ({back, companyId, state, dispatch}) => {
   const [firstCall, setFirstCall] = useState(true);
   const router =  useRouter()
+
+  // useEffect(()=>{
+  //   console.log("STATE INVOICES", state.invoices)
+  // }, [state.invoices])
+
+  useEffect(() => {
+    if(state.autoKnockOff){
+      // console.log("KnockOff useEffect")
+      let remaining = state.knockOffAmount;
+    
+      const updatedInvoices = state.invoices.map((invoice, index) => {
+        let maxReceivable = 0.0
+        // console.log(invoice.total, invoice.recieved, invoice.paid, invoice.constReceiving)
+        if(!state.editing && !state.edit){
+          maxReceivable = invoice.payType === "Recievable"
+            ? (parseFloat(invoice.total) - parseFloat(invoice.constReceiving)) - (parseFloat(invoice.recieved) - parseFloat(invoice.constReceiving))
+            : (parseFloat(invoice.total) - parseFloat(invoice.constReceiving)) - (parseFloat(invoice.paid) - parseFloat(invoice.constReceiving));
+          }else{
+          maxReceivable = invoice.payType === "Recievable"
+            ? (parseFloat(invoice.total)) - (parseFloat(invoice.recieved) - parseFloat(invoice.constReceiving))
+            : (parseFloat(invoice.total)) - (parseFloat(invoice.paid) - parseFloat(invoice.constReceiving));
+        }
+    
+        let receiving = 0;
+    
+        if (remaining > 0) {
+          if (index === state.invoices.length - 1) {
+            receiving = remaining;
+            remaining = 0;
+          } else {
+            receiving = Math.min(maxReceivable, remaining);
+            remaining -= receiving;
+          }
+        }
+    
+        return {
+          ...invoice,
+          receiving
+        };
+      });
+    
+      dispatch(setField({ field: 'invoices', value: updatedInvoices }));
+    }
+  }, [state.knockOffAmount]);
+  
+
+  useEffect(() => {
+    console.log("STATE: ", state)
+  }, [state])
+  
+  
+
   const fetchInvoices = async () => {
     try{
+      // console.log("INVOICES FETCHED!!!!!")
       await axios.get(process.env.NEXT_PUBLIC_CLIMAX_GET_INVOICE_BY_PARTY_ID, {
         headers: {
           id: state.selectedAccount,
@@ -31,14 +84,21 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           // edit: false
         }
       }).then((x) => {
-        console.log("Invoices", x.data.result)
+        // console.log("Invoices", x.data.result)
         let temp = []
         !state.edit?temp  = x.data.result.filter(y => parseFloat(y.total)-parseFloat(y.recieved) != 0.0 && parseFloat(y.total)-parseFloat(y.paid) != 0.0):
         temp = x.data.result
         // console.log("Invoices>>", temp)
         temp.forEach((x) => {
           x.receiving = 0.0;
+          console.log(x)
+          if(x.payType=="Payble"){
+            x.constReceiving = x.paid
+          }else{
+            x.constReceiving = x.recieved
+          }
         });
+        // console.log("Fetch Invoice Function")
         dispatch(setField({ field: 'invoices', value: temp }))
         dispatch(setField({ field: 'load', value: false }))
       })
@@ -108,21 +168,28 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }, [state.transactionMode])
 
   const [ total, setTotal ] = useState(0.0)
+  const [ isFirst, setIsFirst ] = useState(true)
 
   useEffect(() => {
-    if(state.edit){
+    if((state.advance || state.edit) && isFirst){
       setTotal(state.totalReceivable)
+      setIsFirst(false)
     }
+    // if(state.advance && isFirst){
+    //   setTotal(state.totalReceivable)
+    //   setIsFirst(false)
+    // }
     let temp = 0.0
     let gainLoss = 0.0
     state.invoices.forEach((x) => {
+      // console.log("Invoice: ", x)
       x.payType=="Recievable"?
       temp = parseFloat(x.receiving)!=0?temp+parseFloat(x.receiving):temp:
       temp = parseFloat(x.receiving)!=0?temp-parseFloat(x.receiving):temp
       if(x.currency!="PKR"){
-        console.log("X:",x)
+        // console.log("X:",x)
         const receiving = x.payType=="Recievable"?parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.recieved):parseFloat(x.receiving) != 0 ? parseFloat(x.receiving) : parseFloat(x.paid)
-        console.log(parseFloat(x.receiving), parseFloat(x.recieved), receiving)
+        // console.log(parseFloat(x.receiving), parseFloat(x.recieved), receiving)
         const exRate = parseFloat(x.ex_rate) || 0;
         const stateRate = parseFloat(state.exRate) || 0;
 
@@ -136,8 +203,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
     // if(state.edit && temp == 0){
     //   temp = total
     // }
-    console.log("GainLoss Amount: ", gainLoss)
+    // console.log("GainLoss Amount: ", gainLoss)
     if(state.invoices.length>0){
+      // setTotal(temp)
       dispatch(setField({ field: 'totalReceivable', value: temp }))
       dispatch(setField({ field: 'gainLossAmount', value: gainLoss }))
       
@@ -193,7 +261,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
   }
 
   useEffect(()=>{
-    console.log("Change in GainLoss", state.gainLossAmount)
+    // console.log("Change in GainLoss", state.gainLossAmount)
   },[state.gainLossAmount])
 
   const makeTransaction = () => {
@@ -505,10 +573,18 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           </Col>
           <Col md={4}>
           {state.totalReceivable<0||(state.advance&&state.payType=='Payble')?<span style={{fontWeight: 'bold'}}>Total Payable Amount</span>:<span style={{fontWeight: 'bold'}}>Total Receivable Amount</span>}
-          {!state.advance&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
-          {state.advance&&<InputNumber
-          value={state.totalReceivable}
-          onChange={(e) => dispatch(setField({ field: 'totalReceivable', value: e }))}
+          {!state.advance&&!state.autoKnockOff&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(state.totalReceivable):commas(state.totalReceivable*-1)}</span>}
+          {(state.advance||state.autoKnockOff)&&<InputNumber
+          value={state.autoKnockOff?state.knockOffAmount:state.totalReceivable}
+          onChange={(e) => {
+            // console.log(state.advance)
+            // console.log(state.autoKnockOff)
+            if(state.advance){
+              dispatch(setField({ field: 'totalReceivable', value: e }))
+            }else if(state.autoKnockOff){
+              dispatch(setField({ field: 'knockOffAmount', value: e }))
+            }
+          }}
           style={{width: '100%'}}
           formatter={(value) =>
             `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') // Add commas as thousands separators
@@ -527,9 +603,13 @@ const BillComp = ({back, companyId, state, dispatch}) => {
           <Col md={3}>
             <Checkbox style={{marginTop: '25px'}} onChange={(e) => {dispatch(setField({ field: 'autoKnockOff', value: e.target.checked }))}} checked={state.autoKnockOff}>Auto KnockOff</Checkbox>
           </Col>
-          <Col md={6}>
-            <span style={{marginLeft: '5px'}}>Amount</span>
-            <InputNumber disabled={!state.autoKnockOff} style={{width: '100%'}}></InputNumber>
+          <Col md={3}>
+            {state.editing&&<span style={{marginLeft: '5px'}}>Current Payment:</span>}
+            {state.editing&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{commas(total)}</span>}
+          </Col>
+          <Col md={3}>
+            {state.editing&&<span style={{marginLeft: '5px'}}>Current Balance:</span>}
+            {state.editing&&<span style={{width: '100%', height: '60%', display: 'flex', justifyContent: 'left', alignItems: 'center', border: '1px solid #d7d7d7', paddingLeft: '10px'}}>{state.totalReceivable>=0?commas(parseFloat(total)-state.totalReceivable):commas(parseFloat(total)-(state.totalReceivable*-1))}</span>}
           </Col>
         </Row>
         <Row>
@@ -636,8 +716,8 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   onClick={()=>{
                     let type = invoice.SE_Job?.operation;
                     let id = invoice.SE_Job?.id
-                    console.log(type)
-                    console.log(invoice.SE_Job.id)
+                    // console.log(type)
+                    // console.log(invoice.SE_Job.id)
                     if(invoice?.SE_Job?.jobNo){
                       dispatch(incrementTab({
                       "label":type=="SE"?"SE JOB":type=="SI"?"SI JOB":type=="AE"?"AE JOB":"AI JOB",
@@ -653,7 +733,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   ><b>{invoice.SE_Job?.jobNo}</b></td>
                   <td className='row-hov blue-txt' style={{width: '8%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}
                     onClick={()=>{
-                      console.log(invoice)
+                      // console.log(invoice)
                       if(invoice?.id){
                         dispatch(incrementTab({ "label": "Invoice Details", "key": "2-11", "id":`${invoice.id}`}))
                         router.push(`/reports/invoice/${invoice.id}`)
@@ -667,8 +747,9 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                   <td style={{width: '7%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{invoice.ex_rate}</td>
                   <td className='blue-txt' style={{width: '5%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}><b>{invoice.payType=="Recievable"?"DN":"CN"}</b></td>
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{commas(invoice.total)}</td> 
+                  {/* {console.log("Invoice!!!:", invoice)} */}
                   <td style={{width: '12%', paddingLeft: '5px', borderLeft: '1px solid #dee2e6', padding: '10px 10px'}}>{
-                    <InputNumber style={{width: '100%'}} value={invoice.receiving}
+                    <InputNumber style={{width: '100%'}} value={parseFloat(invoice.receiving)}
                     // disabled={invoice.payType=="Payble"?invoice.total - invoice.paid == 0:invoice.total - invoice.recieved == 0}
                     formatter={(value) =>
                       `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') 
@@ -684,10 +765,12 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                         ...updatedInvoiceList[index], 
                         receiving: value, 
                       };
+                      // console.log("Input Number")
                       dispatch(setField({ field: 'invoices', value: updatedInvoiceList })); 
                     }}
                     ></InputNumber>
                     }</td>
+                    {/* {console.log(invoice)} */}
                   <td
                     style={{
                       width: '12%',
@@ -697,17 +780,17 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                       color: calculateColor(invoice),
                     }}
                   >
-                    {/* {console.log("Invoice>>>",invoice)} */}
+                    {/* {console.log("Invoice>>>",state)} */}
                     {invoice.payType=="Recievable"?(state.edit==false?
-                    commas(invoice.total - invoice.recieved - invoice.receiving):
-                    invoice.receiving==0?
-                    commas(invoice.total - invoice.recieved):
-                    commas(invoice.total - invoice.receiving)):
+                    commas(parseFloat(invoice.total) - parseFloat(invoice.recieved) - parseFloat(invoice.receiving)):
+                    // parseFloat(invoice.receiving)==0?
+                    commas(parseFloat(invoice.total) - (parseFloat(invoice.recieved) - parseFloat(invoice.constReceiving)) - parseFloat(invoice.receiving))):
+                    // commas(parseFloat(invoice.total) - parseFloat(invoice.receiving))):
                     (state.edit==false?
-                      commas(invoice.total - invoice.paid - invoice.receiving):
-                      invoice.receiving==0?
-                      commas(invoice.total - invoice.paid):
-                      commas(invoice.total - invoice.receiving)
+                      commas(parseFloat(invoice.total) - parseFloat(invoice.paid) - parseFloat(invoice.receiving)):
+                      // parseFloat(invoice.receiving)==0?
+                      commas(parseFloat(invoice.total) - (parseFloat(invoice.paid) - parseFloat(invoice.constReceiving)) - parseFloat(invoice.receiving))
+                      // commas(parseFloat(invoice.total) - parseFloat(invoice.receiving))
                     )
                     }
                   </td>
@@ -728,6 +811,7 @@ const BillComp = ({back, companyId, state, dispatch}) => {
                         ...updatedInvoiceList[index],
                         receiving: value, 
                       };
+                      // console.log("Another input")
                       dispatch(setField({ field: 'invoices', value: updatedInvoiceList }));
                     }} />
                   </td>

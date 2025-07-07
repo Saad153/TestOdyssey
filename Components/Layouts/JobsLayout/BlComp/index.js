@@ -13,12 +13,13 @@ import { incrementTab } from "/redux/tabs/tabSlice";
 import { stamps as stamp } from "./groupData";
 import { validationSchema } from "./validion";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { setAndFetchBlData, recordsReducer, initialState, baseValues, calculateContainerInfos, calculateItemInfos } from "./states";
+import { setAndFetchBlData, recordsReducer, initialState, baseValues, calculateContainerInfos, calculateItemInfos, calculateContainerInfosCopy } from "./states";
 import axios from 'axios';
 import ItemDetail from "./ItemDetail";
 import ChargesDetail from "./ChargesDetail";
 import { getJobValues, getJobById } from '/apis/jobs';
 import { useQuery } from '@tanstack/react-query';
+import { delay } from "/functions/delay"
 
 const BlComp = ({id, blData, partiesData, type}) => {
 
@@ -112,13 +113,17 @@ const BlComp = ({id, blData, partiesData, type}) => {
     });
     await refetch();
   };
-
+  
   const onEdit = async (data) => {
     set("load", true);
     const stamps = data.stamps?.map((x) => ({
       ...x,
       stamps: stamp[Number(x.code) - 1]?.label,
     }));
+    const values = await calculateContainerInfosCopy(state, set, reset, allValues)
+    // await delay(2000);
+    console.log("DATA:", data)
+    console.log("Values:", values)
     let tempData = {
       ...data,
       id: id,
@@ -145,11 +150,19 @@ const BlComp = ({id, blData, partiesData, type}) => {
       deletingItemList:state.deletingItemList,
       Dimensions:state.Dimensions,
       deletingDimensionsList:state.deletingDimensionsList,
-      applyToCWT:data.applyToCWT[0]==1?'1':'0'
+      applyToCWT:data.applyToCWT[0]==1?'1':'0',
+      gross: values.gross,
+      net: values.net,
+      tare: values.tare,
+      wtUnit: values.wtUnit,
+      pkgs: values.pkgs,
+      unit: values.unit,
+      cbm: values.cbm
     };
     let emp = stamps?.find(
       (x) => x.code == undefined && x.stamp_group == undefined
     );
+    console.log("TEMP DATA:", tempData)
     emp?openNotification("Error", "Fields Can't Be Empty", "red")
       :await axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_EDIT_BL, tempData)
       .then(async(x) => {
@@ -175,7 +188,10 @@ const BlComp = ({id, blData, partiesData, type}) => {
   }, [state.tabState]);
 
   useEffect(() => {
-    calculateContainerInfos(state, set, reset, allValues)
+    const run = async () => {
+      await calculateContainerInfos(state, set, reset, allValues);
+    };
+    run();
   }, [state.Container_Infos]);
 
   useEffect(() => {

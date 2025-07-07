@@ -41,13 +41,14 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
 
   useEffect(() => {
     let tempState = {...baseValues, ...jobData};
+    console.log("RUNS", tempState.approved)
     let tempVoyageList = [...state.voyageList];
     tempVoyageList.length>0?null:tempVoyageList.push(tempState.Voyage);
     tempState = {
       ...tempState,
       eta: tempState.eta==""?"":moment(tempState.eta),
       etd: tempState.etd==""?"":moment(tempState.etd),
-      approved: tempState.approved=="true"?["1"]:[],
+      approved: tempState.approved=="true"||tempState.approved[0]=='1'?["1"]:[],
       arrivalDate: tempState.arrivalDate==""?"":moment(tempState.arrivalDate),
       arrivalTime: tempState.arrivalTime==""?"":moment(tempState.arrivalTime),
       departureDate: tempState.departureDate==""?"":moment(tempState.departureDate),

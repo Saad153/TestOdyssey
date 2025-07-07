@@ -988,7 +988,7 @@ const Upload_CoA = () => {
             let tempCharges = []
             charges.data.forEach((x) => {
                 let temp = {
-                    id: x.Id,
+                    // id: x.Id,
                     code: x.Id,
                     currency: x.GL_Currencies.CurrencyCode,
                     name: x.ChargesName,
@@ -998,12 +998,14 @@ const Upload_CoA = () => {
                     defaultRecivableParty: "Client",
                     taxApply: x.IsTaxable?"Yes":"No",
                     taxPerc: "0",
-                    fixAmount: 0
+                    fixAmount: 0,
+                    climaxId: x.Id
                 }
                 tempCharges.push(temp)
             })
             console.log(tempCharges)
             const result = await axios.post("http://localhost:8088/charges/bulkCreate", tempCharges)
+            console.log(result)
         }catch(err){
             console.error(err)
         }
@@ -1011,13 +1013,63 @@ const Upload_CoA = () => {
     }
     const importCOA = async () => {
         try{
+            const companyId = Cookies.get("companyId")
             const coa = await axios.post("http://localhost:8081/accounts/getAll")
             console.log(coa.data)
-            const result = await axios.post("http://localhost:8088/accounts/importAccounts", coa.data)
+            const result = await axios.post("http://localhost:8088/coa/importAccounts", coa.data.temp)
+            console.log(result.status)
         }catch(err){
             console.error(err)
         }
     }
+    const getCOATree = async () => {
+        try{
+            // const coa = await axios.post("http://localhost:8081/accounts/getAll")
+            // console.log(coa.data)
+            const result = await axios.get("http://localhost:8088/coa/getCOATree")
+            console.log(result.data)
+        }catch(err){
+            console.error(err)
+        }
+    }
+
+const importParties = async () => {
+    try{
+        const { data } = await axios.get("http://localhost:8081/parties/get")
+        console.log(data)
+
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+
+        const lookupMaps = {
+            Parties: createMap(data.Parties, "Id"),
+            UNLocation: createMap(data.UNLocation, "UNLocCode"),
+            Employee: createMap(data.Employee, "Id"),
+            Currencies: createMap(data.Currencies, "Id"),
+            COA: createMap(data.COA, "Id"),
+        };
+
+        const parties = data.Parties.map(x => ({
+            ...x,
+            ParentParty: lookupMaps.Parties.get(x.ParentPartyId),
+            Country: lookupMaps.UNLocation.get(x.CountryCode),
+            City: lookupMaps.UNLocation.get(x.CityCode),
+            SalesPerson: lookupMaps.Employee.get(x.SalesPersonId),
+            AccountsRep: lookupMaps.Employee.get(x.AccountsRepId),
+            DocsRep: lookupMaps.Employee.get(x.DocsRepId),
+            Currency: lookupMaps.Currencies.get(x.CurrencyId),
+            ParentAccount: lookupMaps.COA.get(x.ParentAccountId),
+            ContraAccount: lookupMaps.COA.get(x.ContraAccountId),
+            Account: lookupMaps.COA.get(x.AccountId),
+        }));
+
+        console.log(parties)
+
+        const result = await axios.post("http://localhost:8088/parties/bulkCreate", parties)
+        console.log(result.data.status)
+    }catch(err){
+        console.error(err)
+    }
+}
 
 const importVouchers = async () => {
     try {
@@ -1228,6 +1280,207 @@ const importVouchers = async () => {
         console.error("❌ Import failed:", err);
     }
 };
+
+const BATCH_SIZE = 100;
+
+const importAirPorts = async () => {
+    try {
+        const { data } = await axios.get("http://localhost:8081/jobs/getAirports");
+        console.log("AirPort Data:", data);
+
+        const airports = data.Airports || [];
+        const unLocations = data.UNLocation || [];
+
+        // Function to split array into chunks
+        const chunkArray = (array, size) =>
+            Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
+                array.slice(i * size, i * size + size)
+            );
+
+        const airportBatches = chunkArray(airports, BATCH_SIZE);
+        const unLocationBatches = chunkArray(unLocations, BATCH_SIZE);
+
+        // Upload each batch sequentially (or you can do Promise.all for parallel)
+        for (const batch of airportBatches) {
+            await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/UploadAirPorts`, {
+                Airports: batch,
+                UNLocation: [],
+            });
+        }
+
+        for (const batch of unLocationBatches) {
+            await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/UploadAirPorts`, {
+                Airports: [],
+                UNLocation: batch,
+            });
+        }
+
+        console.log("All batches uploaded successfully");
+    } catch (e) {
+        console.error("Batch upload error:", e);
+    }
+};
+
+const importEmployees = async () => {
+    try {
+        const { data } = await axios.get("http://localhost:8081/jobs/getEmployees");
+        console.log("Employee Data:", data);
+
+        await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/employeeRoutes/uploadEmployees`, data);
+
+        console.log("Employees uploaded successfully");
+    }catch(e){
+        console.log(e)
+    }
+}
+
+const importCommodities = async () => {
+    try {
+        const { data } = await axios.get("http://localhost:8081/jobs/getCommodities");
+        console.log("Commodity Data:", data);
+
+        await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/commodity/uploadCommodities`, data);
+
+        console.log("Comodities uploaded successfully");
+    }catch(e){
+        console.log(e)
+    }
+}
+
+const importBls = async () => {
+    try {
+        const { data } = await axios.get("http://localhost:8081/jobs/getBLs");
+        console.log("BL Data:", data);
+
+        await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/uploadBLs`, data);
+
+        console.log("BLs uploaded successfully");
+    }catch(e){
+        console.log(e)
+    }
+}
+
+const importAECharges = async () => {
+    try {
+        const { data } = await axios.get("http://localhost:8081/jobs/getAECharges");
+        console.log("AE Charges Data:", data);
+        
+        const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/charges/uploadChargeHeads`, data);
+        console.log("Charges uploaded successfully", result);
+
+    }catch(e){
+        console.log(e)
+    }
+}
+
+
+const importJobs = async () => {
+    try{
+        const { data } = await axios.get("http://localhost:8081/jobs/getAll");
+        console.log("AE Job Data:", data)
+
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+
+        const lookupMaps = {
+            AirExportJob: createMap(data.AirExportJob, "Id"),
+            Commodity: createMap(data.Commodity, "Id"),
+            Employee: createMap(data.Employee, "Id"),
+            PropertiesLOV: createMap(data.PropertiesLOV, "Id"),
+            IncoTerms: createMap(data.IncoTerms, "Id"),
+            BL: createMap(data.BL, "AEJobId"),
+            Currency: createMap(data.Currencies, "Id"),
+            // keep arrays for filtering
+            ChargesPayb: data.AirExportJob_ChargesPayb,
+            ChargesRecv: data.AirExportJob_ChargesRecv,
+        };
+
+        const  CP = data.AirExportJob_ChargesPayb.map(x => ({
+            ...x,
+            Currency: lookupMaps.Currency.get(x.CurrencyId),
+        }));
+
+        const  CR = data.AirExportJob_ChargesRecv.map(x => ({
+            ...x,
+            Currency: lookupMaps.Currency.get(x.CurrencyId),
+        }));
+
+        lookupMaps.ChargesPayb = CP;
+        lookupMaps.ChargesRecv = CR;
+
+        const AEJobs = data.AirExportJob.map(x => ({
+            ...x,
+            AExp_AirExportJob: lookupMaps.AirExportJob.get(x.ParentJobId),
+            Commodity: lookupMaps.Commodity.get(x.CommodityId),
+            Employee: lookupMaps.Employee.get(x.SalesRepId),
+            CostCenter: lookupMaps.PropertiesLOV.get(x.CostCenterId),
+            IncoTerms: lookupMaps.IncoTerms.get(x.IncoTermsId),
+            BL: lookupMaps.BL.get(x.Id),
+            ChargesPayb: lookupMaps.ChargesPayb.filter(c => c.AEJobId === x.Id),
+            ChargesRecv: lookupMaps.ChargesRecv.filter(c => c.AEJobId === x.Id),
+        }));
+
+        console.log(AEJobs);
+
+
+        const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/UploadAEJobs`, AEJobs);
+        console.log("RESULT: ", result.data.result)
+        
+    }catch(e){
+        console.error(e)
+    }
+    try{
+const { data } = await axios.get("http://localhost:8081/jobs/getAllAI");
+        console.log("AI Job Data:", data)
+
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+
+        const lookupMaps = {
+            AirImportJob: createMap(data.AirImportJob, "Id"),
+            Commodity: createMap(data.Commodity, "Id"),
+            Employee: createMap(data.Employee, "Id"),
+            PropertiesLOV: createMap(data.PropertiesLOV, "Id"),
+            IncoTerms: createMap(data.IncoTerms, "Id"),
+            BL: createMap(data.BL, "AEJobId"),
+            Currency: createMap(data.Currencies, "Id"),
+            // keep arrays for filtering
+            ChargesPayb: data.AirImportJob_ChargesPayb,
+            ChargesRecv: data.AirImportJob_ChargesRecv,
+        };
+
+        const  CP = data.AirImportJob_ChargesPayb.map(x => ({
+            ...x,
+            Currency: lookupMaps.Currency.get(x.CurrencyId),
+        }));
+
+        const  CR = data.AirImportJob_ChargesRecv.map(x => ({
+            ...x,
+            Currency: lookupMaps.Currency.get(x.CurrencyId),
+        }));
+
+        lookupMaps.ChargesPayb = CP;
+        lookupMaps.ChargesRecv = CR;
+
+        const AIJobs = data.AirImportJob.map(x => ({
+            ...x,
+            AExp_AirExportJob: lookupMaps.AirImportJob.get(x.ParentJobId),
+            Commodity: lookupMaps.Commodity.get(x.CommodityId),
+            Employee: lookupMaps.Employee.get(x.SalesRepId),
+            CostCenter: lookupMaps.PropertiesLOV.get(x.CostCenterId),
+            IncoTerms: lookupMaps.IncoTerms.get(x.IncoTermsId),
+            BL: lookupMaps.BL.get(x.Id),
+            ChargesPayb: lookupMaps.ChargesPayb.filter(c => c.AEJobId === x.Id),
+            ChargesRecv: lookupMaps.ChargesRecv.filter(c => c.AEJobId === x.Id),
+        }));
+
+        console.log(AIJobs);
+
+
+        const result = await axios.post(`${process.env.NEXT_PUBLIC_CLIMAX_MAIN_URL}/seaJob/UploadAIJobs`, AIJobs);
+        console.log("RESULT: ", result.data.result)
+    }catch(e){
+        console.error(e)
+    }
+}
 
 
 
@@ -1965,6 +2218,14 @@ const importVouchers = async () => {
         console.log(chargesHead)
     }
 
+    const backup = async () => {
+        try{
+            importCOA()
+        }catch(e){
+            console.error(e)
+        }
+    }
+
     return (
         <Row md={24}>
             {/* <Col md={12}>
@@ -2059,9 +2320,18 @@ const importVouchers = async () => {
             
             </Col> */}
             <Col md={12}>
-                <button onClick={()=>{importCOA()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Import COA from Climax DB</button>
-                <button onClick={()=>{importCharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>2. Import Charges from Climax DB</button>
-                <button onClick={()=>{importVouchers()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Vouchers from Climax DB</button>
+                {/* <button onClick={()=>{importCOA()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Import COA from Climax DB</button> */}
+                {/* <button onClick={()=>{getCOATree()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>2. Console COA from Odyssey DB</button> */}
+                {/* <button onClick={()=>{importCharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>3. Import Charges from Climax DB</button> */}
+                {/* <button onClick={()=>{importVouchers()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>4. Import Vouchers from Climax DB</button> */}
+                {/* <button onClick={()=>{importParties()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>5. Import Parties from Climax DB</button> */}
+                {/* <button onClick={()=>{importJobs()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>6. Import Jobs from Climax DB</button> */}
+                {/* <button onClick={()=>{importAirPorts()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>7. Import Airports from Climax DB</button> */}
+                {/* <button onClick={()=>{importEmployees()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>8. Import Employees from Climax DB</button> */}
+                {/* <button onClick={()=>{importCommodities()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>9. Import Commodities from Climax DB</button> */}
+                {/* <button onClick={()=>{importBls()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>10. Import BLs from Climax DB</button> */}
+                {/* <button onClick={()=>{importAECharges()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>11. Import AE Charges from Climax DB</button> */}
+                {/* <button onClick={()=>{backup()}} style={{width: 'auto'}} className='btn-custom mt-3 px-3 mx-3'>1. Backup data from Climax DB</button> */}
             </Col>
         </Row>
     )

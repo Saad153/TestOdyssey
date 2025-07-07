@@ -28,16 +28,16 @@ const SEJobList = ({ jobsData, sessionData, type }) => {
   const indexOfLast = currentPage * recordsPerPage;
   const indexOfFirst = indexOfLast - recordsPerPage;
   const currentRecords = (query!='' && query!=null && query!=undefined)?records.filter((x)=>{
-    return  x.jobNo.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Client?.name.toLowerCase().includes(query.toLowerCase()) ||
-      x?.fd.toLowerCase().includes(query.toLowerCase()) ||
-      x?.freightType.toLowerCase().includes(query.toLowerCase()) ||
-      x?.nomination.toLowerCase().includes(query.toLowerCase()) ||
-      x?.pod.toLowerCase().includes(query.toLowerCase()) ||
-      x?.pol.toLowerCase().includes(query.toLowerCase()) ||
-      x?.weight.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Bl?.hbl.toLowerCase().includes(query.toLowerCase()) ||
-      x?.Bl?.mbl.toLowerCase().includes(query.toLowerCase()) 
+    return  x.jobNo?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.Client?.name?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.fd?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.freightType?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.nomination?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.pod?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.pol?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.weight?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.Bl?.hbl?.toLowerCase().includes(query.toLowerCase()) ||
+      x?.Bl?.mbl?.toLowerCase().includes(query.toLowerCase()) 
   }) : records?.slice(indexOfFirst, indexOfLast);
   const noOfPages = Math.ceil(records?.length / recordsPerPage);
 

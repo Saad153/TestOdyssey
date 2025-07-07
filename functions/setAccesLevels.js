@@ -224,6 +224,11 @@ function setAccesLevels(dispatch, collapsed){
         key: '7-4',
         children: `Content of Tab Pane 2`,
       }):null,
+      (levels?.includes("manifest")||levels?.includes("admin"))?getItem('Manifest List', '7-7',<></>, null, {
+        label: `Manifest List`,
+        key: '7-7',
+        children: `Content of Tab Pane 2`,
+      }):null,
     ]
   )
 

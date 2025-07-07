@@ -69,6 +69,7 @@ const PartySearch = ({state, dispatch, reset, useWatch, control}) => {
             }
           }
           else {
+            console.log(x)
             if(x.types.includes("Overseas Agent")){
               temp[state.headIndex].invoiceType = "Agent Bill";
               temp[state.headIndex].partyType = "agent";

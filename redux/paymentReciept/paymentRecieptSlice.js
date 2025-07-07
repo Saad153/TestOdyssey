@@ -41,7 +41,7 @@ const initialState = {
   onAccount: 'client',
   delete: false,
   advance: false,
-  
+  knockOffAmount: 0.0
 };
 
 export const paymentRecieptSlice = createSlice({
