@@ -8,6 +8,7 @@ import Cookies from 'js-cookie';
 import Router from "next/router";
 import { Spinner } from 'react-bootstrap';
 import { checkEmployeeAccess} from '/functions/checkEmployeeAccess';
+import { setJobField, setFullJobState } from '../../../../redux/Job/jobSlice';
 
 const Invoice = dynamic(() => import('./Invoice'), {loading: () => <p>Loading...</p>,})
 const BookingInfo = dynamic(() => import('./BookingInfo'), {loading: () => <p>Loading...</p>,})
@@ -16,16 +17,12 @@ const EquipmentInfo = dynamic(() => import('./EquipmentInfo'), {loading: () => <
 const DelieveryOrder = dynamic(() => import('./Delievery Order'), {loading: () => <p>Loading...</p>,})
 const LoadingProgram = dynamic(() => import('./Loading Program'), {loading: () => <p>Loading...</p>,})
 
-import { useDispatch, useSelector } from 'react-redux';
-import { useForm, useWatch } from "react-hook-form";
 import { incrementTab, removeTab } from '/redux/tabs/tabSlice';
-import { SignupSchema, getInvoices, baseValues } from './states';
-import { yupResolver } from "@hookform/resolvers/yup";
 import PopConfirm from '/Components/Shared/PopConfirm';
 import { createNotification } from '/functions/notifications';
 import openNotification from '/Components/Shared/Notification';
 import FullScreenLoader from '/Components/Shared/FullScreenLoader';
-import { useQueryClient } from '@tanstack/react-query';
+import { useDispatch, useSelector } from 'react-redux';
 
 const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) => {
   const queryClient = useQueryClient();
@@ -201,94 +198,22 @@ const CreateOrEdit = ({state, dispatch, companyId, jobData, id, type, refetch}) 
   const onError = (errors) => console.log(errors);
 
   useEffect(() => {
-    let obj = {...allValues, SE_Equipments:state.equipments};
-    queryClient.setQueryData(
-      ['jobData', {id, type}],
-      (x) => x?{...x,result:obj}:x
-    )
-
-    // console.log(state.values)
-    // console.log(allValues.approved)
-    // console.log(checkEmployeeAccess())
-    if(allValues.approved!=1 && checkEmployeeAccess()){
-      // console.log("approved")
-      setDeleteAccess(true)
-      // console.log(deleteAccess)
-    }else{
-      setDeleteAccess(false)
-      // console.log("Not Approved")
-      // console.log(deleteAccess)
-    }
-  }, [allValues, state.equipments])
+    console.log("STATE: ", state)
+  }, [state])
   return(
-  <div className='client-styles' style={{overflowY:'auto', overflowX:'hidden'}}>
-    <form onSubmit={handleSubmit(state.edit?onEdit:onSubmit, onError)}>
-      <Tabs defaultActiveKey={state.tabState} activeKey={state.tabState}
-        onChange={(e)=> dispatch({type:'toggle', fieldName:'tabState', payload:e}) }>
-      <Tabs.TabPane tab="Booking Info" key="1"> 
-        <BookingInfo handleSubmit={handleSubmit} onEdit={onEdit} companyId={companyId} control={control} register={register} 
-          errors={errors} state={state} useWatch={useWatch} dispatch={dispatch} reset={reset} id={id} type={type}
-        />
-      </Tabs.TabPane>
-      {(subType=="FCL" && (type=="SE" || type=="SI")) &&
-        <Tabs.TabPane tab="Equipment" key="2">
-          <EquipmentInfo control={control} register={register} errors={errors} state={state} dispatch={dispatch} useWatch={useWatch}/>
+    <div  className='client-styles'  style={{overflowY:'auto', overflowX:'hidden'}}>
+      {loading ? <Spinner animation="border" /> : <Tabs  defaultActiveKey={"1"}>
+        <Tabs.TabPane tab="Booking Info" key={"1"}>
+          <BookingInfo setJobField={setJobField} state={state} />
         </Tabs.TabPane>
-      }
-        <Tabs.TabPane tab="Routing" key="3">
-          <Routing control={control} register={register} errors={errors} state={state} useWatch={useWatch} type={type} />
+        <Tabs.TabPane tab="Equipment" key={"2"}>
+          <EquipmentInfo setJobField={setJobField} state={state} />
         </Tabs.TabPane>
-      {state.edit &&
-        <Tabs.TabPane tab="Charges" key="4">
-          <ChargesComp state={state} dispatch={dispatch} type={type} allValues={allValues} />
+        <Tabs.TabPane tab="Routing" key={"3"}>
+          <Routing setJobField={setJobField} state={state} />
         </Tabs.TabPane>
-      }
-      {(state.selectedInvoice!='') &&
-        <Tabs.TabPane tab="Invoice / Bills" key="5">
-          <Invoice state={state} dispatch={dispatch} companyId={companyId} />
-        </Tabs.TabPane>
-      }
-      {(state.loadingProgram!='') &&
-        <Tabs.TabPane tab={`Loading Program`} key="6">
-          <LoadingProgram state={state} dispatch={dispatch} companyId={companyId} jobData={jobData} />
-        </Tabs.TabPane>
-      }
-      {(state.do!='') &&
-        <Tabs.TabPane tab={"Delivery Order"} key="7">
-          <DelieveryOrder state={state} dispatch={dispatch} companyId={companyId} jobData={jobData} clearingAgents={state.fields.vendor.chaChb} />
-        </Tabs.TabPane>
-      }
-      </Tabs>
-      {(state.tabState=="1"||state.tabState=="2"||state.tabState=="3") &&
-      <div className='flex'>
-        <button type="submit" disabled={state.load?true:false} className='btn-custom mt-3'>
-          {state.load?<Spinner animation="border" size='sm' className='mx-3' />:'Save Job'}
-        </button>
-        <button type="button" disabled={!deleteAccess} 
-          className={!deleteAccess?"btn-red-disabled mt-3 mx-3":"btn-red mt-3 mx-3"}
-          onClick={()=>{
-            PopConfirm("Confirmation", "Are You Sure You Want To Delete This Job?",
-              () => {
-                axios.post(process.env.NEXT_PUBLIC_CLIMAX_POST_DELETE_JOBS,{
-                  id:allValues.id
-                }).then(async(x)=>{
-                  let oldTabs = await type=="SE"?tabs.filter((x)=> {return x.key!="4-3" }):
-                  // console.log(oldTabs)
-                  await type=="SI"?tabs.filter((x)=> {return x.key!="4-6" }):
-                  await type=="AE"?tabs.filter((x)=> {return x.key!="7-2" }):
-                  await tabs.filter((x)=> {return x.key!="7-5" })
-                  dispatchNew(await removeTab(oldTabs)); // First deleting Job Tab
-                  Router.push(type=="SE"?"/seaJobs/seJobList":type=="SI"?"/seaJobs/siJobList":type=="AE"?"/airJobs/aeJobList":"/airJobs/aiJobList")
-                })
-            })
-          }}
-        >Delete Job
-        </button>
-      </div>
-      }
-    </form>
-    {state.load && <FullScreenLoader/>}
-  </div>
+      </Tabs>}
+    </div>
   )
 }
 

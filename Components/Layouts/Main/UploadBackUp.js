@@ -1014,8 +1014,63 @@ const Upload_CoA = () => {
     const importCOA = async () => {
         try{
             const companyId = Cookies.get("companyId")
+            const companyId = Cookies.get("companyId")
             const coa = await axios.post("http://localhost:8081/accounts/getAll")
             console.log(coa.data)
+            const result = await axios.post("http://localhost:8088/coa/importAccounts", coa.data.temp)
+            console.log(result.status)
+        }catch(err){
+            console.error(err)
+        }
+    }
+    const getCOATree = async () => {
+        try{
+            // const coa = await axios.post("http://localhost:8081/accounts/getAll")
+            // console.log(coa.data)
+            const result = await axios.get("http://localhost:8088/coa/getCOATree")
+            console.log(result.data)
+        }catch(err){
+            console.error(err)
+        }
+    }
+
+const importParties = async () => {
+    try{
+        const { data } = await axios.get("http://localhost:8081/parties/get")
+        console.log(data)
+
+        const createMap = (arr, key) => new Map(arr.map(item => [item[key], item]));
+
+        const lookupMaps = {
+            Parties: createMap(data.Parties, "Id"),
+            UNLocation: createMap(data.UNLocation, "UNLocCode"),
+            Employee: createMap(data.Employee, "Id"),
+            Currencies: createMap(data.Currencies, "Id"),
+            COA: createMap(data.COA, "Id"),
+        };
+
+        const parties = data.Parties.map(x => ({
+            ...x,
+            ParentParty: lookupMaps.Parties.get(x.ParentPartyId),
+            Country: lookupMaps.UNLocation.get(x.CountryCode),
+            City: lookupMaps.UNLocation.get(x.CityCode),
+            SalesPerson: lookupMaps.Employee.get(x.SalesPersonId),
+            AccountsRep: lookupMaps.Employee.get(x.AccountsRepId),
+            DocsRep: lookupMaps.Employee.get(x.DocsRepId),
+            Currency: lookupMaps.Currencies.get(x.CurrencyId),
+            ParentAccount: lookupMaps.COA.get(x.ParentAccountId),
+            ContraAccount: lookupMaps.COA.get(x.ContraAccountId),
+            Account: lookupMaps.COA.get(x.AccountId),
+        }));
+
+        console.log(parties)
+
+        const result = await axios.post("http://localhost:8088/parties/bulkCreate", parties)
+        console.log(result.data.status)
+    }catch(err){
+        console.error(err)
+    }
+}
             const result = await axios.post("http://localhost:8088/coa/importAccounts", coa.data.temp)
             console.log(result.status)
         }catch(err){

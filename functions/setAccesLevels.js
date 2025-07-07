@@ -69,6 +69,11 @@ function setAccesLevels(dispatch, collapsed){
       key: '2-2',
       children: `Content of Tab Pane 2`,
     }):null,
+    (levels?.includes("Parties")||levels?.includes("admin"))?getItem('Parties', '2-20',<></>, null, {
+      label: `Parties`,
+      key: '2-20',
+      children: `Content of Tab Pane 2`,
+    }):null,
     (levels?.includes("VendorList")||levels?.includes("admin"))?getItem('Vendor List', '2-5',<></>, null, {
       label: `Vendor List`,
       key: '2-5',

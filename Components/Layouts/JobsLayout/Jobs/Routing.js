@@ -5,63 +5,57 @@ import { Row, Col } from 'react-bootstrap';
 import ports from "/jsonData/ports";
 import airports from "/jsonData/airports";
 import React from 'react';
+import { DatePicker, Select } from 'antd';
 
-const Routing = ({register, control, errors, state, useWatch, type}) => {
+const Routing = ({setJobField, state}) => {
 
-  const Space = () => <div className='mt-2'/>
 
   return (
-    <>
-    <Row>
-        <Col md={6}>
-            <SelectSearchComp register={register} name='pol' control={control} 
-                label={(type=="SE"||type=="SI")?'Port Of Loading':'Airport of Loading'} 
-                width={"100%"}
-                options={(type=="SE"||type=="SI")?ports.ports:airports} />
-            <Space/>
-        </Col>
-        <Col md={6} style={{paddingTop:19}}> 
-            <DateComp register={register} name='polDate' control={control} label=''  /> <Space/>
-        </Col>
-        <Col md={6}>
-            <SelectSearchComp register={register} name='pod' control={control} 
-                label={(type=="SE"||type=="SI")?'Port Of Discharge':'Airport of Discharge'} width={"100%"}
-                options={(type=="SE"||type=="SI")?ports.ports:airports} />
-            <Space/>
-        </Col>
-        <Col md={6} style={{paddingTop:19}}> 
-            <DateComp register={register} name='podDate' control={control} label='' /> <Space/>
-        </Col>
-        <Col md={6}>
-            <SelectSearchComp register={register} name='fd' control={control} label='Final Destination' width={"100%"}
-                options={ports.ports} />
-            <Space/>
-        </Col>
-        <Col md={6}></Col>
-        <Col md={6} className='my-1'>
-            <InputComp register={register} name='freightPaybleAt' control={control} label='Freight Payble At' width={300} /> <Space/>
-        </Col>
-        <Col md={6}></Col>
-        <Col md={6}>
-            <SelectSearchComp register={register} name='terminal' control={control} label='Terminal' width={"100%"}
-                options={[  
-                    {id:'Direct', name:'Direct'},
-                ]}
-            />
-            <Space/>
-        </Col>
-        <Col md={6}></Col>
-        <Col md={6}>
-            <SelectSearchComp register={register} name='delivery' control={control} label='Delivery' width={"100%"}
-                options={[  
-                    {id:'CY/CY', name:'CY/CY'},
-                ]}
-            /> <Space/>
-        </Col>
-        <Col md={6}></Col>
-        <div style={{minHeight:258}}></div>
-    </Row>
-    </>
+    <div>
+        <Row>
+
+            <Col md={6}>
+                <Row>
+                    <label>Port Of Loading</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+                <Row className='mt-3'>
+                    <label>Port Of Discharge</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+                <Row className='mt-3'>
+                    <label>Final Destination</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+                <Row className='mt-3'>
+                    <label>Freight Payable At</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+                <Row className='mt-3'>
+                    <label>Terminal</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+                <Row className='mt-3'>
+                    <label>Delivery</label>
+                </Row>
+                <Select style={{width: '100%'}}></Select>
+            </Col>
+            <Col md={6} className='px-4'>
+                <Row>
+                    <Row>
+                        <label>POL Date</label>
+                    </Row>
+                    <DatePicker style={{width: '30%'}}></DatePicker>
+                </Row>
+                <Row className='mt-3'>
+                    <Row>
+                        <label>POD Date</label>
+                    </Row>
+                    <DatePicker style={{width: '30%'}}></DatePicker>
+                </Row>
+            </Col>
+        </Row>
+    </div>
   )
 }
 
